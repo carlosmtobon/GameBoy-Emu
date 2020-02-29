@@ -22,7 +22,7 @@ namespace GameBoy_Emu
             sbyte sb = -1;
             ushort us = 10;
             us += (ushort)sb;
-            Console.WriteLine($"{us}");
+            Console.WriteLine($"{~us}");
             //cpu.Registers.SetAF(0xACDC);
 
             // Console.WriteLine(String.Format("{0:X}", cpu.Registers.FRegister));
