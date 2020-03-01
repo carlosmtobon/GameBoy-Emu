@@ -19,10 +19,20 @@ namespace GameBoy_Emu
             var ram = new RAM();
             ram.LoadRom(@"C:\Users\Carlos\Desktop\cpu_instrs.gb");
             var cpu = new CPU(ram);
-            sbyte sb = -1;
-            ushort us = 10;
-            us += (ushort)sb;
-            Console.WriteLine($"{~us}");
+            cpu.Push();
+            cpu.PC += 100;
+            cpu.Push();
+            cpu.PC = 4000;
+            cpu.Push();
+
+            Console.WriteLine($"PC: {cpu.PC}");
+            cpu.Pop();
+            Console.WriteLine($"PC: {cpu.PC}");
+            cpu.Pop();
+            Console.WriteLine($"PC: {cpu.PC}");
+            cpu.Pop();
+            Console.WriteLine($"PC: {cpu.PC}");
+
             //cpu.Registers.SetAF(0xACDC);
 
             // Console.WriteLine(String.Format("{0:X}", cpu.Registers.FRegister));

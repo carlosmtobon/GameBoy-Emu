@@ -5,7 +5,7 @@ namespace GameBoy_Emu.Core
     internal class Registers
     {
         public const byte ZERO_FLAG = 0x80;
-        public const byte NEGATIVE_FLAG = 0x40;
+        public const byte SUBTRACT_FLAG = 0x40;
         public const byte HALF_CARRY_FLAG = 0x20;
         public const byte FULL_CARRY_FLAG = 0x10;
 
@@ -89,45 +89,37 @@ namespace GameBoy_Emu.Core
         {
             SetHL((ushort)(GetHL() - val));
         }
-        public void SetFlags(byte zeroFlag, byte negFlag, byte halfFlag, byte fullFlag)
+       
+        public void SetZFLag(bool zSet)
         {
-            //TODO Fix this shit
-            F = (byte)(ZERO_FLAG & zeroFlag);
-            F = (byte)(NEGATIVE_FLAG & negFlag);
-            F = (byte)(HALF_CARRY_FLAG & halfFlag);
-            F = (byte)(FULL_CARRY_FLAG & fullFlag);
-        }
-
-        public void SetZFLag(byte val)
-        {
-            F = (byte)(val | ZERO_FLAG);
+             F = (byte)((zSet ? 1 : 0) | ZERO_FLAG);
         }
 
         public int GetZFlag()
         {
             return F & ZERO_FLAG;
         }
-        public void SetNFLag(byte val)
+        public void SetNFLag(bool nSet)
         {
-            F = (byte)(val | NEGATIVE_FLAG);
+            F = (byte)((nSet ? 1 : 0) | SUBTRACT_FLAG);
         }
 
         public int GetNFlag()
         {
-            return F & NEGATIVE_FLAG;
+            return F & SUBTRACT_FLAG;
         }
 
-        public void SetHCYFLag(byte val)
+        public void SetHCYFLag(bool hcySet)
         {
-            F = (byte)(val | HALF_CARRY_FLAG);
+             F = (byte)((hcySet ? 1 : 0) | HALF_CARRY_FLAG);
         }
         public int GetHCYFlag()
         {
             return F & HALF_CARRY_FLAG;
         }
-        public void SetCYFLag(byte val)
+        public void SetCYFLag(bool cySet)
         {
-            F = (byte)(val | FULL_CARRY_FLAG);
+            F = (byte)((cySet ? 1 : 0) | FULL_CARRY_FLAG);
         }
         public int GetCYFlag()
         {
