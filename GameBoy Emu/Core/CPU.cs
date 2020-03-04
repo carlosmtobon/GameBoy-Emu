@@ -29,10 +29,10 @@ namespace GameBoy_Emu.Core
             CpuCycles += cycles;
         }
 
-        public void Push()
+        public void Push(ushort val)
         {
-            _ram.Memory[SP - 1] = (byte)(PC & 0x00FF);
-            _ram.Memory[SP - 2] = (byte)(PC >> 8);
+            _ram.Memory[SP - 1] = (byte)(val & 0x00FF);
+            _ram.Memory[SP - 2] = (byte)(val >> 8);
             SP -= 2;
         }
 
@@ -40,6 +40,11 @@ namespace GameBoy_Emu.Core
         {
             SP+=2;
             return (ushort)(_ram.Memory[SP] << 8 | _ram.Memory[SP + 1]); ;
+        }
+
+        public void JP(ushort addr)
+        {
+            PC = _ram.LoadU16Bits(addr);
         }
 
         public void ProcessOpcode()
@@ -973,6 +978,257 @@ namespace GameBoy_Emu.Core
                 case 0xC1:
                     Registers.SetBC(Pop());
                     UpdatePCAndCycles(1, 12);
+                    break;
+                case 0xC2:
+                    if (Registers.GetZFlag() == 0)
+                    {
+                        JP((ushort)(PC + 1));
+                        UpdatePCAndCycles(0, 16);
+                    }
+                    else
+                    {
+                        UpdatePCAndCycles(3, 12);
+                    }  
+                    break;
+                case 0xC3:
+                    JP((ushort)(PC + 1));
+                    UpdatePCAndCycles(0, 16);
+                    break;
+                case 0xC4:
+                    if (Registers.GetZFlag() == 0)
+                    {
+                        Push(PC);
+                        JP((ushort)(PC + 1));
+                        UpdatePCAndCycles(0, 24);
+                    }
+                    else
+                    {
+                        UpdatePCAndCycles(3, 12);
+                    }
+                    break;
+                case 0xC5:
+                    Push(Registers.GetBC());
+                    UpdatePCAndCycles(1, 16);
+                    break;
+                case 0xC6:
+                    Registers.A += _ram.LoadU8Bits(PC + 1);
+                    // set flags
+                    UpdatePCAndCycles(2, 8);
+                    break;
+                case 0xC7:
+                    Push(PC);
+                    PC = 0;
+                    UpdatePCAndCycles(0, 16);
+                    break;
+                case 0xC8:
+                    if (Registers.GetZFlag() == 1)
+                    {
+                        PC = Pop();
+                        UpdatePCAndCycles(0, 20);
+                    }
+                    else
+                    {
+                        UpdatePCAndCycles(1, 8);
+                    }
+                    break;
+                case 0xC9:
+                    PC = Pop();
+                    UpdatePCAndCycles(0, 16);
+                    break;
+                case 0xCA:
+                    if (Registers.GetZFlag() == 1)
+                    {
+                        JP((ushort)(PC + 1));
+                        UpdatePCAndCycles(0, 16);
+                    }
+                    else
+                    {
+                        UpdatePCAndCycles(3, 12);
+                    }
+                    break;
+                case 0xCB:
+                    // Prefix CB
+                    break;
+                case 0xCC:
+                    if (Registers.GetZFlag() == 1)
+                    {
+                        Push(PC);
+                        JP((ushort)(PC + 1));
+                        UpdatePCAndCycles(0, 24);
+                    }
+                    else
+                    {
+                        UpdatePCAndCycles(3, 12);
+                    }
+                    break;
+                case 0xCD:
+                    Push(PC);
+                    JP((ushort)(PC + 1));
+                    UpdatePCAndCycles(0, 24);
+                    break;
+                case 0xCE:
+                    Registers.A += (byte)(_ram.LoadU8Bits(PC + 1) + Registers.GetCYFlag());
+                    UpdatePCAndCycles(2, 8);
+                    break;
+                case 0xCF:
+                    Push(PC);
+                    PC = 8;
+                    // set flags
+                    UpdatePCAndCycles(0, 16);
+                    break;
+                case 0xD0:
+                    if (Registers.GetCYFlag() == 0)
+                    {
+                        PC = Pop();
+                        UpdatePCAndCycles(0, 20);
+                    }
+                    else
+                    {
+                        UpdatePCAndCycles(1, 8);
+                    }
+                    break;
+                case 0xD1:
+                    Registers.SetDE(Pop());
+                    UpdatePCAndCycles(1, 12);
+                    break;
+                case 0xD2:
+                    if (Registers.GetCYFlag() == 0)
+                    {
+                        JP((ushort)(PC + 1));
+                        UpdatePCAndCycles(0, 16);
+                    }
+                    else
+                    {
+                        UpdatePCAndCycles(3, 12);
+                    }
+                    break;
+                case 0xD4:
+                    if (Registers.GetCYFlag() == 0)
+                    {
+                        Push(PC);
+                        JP((ushort)(PC + 1));
+                        UpdatePCAndCycles(0, 24);
+                    }
+                    else
+                    {
+                        UpdatePCAndCycles(3, 12);
+                    }
+                    break;
+                case 0xD5:
+                    Push(Registers.GetDE());
+                    UpdatePCAndCycles(1, 16);
+                    break;
+                case 0xD6:
+                    Registers.A -= _ram.LoadU8Bits(PC + 1);
+                    // set flags
+                    UpdatePCAndCycles(2, 8);
+                    break;
+                case 0xD7:
+                    Push(PC);
+                    PC = 10;
+                    UpdatePCAndCycles(0, 16);
+                    break;
+                case 0xD8:
+                    if (Registers.GetCYFlag() == 1)
+                    {
+                        PC = Pop();
+                        UpdatePCAndCycles(0, 20);
+                    }
+                    else
+                    {
+                        UpdatePCAndCycles(1, 8);
+                    }
+                    break;
+                case 0xD9:
+                    PC = Pop();
+                    // enable interrupt
+                    UpdatePCAndCycles(0, 16);
+                    break;
+                case 0xDA:
+                    if (Registers.GetCYFlag() == 1)
+                    {
+                        JP((ushort)(PC + 1));
+                        UpdatePCAndCycles(0, 16);
+                    }
+                    else
+                    {
+                        UpdatePCAndCycles(3, 12);
+                    }
+                    break;
+                case 0xDC:
+                    if (Registers.GetCYFlag() == 1)
+                    {
+                        Push(PC);
+                        JP((ushort)(PC + 1));
+                        UpdatePCAndCycles(0, 24);
+                    }
+                    else
+                    {
+                        UpdatePCAndCycles(3, 12);
+                    }
+                    break;
+                case 0xDE:
+                    Registers.A -= (byte)(_ram.LoadU8Bits(PC + 1) + Registers.GetCYFlag());
+                    UpdatePCAndCycles(2, 8);
+                    break;
+                case 0xDF:
+                    Push(PC);
+                    PC = 18;
+                    UpdatePCAndCycles(0, 16);
+                    break;
+                case 0xE0:
+                    _ram.StoreU8Bits(0xFF00 + _ram.LoadU8Bits(PC + 1), Registers.A);
+                    UpdatePCAndCycles(2, 12);
+                    break;
+                case 0xE1:
+                    Registers.SetHL(Pop());
+                    UpdatePCAndCycles(1, 12);
+                    break;
+                case 0xE2:
+                    _ram.StoreU8Bits(0xFF00 + Registers.C, Registers.A);
+                    UpdatePCAndCycles(1, 8);
+                    break;
+                case 0xE5:
+                    Push(Registers.GetHL());
+                    UpdatePCAndCycles(1, 16);
+                    break;
+                case 0xE6:
+                    Registers.A &= _ram.LoadU8Bits(PC + 1);
+                    // set flags
+                    UpdatePCAndCycles(2, 8);
+                    break;
+                case 0xE7:
+                    Push(PC);
+                    PC = 20;
+                    UpdatePCAndCycles(0, 16);
+                    break;
+                case 0xE8:
+                    SP += (ushort)_ram.LoadI8Bits(PC + 1);
+                    // set flag
+                    UpdatePCAndCycles(0, 16);
+                    break;
+                case 0xE9:
+                    JP(Registers.GetHL());
+                    UpdatePCAndCycles(0, 4);
+                    break;
+                case 0xEA:
+                    _ram.StoreU8Bits(_ram.LoadU16Bits(PC + 1), Registers.A);
+                    UpdatePCAndCycles(3, 16);
+                    break;
+                case 0xEE:
+                    Registers.A ^= _ram.LoadU8Bits(PC + 1);
+                    Registers.SetZFLag(Registers.A == 0);
+                    Registers.SetNFLag(false);
+                    Registers.SetHCYFLag(false);
+                    Registers.SetCYFLag(false);
+                    UpdatePCAndCycles(2, 8);
+                    break;
+                case 0xEF:
+                    Push(PC);
+                    PC = 28;
+                    UpdatePCAndCycles(0, 16);
+                    break;
+                case 0xF0:
                     break;
 
             }
