@@ -92,39 +92,50 @@ namespace GameBoy_Emu.Core
        
         public void SetZFLag(bool zSet)
         {
-             F = (byte)((zSet ? 1 : 0) | ZERO_FLAG);
+            F = zSet ? SetBit(F, ZERO_FLAG) : ClearBit(F, ZERO_FLAG);
         }
 
-        public int GetZFlag()
+        public byte GetZFlag()
         {
-            return F & ZERO_FLAG;
+            return (byte)((F & ZERO_FLAG) >> 7);
         }
         public void SetNFLag(bool nSet)
         {
-            F = (byte)((nSet ? 1 : 0) | SUBTRACT_FLAG);
+            F = nSet ? SetBit(F, SUBTRACT_FLAG) : ClearBit(F, SUBTRACT_FLAG);
         }
 
-        public int GetNFlag()
+        public byte GetNFlag()
         {
-            return F & SUBTRACT_FLAG;
+            return (byte)((F & SUBTRACT_FLAG) >> 6);
         }
 
         public void SetHCYFLag(bool hcySet)
         {
-             F = (byte)((hcySet ? 1 : 0) | HALF_CARRY_FLAG);
+             F = hcySet ? SetBit(F, HALF_CARRY_FLAG) : ClearBit(F, HALF_CARRY_FLAG);
         }
-        public int GetHCYFlag()
+        public byte GetHCYFlag()
         {
-            return F & HALF_CARRY_FLAG;
+            return (byte)((F & HALF_CARRY_FLAG) >> 5);
         }
         public void SetCYFLag(bool cySet)
         {
-            F = (byte)((cySet ? 1 : 0) | FULL_CARRY_FLAG);
+            F = cySet ? SetBit(F, FULL_CARRY_FLAG) : ClearBit(F, FULL_CARRY_FLAG);
         }
-        public int GetCYFlag()
+        public byte GetCYFlag()
         {
-            return F & FULL_CARRY_FLAG;
+            return (byte)((F & FULL_CARRY_FLAG) >> 4);
         }
 
+        public byte ClearBit(byte val, byte bitToClear)
+        {
+            val &= (byte)~(bitToClear);
+            return val;
+        }
+
+        public byte SetBit(byte val, byte bitToSet)
+        {
+            val |= (byte)(bitToSet);
+            return val;
+        }
     }
 }

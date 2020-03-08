@@ -4,8 +4,12 @@ namespace GameBoy_Emu.Core
 {
     public class RAM
     {
-        private const int RAM_SIZE = 8092;
-        private const int RomOffset = 0x100;
+        private const int RAM_SIZE = 65535;
+        private const int RomOffset = 0x00;
+
+        const int IE = 0xFFFF;
+        const int IF = 0xFF0F; 
+
 
         public byte[] Memory { get; }
 
