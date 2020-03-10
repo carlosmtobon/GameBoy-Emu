@@ -47,6 +47,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\CPU.cs" />
+    <Compile Include="Core\Fetcher.cs" />
+    <Compile Include="Core\PixelFIFO.cs" />
+    <Compile Include="Core\PPU.cs" />
     <Compile Include="Core\RAM.cs" />
     <Compile Include="Core\Registers.cs" />
     <Compile Include="Form1.cs">

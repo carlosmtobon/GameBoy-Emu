@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GameBoy_Emu.Core
 {
-    class CPU
+    public class CPU
     {
         public int CpuCycles { get; set; }
         public byte Opcode { get; set; }
@@ -21,8 +21,9 @@ namespace GameBoy_Emu.Core
         {
             _ram = ram;
             Registers = new Registers();
-            PC = 0x0100;
+            PC = 0;
             SP = (ushort)(ram.Memory.Length - 1);
+            IME = false;
         }
 
         public void UpdatePCAndCycles(ushort val, int cycles)
@@ -62,6 +63,7 @@ namespace GameBoy_Emu.Core
             Registers.SetZFLag((val == 0));
             Registers.SetNFLag(false);
             Registers.SetHCYFLag((((oldVal & 0xF) + (oldVal & 0xF)) & 0x10) == 0x10);
+            UpdatePCAndCycles(bytesRead, cycles);
             return val;
         }
 
@@ -72,6 +74,7 @@ namespace GameBoy_Emu.Core
             Registers.SetZFLag((val == 0));
             Registers.SetNFLag(false);
             Registers.SetHCYFLag((((oldVal & 0xF) - (oldVal & 0xF)) & 0x10) == 0x10);
+            UpdatePCAndCycles(bytesRead, cycles);
             return val;
         }
 
@@ -92,6 +95,7 @@ namespace GameBoy_Emu.Core
             Registers.SetHCYFLag((((Registers.A & 0xF) + (register & 0xF)) & 0x10) == 0x10);
             Registers.SetCYFLag((Registers.A + register) > 0xFF);
             Registers.A += register;
+            UpdatePCAndCycles(bytesRead, cycles);
         }
         private void ADDC(byte register, ushort bytesRead, int cycles)
         {
@@ -101,9 +105,10 @@ namespace GameBoy_Emu.Core
             Registers.SetHCYFLag((((Registers.A & 0xF) + (register & 0xF) + currentCY) & 0x10) == 0x10);
             Registers.SetCYFLag((Registers.A + register + currentCY) > 0xFF);
             Registers.A += (byte)(register + currentCY);
+            UpdatePCAndCycles(bytesRead, cycles);
         }
 
-        public void SUB(byte register, ushort bytesRead, int cycles)
+        private void SUB(byte register, ushort bytesRead, int cycles)
         {
             Registers.SetZFLag((Registers.A - register) == 0);
             Registers.SetNFLag(true);
@@ -112,7 +117,7 @@ namespace GameBoy_Emu.Core
             Registers.A -= (byte)(register);
             UpdatePCAndCycles(bytesRead, cycles);
         }
-        public void SBC(byte register, ushort bytesRead, int cycles)
+        private void SBC(byte register, ushort bytesRead, int cycles)
         {
             byte currentCY = Registers.GetCYFlag();
             Registers.SetZFLag((byte)(Registers.A - register - currentCY) == 0);
@@ -123,10 +128,49 @@ namespace GameBoy_Emu.Core
             UpdatePCAndCycles(bytesRead, cycles);
         }
 
+        private void AND(byte register, ushort bytesRead, int cycles)
+        {
+            Registers.A &= register;
+            Registers.SetZFLag(Registers.A == 0);
+            Registers.SetNFLag(false);
+            Registers.SetHCYFLag(true);
+            Registers.SetCYFLag(false);
+            UpdatePCAndCycles(bytesRead, cycles);
+        }
+
+        public void XOR(byte register, ushort bytesRead, int cycles)
+        {
+            Registers.A ^= register;
+            Registers.SetZFLag(Registers.A == 0);
+            Registers.SetNFLag(false);
+            Registers.SetHCYFLag(false);
+            Registers.SetCYFLag(false);
+            UpdatePCAndCycles(bytesRead, cycles);
+        }
+
+        private void OR(byte register, ushort bytesRead, int cycles)
+        {
+            Registers.A |= register;
+            Registers.SetZFLag(Registers.A == 0);
+            Registers.SetNFLag(false);
+            Registers.SetHCYFLag(false);
+            Registers.SetCYFLag(false);
+            UpdatePCAndCycles(bytesRead, cycles);
+        }
+
+        public void CP(byte register, ushort bytesRead, int cycles)
+        {
+            Registers.SetZFLag((Registers.A - register) == 0);
+            Registers.SetNFLag(true);
+            Registers.SetHCYFLag((Registers.A & 0xF) < (register & 0xF));
+            Registers.SetCYFLag(Registers.A < register);
+            UpdatePCAndCycles(bytesRead, cycles);
+        }
+
         public void ProcessOpcode()
         {
             Opcode = _ram.Memory[PC];
-            Console.WriteLine(Opcode);
+            Console.WriteLine("PC: " + PC);
             switch (Opcode)
             {
                 case 0x00:
@@ -254,7 +298,7 @@ namespace GameBoy_Emu.Core
                     if (Registers.GetZFlag() == 0)
                     {
                         PC += (ushort)(_ram.LoadI8Bits(PC + 1));
-                        UpdatePCAndCycles(0, 12);
+                        UpdatePCAndCycles(2, 12);
                     }
                     else
                     {
@@ -295,7 +339,7 @@ namespace GameBoy_Emu.Core
                     if (Registers.GetZFlag() == 1)
                     {
                         PC += (ushort)(_ram.LoadI8Bits(PC + 1));
-                        UpdatePCAndCycles(0, 12);
+                        UpdatePCAndCycles(2, 12);
                     }
                     else
                     {
@@ -334,7 +378,7 @@ namespace GameBoy_Emu.Core
                     if (Registers.GetCYFlag() == 0)
                     {
                         PC += (ushort)(_ram.LoadI8Bits(PC + 1));
-                        UpdatePCAndCycles(0, 12);
+                        UpdatePCAndCycles(2, 12);
                     } 
                     else
                     {
@@ -376,7 +420,7 @@ namespace GameBoy_Emu.Core
                     if (Registers.GetCYFlag() == 1)
                     {
                         PC += (ushort)(_ram.LoadI8Bits(PC + 1));
-                        UpdatePCAndCycles(0, 12);
+                        UpdatePCAndCycles(2, 12);
                     }
                     else
                     {
@@ -716,180 +760,100 @@ namespace GameBoy_Emu.Core
                     SBC(Registers.A, 1, 4);
                     break;
                 case 0xA0:
-                    Registers.A &= Registers.B;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    AND(Registers.B, 1, 4);
                     break;
                 case 0xA1:
-                    Registers.A &= Registers.C;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    AND(Registers.C, 1, 4);
                     break;
                 case 0xA2:
-                    Registers.A &= Registers.D;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    AND(Registers.D, 1, 4);
                     break;
                 case 0xA3:
-                    Registers.A &= Registers.E;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    AND(Registers.E, 1, 4);
                     break;
                 case 0xA4:
-                    Registers.A &= Registers.H;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    AND(Registers.H, 1, 4);
                     break;
                 case 0xA5:
-                    Registers.A &= Registers.L;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    AND(Registers.L, 1, 4);
                     break;
                 case 0xA6:
-                    Registers.A &= _ram.LoadU8Bits(Registers.GetHL());
-                    //set flag
-                    UpdatePCAndCycles(1, 8);
+                    AND(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
                     break;
                 case 0xA7:
-                    Registers.A &= Registers.A;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    AND(Registers.A, 1, 4);
                     break;
                 case 0xA8:
-                    Registers.A ^= Registers.B;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    XOR(Registers.B, 1, 4);
                     break;
                 case 0xA9:
-                    Registers.A ^= Registers.C;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    XOR(Registers.C, 1, 4);
                     break;
                 case 0xAA:
-                    Registers.A ^= Registers.D;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    XOR(Registers.D, 1, 4);
                     break;
                 case 0xAB:
-                    Registers.A ^= Registers.E;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    XOR(Registers.E, 1, 4);
                     break;
                 case 0xAC:
-                    Registers.A ^= Registers.H;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    XOR(Registers.H, 1, 4);
                     break;
                 case 0xAD:
-                    Registers.A ^= Registers.L;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    XOR(Registers.L, 1, 4);
                     break;
                 case 0xAE:
-                    Registers.A ^= _ram.LoadU8Bits(Registers.GetHL());
-                    //set flag
-                    UpdatePCAndCycles(1, 8);
+                    XOR(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
                     break;
                 case 0xAF:
-                    Registers.A ^= Registers.A;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    XOR(Registers.A, 1, 4);
                     break;
                 case 0xB0:
-                    Registers.A |= Registers.B;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    OR(Registers.B, 1, 4);
                     break;
                 case 0xB1:
-                    Registers.A |= Registers.C;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    OR(Registers.C, 1, 4);
                     break;
                 case 0xB2:
-                    Registers.A |= Registers.D;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    OR(Registers.D, 1, 4);
                     break;
                 case 0xB3:
-                    Registers.A |= Registers.E;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    OR(Registers.E, 1, 4);
                     break;
                 case 0xB4:
-                    Registers.A |= Registers.H;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    OR(Registers.H, 1, 4);
                     break;
                 case 0xB5:
-                    Registers.A |= Registers.L;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    OR(Registers.L, 1, 4);
                     break;
                 case 0xB6:
-                    Registers.A |= _ram.LoadU8Bits(Registers.GetHL());
-                    //set flag
-                    UpdatePCAndCycles(1, 8);
+                    OR(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
                     break;
                 case 0xB7:
-                    Registers.A |= Registers.A;
-                    //set flag
-                    UpdatePCAndCycles(1, 4);
+                    OR(Registers.A, 1, 4);
                     break;
                 case 0xB8:
-                    Registers.SetZFLag(Registers.A == Registers.B);
-                    Registers.SetNFLag(true);
-                    // hcy set
-                    Registers.SetCYFLag(Registers.A < Registers.B);
-                    UpdatePCAndCycles(1, 4);
+                    CP(Registers.B, 1, 4);
                     break;
                 case 0xB9:
-                    Registers.SetZFLag(Registers.A == Registers.C);
-                    Registers.SetNFLag(true);
-                    // hcy set
-                    Registers.SetCYFLag(Registers.A < Registers.C);
-                    UpdatePCAndCycles(1, 4);
+                    CP(Registers.C, 1, 4);
                     break;
                 case 0xBA:
-                    Registers.SetZFLag(Registers.A == Registers.D);
-                    Registers.SetNFLag(true);
-                    // hcy set
-                    Registers.SetCYFLag(Registers.A < Registers.D);
-                    UpdatePCAndCycles(1, 4);
+                    CP(Registers.D, 1, 4);
                     break;
                 case 0xBB:
-                    Registers.SetZFLag(Registers.A == Registers.E);
-                    Registers.SetNFLag(true);
-                    // hcy set
-                    Registers.SetCYFLag(Registers.A < Registers.E);
-                    UpdatePCAndCycles(1, 4);
+                    CP(Registers.E, 1, 4);
                     break;
                 case 0xBC:
-                    Registers.SetZFLag(Registers.A == Registers.H);
-                    Registers.SetNFLag(true);
-                    // hcy set
-                    Registers.SetCYFLag(Registers.A < Registers.H);
-                    UpdatePCAndCycles(1, 4);
+                    CP(Registers.H, 1, 4);
                     break;
                 case 0xBD:
-                    Registers.SetZFLag(Registers.A == Registers.L);
-                    Registers.SetNFLag(true);
-                    // hcy set
-                    Registers.SetCYFLag(Registers.A < Registers.L);
-                    UpdatePCAndCycles(1, 4);
+                    CP(Registers.L, 1, 4);
                     break;
                 case 0xBE:
-                    Registers.SetZFLag(Registers.A == _ram.LoadU8Bits(Registers.GetHL()));
-                    Registers.SetNFLag(true);
-                    // hcy set
-                    Registers.SetCYFLag(Registers.A < _ram.LoadU8Bits(Registers.GetHL()));
-                    UpdatePCAndCycles(1, 8);
+                    CP(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
                     break;
                 case 0xBF:
-                    Registers.SetZFLag(Registers.A == Registers.A);
-                    Registers.SetNFLag(true);
-                    // hcy set
-                    Registers.SetCYFLag(Registers.A < Registers.A);
-                    UpdatePCAndCycles(1, 4);
+                    CP(Registers.A, 1, 4);
                     break;
                 case 0xC0:
                     if (Registers.GetZFlag() == 0)
@@ -938,9 +902,7 @@ namespace GameBoy_Emu.Core
                     UpdatePCAndCycles(1, 16);
                     break;
                 case 0xC6:
-                    Registers.A += _ram.LoadU8Bits(PC + 1);
-                    // set flags
-                    UpdatePCAndCycles(2, 8);
+                    ADD(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xC7:
                     Push(PC);
@@ -975,8 +937,7 @@ namespace GameBoy_Emu.Core
                     break;
                 case 0xCB:
                     // Prefix CB
-                    UpdatePCAndCycles(1, 4);
-                    CBPrefix(_ram.Memory[PC]);
+                    CBPrefix(_ram.Memory[PC + 1]);
                     break;
                 case 0xCC:
                     if (Registers.GetZFlag() == 1)
@@ -996,8 +957,7 @@ namespace GameBoy_Emu.Core
                     UpdatePCAndCycles(0, 24);
                     break;
                 case 0xCE:
-                    Registers.A += (byte)(_ram.LoadU8Bits(PC + 1) + Registers.GetCYFlag());
-                    UpdatePCAndCycles(2, 8);
+                    ADDC(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xCF:
                     Push(PC);
@@ -1048,9 +1008,7 @@ namespace GameBoy_Emu.Core
                     UpdatePCAndCycles(1, 16);
                     break;
                 case 0xD6:
-                    Registers.A -= _ram.LoadU8Bits(PC + 1);
-                    // set flags
-                    UpdatePCAndCycles(2, 8);
+                    SUB(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xD7:
                     Push(PC);
@@ -1069,7 +1027,10 @@ namespace GameBoy_Emu.Core
                     }
                     break;
                 case 0xD9:
-                    EI();
+                    // RETI
+                    PC = Pop();
+                    IME = false;
+                    UpdatePCAndCycles(1, 16);
                     break;
                 case 0xDA:
                     if (Registers.GetCYFlag() == 1)
@@ -1095,8 +1056,7 @@ namespace GameBoy_Emu.Core
                     }
                     break;
                 case 0xDE:
-                    Registers.A -= (byte)(_ram.LoadU8Bits(PC + 1) + Registers.GetCYFlag());
-                    UpdatePCAndCycles(2, 8);
+                    SBC(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xDF:
                     Push(PC);
@@ -1120,9 +1080,7 @@ namespace GameBoy_Emu.Core
                     UpdatePCAndCycles(1, 16);
                     break;
                 case 0xE6:
-                    Registers.A &= _ram.LoadU8Bits(PC + 1);
-                    // set flags
-                    UpdatePCAndCycles(2, 8);
+                    AND(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xE7:
                     Push(PC);
@@ -1143,12 +1101,7 @@ namespace GameBoy_Emu.Core
                     UpdatePCAndCycles(3, 16);
                     break;
                 case 0xEE:
-                    Registers.A ^= _ram.LoadU8Bits(PC + 1);
-                    Registers.SetZFLag(Registers.A == 0);
-                    Registers.SetNFLag(false);
-                    Registers.SetHCYFLag(false);
-                    Registers.SetCYFLag(false);
-                    UpdatePCAndCycles(2, 8);
+                    XOR(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xEF:
                     Push(PC);
@@ -1170,20 +1123,14 @@ namespace GameBoy_Emu.Core
                     break;
                 case 0xF3:
                     // disable interrupt
-                    _ram.Memory[0xFFFF] = 0;
-                    UpdatePCAndCycles(1, 4);
+                    DI();
                     break;
                 case 0xF5:
                     Push(Registers.GetAF());
                     UpdatePCAndCycles(1, 16);
                     break;
                 case 0xF6:
-                    Registers.A |= _ram.LoadU8Bits(PC + 1);
-                    Registers.SetZFLag(Registers.A == 0);
-                    Registers.SetNFLag(false);
-                    Registers.SetHCYFLag(false);
-                    Registers.SetCYFLag(false);
-                    UpdatePCAndCycles(2, 8);
+                    OR(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xF7:
                     Push(PC);
@@ -1204,22 +1151,27 @@ namespace GameBoy_Emu.Core
                     UpdatePCAndCycles(3, 16);
                     break;
                 case 0xFB:
-                    // Enable Interrupts
                     EI();
                     break;
                 case 0xFE:
-                    Registers.SetZFLag(Registers.A == _ram.LoadU8Bits(PC + 1));
-                    Registers.SetNFLag(true);
-                    // hcy set
-                    Registers.SetCYFLag(Registers.A < _ram.LoadU8Bits(PC + 1));
-                    UpdatePCAndCycles(1, 8);
+                    CP(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xFF:
                     Push(PC);
                     PC = 0x38;
                     UpdatePCAndCycles(0, 16);
                     break;
-                
+            }
+
+            CheckForInterrupts();
+        }
+
+        private void CheckForInterrupts()
+        {
+            if (IME)
+            {
+                Console.WriteLine(_ram.GetIE());
+                Console.WriteLine(_ram.GetIF());
             }
         }
 

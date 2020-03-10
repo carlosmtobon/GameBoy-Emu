@@ -17,43 +17,16 @@ namespace GameBoy_Emu
         {
             InitializeComponent();
             var ram = new RAM();
-            ram.LoadRom(@"C:\Users\Carlos\Desktop\cpu_instrs.gb");
+           // ram.LoadRom(@"C:\Users\Carlos\Desktop\cpu_instrs.gb");
+            ram.LoadRom(@"C:\Users\Carlos\Desktop\DMG_ROM.bin");
             var cpu = new CPU(ram);
+            var ppu = new PPU(ram);
 
-            cpu.Registers.A = 0x3b;
-            byte e = 0x2a;
-            byte hl = 0x4f;
-            cpu.Registers.SetCYFLag(true);
-            cpu.SBC(e, 1, 4);
-            Console.WriteLine(string.Format("{0:X}", cpu.Registers.A));
-            Console.WriteLine("Z: " + cpu.Registers.GetZFlag());
-            Console.WriteLine("HCY: " +cpu.Registers.GetHCYFlag());
-            Console.WriteLine("N: " + cpu.Registers.GetNFlag());
-            Console.WriteLine("CY: " + cpu.Registers.GetCYFlag());
-            Console.WriteLine("------------");
-            cpu.Registers.A = 0x3b;
-            cpu.Registers.SetCYFLag(true);
-            cpu.SBC(0x3a, 1, 4);
-            Console.WriteLine(string.Format("{0:X}",cpu.Registers.A));
-            Console.WriteLine("Z: " + cpu.Registers.GetZFlag());
-            Console.WriteLine("HCY: " + cpu.Registers.GetHCYFlag());
-            Console.WriteLine("N: " + cpu.Registers.GetNFlag());
-            Console.WriteLine("CY: " + cpu.Registers.GetCYFlag());
-            Console.WriteLine("------------");
-            cpu.Registers.A = 0x3b;
-            cpu.Registers.SetCYFLag(true);
-            cpu.SBC(hl, 1, 4);
-            Console.WriteLine(string.Format("{0:X}", cpu.Registers.A));
-            Console.WriteLine("Z: " + cpu.Registers.GetZFlag());
-            Console.WriteLine("HCY: " + cpu.Registers.GetHCYFlag());
-            Console.WriteLine("N: " + cpu.Registers.GetNFlag());
-            Console.WriteLine("CY: " + cpu.Registers.GetCYFlag());
-            Console.WriteLine("------------");
-            //while (true)
-            //{
-            //    cpu.ProcessOpcode();
-            //}
-
+            while (true)
+            {
+                cpu.ProcessOpcode();
+                ppu.Process();
+            }
         }
     }
 }
