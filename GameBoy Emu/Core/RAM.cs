@@ -9,8 +9,10 @@ namespace GameBoy_Emu.Core
             0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D, 0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00,
             0x0E, 0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E,
             0x0E, 0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E };
-        private const int RAM_SIZE = 65536;
-        private const int RomOffset = 0;
+        private const int RAM_SIZE = 0x10000;
+        private const int BIOS_OFFSET = 0;
+        private const int ROM_OFFSET = 0x100;
+
 
         const int IE = 0xFFFF;
         const int IF = 0xFF0F; 
@@ -20,24 +22,33 @@ namespace GameBoy_Emu.Core
         public RAM()
         {
             Memory = new byte[RAM_SIZE];
-            //LoadNintendoLogo();
+            
         }
 
         private void LoadNintendoLogo()
         {
             for (int i = 0; i < logoBytes.Length; i++)
             {
-                Memory[RomOffset + i] = logoBytes[i]; 
+                Memory[0x104 + i] = logoBytes[i]; 
             }
+        }
+
+        public void LoadBios(string fileName)
+        {
+            using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+            {
+                fs.Read(Memory, BIOS_OFFSET, Memory.Length - BIOS_OFFSET);
+            }
+            LoadNintendoLogo();
         }
 
         public void LoadRom(string fileName)
         {
             using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
-                fs.Read(Memory, RomOffset, Memory.Length - RomOffset);
+                fs.Read(Memory, ROM_OFFSET, Memory.Length - ROM_OFFSET);
             }
-        }
+        } 
         public void StoreU8Bits(int addr, byte value)
         {
             Memory[addr] = value;
