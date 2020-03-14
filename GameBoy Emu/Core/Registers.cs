@@ -18,7 +18,17 @@ namespace GameBoy_Emu.Core
         public byte H { get; set; }
         public byte L { get; set; }
 
-
+        public Registers()
+        {
+            SetAF(0x1180);
+            SetBC(0x0000);
+            SetDE(0xff56);
+            SetHL(0x000D);
+            //SetAF(0x01B0);
+            //SetBC(0x0013);
+            //SetDE(0x00D8);
+            //SetHL(0x014D);
+        }
         public void SetAF(ushort value)
         {
             A = (byte)(value >> 8);

@@ -15,14 +15,14 @@ namespace GameBoy_Emu.Core
         internal Registers Registers { get; }
         public bool IME { get; set; } 
 
-        private RAM _ram;
+        public RAM _ram;
 
         public CPU(RAM ram)
         {
             _ram = ram;
             Registers = new Registers();
             PC = 0x100;
-            SP = (ushort)(ram.Memory.Length - 1);
+            SP = 0xFFFE;
             IME = false;
         }
 
@@ -46,20 +46,20 @@ namespace GameBoy_Emu.Core
             return val;
         }
 
-        private void JP(ushort addr)
+        public void JP(ushort addr)
         {
             PC = _ram.LoadU16Bits(addr);
         }
 
-        private byte LD(byte register, ushort bytesRead, int cycles)
+        public byte LD(byte register, ushort bytesRead, int cycles)
         {
             UpdatePCAndCycles(bytesRead, cycles);
             return register;
         }
 
-        private byte INC(byte val, ushort bytesRead, int cycles)
+        public byte INC(byte val, ushort bytesRead, int cycles)
         {
-            var oldVal = val;
+            byte oldVal = val;
             val++;
             Registers.SetZFLag((val == 0));
             Registers.SetNFLag(false);
@@ -68,22 +68,23 @@ namespace GameBoy_Emu.Core
             return val;
         }
 
-        private byte DEC(byte val, ushort bytesRead, int cycles)
+        public byte DEC(byte val, ushort bytesRead, int cycles)
         {
-            var oldVal = val;
+            byte oldVal = val;
             val--;
             Registers.SetZFLag((val == 0));
-            Registers.SetNFLag(false);
+            Registers.SetNFLag(true);
             Registers.SetHCYFLag((((oldVal & 0xF) - (oldVal & 0xF)) & 0x10) == 0x10);
             UpdatePCAndCycles(bytesRead, cycles);
             return val;
         }
 
-        private void AddToHL(ushort registerPair)
+        public void AddToHL(ushort registerPair)
         {
-            var hlVal = Registers.GetHL();
+            byte h = Registers.H;
+            ushort hlVal = Registers.GetHL();
             Registers.SetNFLag(false);
-            Registers.SetHCYFLag(((((hlVal >> 8) & 0xF) + ((registerPair >> 8) & 0xF)) & 0x10) == 0x10);
+            Registers.SetHCYFLag((((h & 0xF) + (h & 0xF)) & 0x10) == 0x10);
             Registers.SetCYFLag((hlVal + registerPair) > 0xFFFF);
             Registers.AddToHL(registerPair);
             UpdatePCAndCycles(1, 8);
@@ -98,7 +99,7 @@ namespace GameBoy_Emu.Core
             Registers.A += register;
             UpdatePCAndCycles(bytesRead, cycles);
         }
-        private void ADDC(byte register, ushort bytesRead, int cycles)
+        public void ADDC(byte register, ushort bytesRead, int cycles)
         {
             byte currentCY = Registers.GetCYFlag();
             Registers.SetZFLag((byte)(Registers.A + register + currentCY) == 0);
@@ -118,7 +119,7 @@ namespace GameBoy_Emu.Core
             Registers.A -= (byte)(register);
             UpdatePCAndCycles(bytesRead, cycles);
         }
-        private void SBC(byte register, ushort bytesRead, int cycles)
+        public void SBC(byte register, ushort bytesRead, int cycles)
         {
             byte currentCY = Registers.GetCYFlag();
             Registers.SetZFLag((byte)(Registers.A - register - currentCY) == 0);
@@ -129,7 +130,7 @@ namespace GameBoy_Emu.Core
             UpdatePCAndCycles(bytesRead, cycles);
         }
 
-        private void AND(byte register, ushort bytesRead, int cycles)
+        public void AND(byte register, ushort bytesRead, int cycles)
         {
             Registers.A &= register;
             Registers.SetZFLag(Registers.A == 0);
@@ -149,7 +150,7 @@ namespace GameBoy_Emu.Core
             UpdatePCAndCycles(bytesRead, cycles);
         }
 
-        private void OR(byte register, ushort bytesRead, int cycles)
+        public void OR(byte register, ushort bytesRead, int cycles)
         {
             Registers.A |= register;
             Registers.SetZFLag(Registers.A == 0);
@@ -202,7 +203,7 @@ namespace GameBoy_Emu.Core
         public void ProcessOpcode()
         {
             Opcode = _ram.Memory[PC];
-           // Console.WriteLine(String.Format("PC: {0:X}", PC));
+            
             switch (Opcode)
             {
                 case 0x00:
@@ -253,7 +254,7 @@ namespace GameBoy_Emu.Core
                     Registers.C = INC(Registers.C, 1, 4);
                     break;
                 case 0x0D:
-                    Registers.C = DEC(Registers.D, 1, 4);
+                    Registers.C = DEC(Registers.C, 1, 4);
                     break;
                 case 0x0E:
                     Registers.C = _ram.LoadU8Bits(PC + 1);
@@ -374,9 +375,7 @@ namespace GameBoy_Emu.Core
                     AddToHL(Registers.GetHL());
                     break;
                 case 0x2A:
-                    Registers.A = _ram.LoadU8Bits(Registers.GetHL());
-                    Registers.AddToHL(1);
-                    UpdatePCAndCycles(1, 8);
+                    LDAHLINC();
                     break;
                 case 0x2B:
                     Registers.SubToHL(1);
@@ -455,9 +454,7 @@ namespace GameBoy_Emu.Core
                     AddToHL(SP);
                     break;
                 case 0x3A:
-                    Registers.A = _ram.LoadU8Bits(Registers.GetHL());
-                    Registers.SubToHL(1);
-                    UpdatePCAndCycles(1, 8);
+                    LDAHLDEC();
                     break;
                 case 0x3B:
                     SP--;
@@ -1172,7 +1169,23 @@ namespace GameBoy_Emu.Core
             CheckForInterrupts();
         }
 
-        private void CALL()
+        public void LDAHLINC()
+        {
+            byte hlContents = _ram.LoadU8Bits(Registers.GetHL());
+            Registers.A = hlContents;
+            Registers.AddToHL(1);
+            UpdatePCAndCycles(1, 8);
+        }
+
+        public void LDAHLDEC()
+        {
+            byte hlContents = _ram.LoadU8Bits(Registers.GetHL());
+            Registers.A = hlContents;
+            Registers.SubToHL(1);
+            UpdatePCAndCycles(1, 8);
+        }
+
+        public void CALL()
         {
             var currentPC = PC;
             UpdatePCAndCycles(3, 24);
@@ -1213,7 +1226,7 @@ namespace GameBoy_Emu.Core
             UpdatePCAndCycles(1, 4);
         }
 
-        private void CheckForInterrupts()
+        public void CheckForInterrupts()
         {
             if (IME)
             {
@@ -1222,12 +1235,12 @@ namespace GameBoy_Emu.Core
             }
         }
 
-        private void DI()
+        public void DI()
         {
             IME = false;
             UpdatePCAndCycles(1, 4);
         }
-        private void EI()
+        public void EI()
         {
             IME = true;
             UpdatePCAndCycles(1, 4);
@@ -1313,7 +1326,7 @@ namespace GameBoy_Emu.Core
         public byte RR(byte register, ushort bytesRead, int cycles)
         {
             var setCarry = (register & 1) == 1;
-            register = (byte)((register >> 1) | Registers.GetCYFlag());
+            register = (byte)((register >> 1) | Registers.GetCYFlag() << 7);
             Registers.SetCYFLag(setCarry);
             Registers.SetZFLag(register == 0);
             Registers.SetNFLag(false);
@@ -1325,7 +1338,7 @@ namespace GameBoy_Emu.Core
         public void RRA()
         {
             var setCarry = (Registers.A & 1) == 1;
-            Registers.A = (byte)((Registers.A >> 1) | Registers.GetCYFlag());
+            Registers.A = (byte)((Registers.A >> 1) | Registers.GetCYFlag() << 7);
             Registers.SetCYFLag(setCarry);
             Registers.SetZFLag(false);
             Registers.SetNFLag(false);
@@ -1392,7 +1405,7 @@ namespace GameBoy_Emu.Core
             return val;
         }
 
-        private void CBPrefix(byte op)
+        public void CBPrefix(byte op)
         {
             switch (op)
             {
