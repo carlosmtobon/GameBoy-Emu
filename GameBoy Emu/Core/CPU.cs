@@ -74,7 +74,7 @@ namespace GameBoy_Emu.Core
             val--;
             Registers.SetZFLag((val == 0));
             Registers.SetNFLag(true);
-            Registers.SetHCYFLag((((oldVal & 0xF) - (oldVal & 0xF)) & 0x10) == 0x10);
+            Registers.SetHCYFLag((oldVal & 0xF) < (1 & 0xF));
             UpdatePCAndCycles(bytesRead, cycles);
             return val;
         }
