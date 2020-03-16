@@ -92,7 +92,7 @@ namespace GameBoy_Emu.Core
 
         public void ADD(byte register, ushort bytesRead, int cycles)
         {
-            Registers.SetZFLag((Registers.A + register) == 0);
+            Registers.SetZFLag((byte)(Registers.A + register) == 0);
             Registers.SetNFLag(false);
             Registers.SetHCYFLag((((Registers.A & 0xF) + (register & 0xF)) & 0x10) == 0x10);
             Registers.SetCYFLag((Registers.A + register) > 0xFF);
@@ -1248,9 +1248,10 @@ namespace GameBoy_Emu.Core
 
         public byte RLC(byte register, ushort bytesRead, int cycles)
         {
-            Registers.SetCYFLag((register >> 7) == 1);
+            byte oldbit7 = (byte)(register >> 7);
+            Registers.SetCYFLag(oldbit7 == 1);
             register = (byte)(register << 1);
-            register |= (byte)(Registers.GetCYFlag());
+            register |= (byte)(oldbit7);
             Registers.SetZFLag(register == 0);
             Registers.SetNFLag(false);
             Registers.SetHCYFLag(false);
@@ -1259,10 +1260,10 @@ namespace GameBoy_Emu.Core
         }
         public void RLCA()
         {
-            var currentCy = Registers.GetCYFlag();
-            Registers.SetCYFLag((Registers.A >> 7) == 1);
+            byte oldbit7 = (byte)(Registers.A >> 7);
+            Registers.SetCYFLag(oldbit7 == 1);
             Registers.A = (byte)(Registers.A << 1);
-            Registers.A |= (byte)(currentCy);
+            Registers.A |= (byte)(oldbit7);
             Registers.SetZFLag(false);
             Registers.SetNFLag(false);
             Registers.SetHCYFLag(false);
@@ -1348,9 +1349,9 @@ namespace GameBoy_Emu.Core
 
         public byte SRA(byte register, ushort bytesRead, int cycles)
         {
-            int bit7 = register & 0x80;
+            byte bit7 = (byte)(register >> 7);
             Registers.SetCYFLag((register & 1) == 1);
-            register = (byte)((register >> 1) | bit7);
+            register = (byte)((register >> 1) | bit7 << 7);
             Registers.SetZFLag(register == 0);
             Registers.SetNFLag(false);
             Registers.SetHCYFLag(false);
