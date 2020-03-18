@@ -8,13 +8,13 @@ namespace GameBoy_Emu.Core
 {
     public class PPU
     {
-        private RAM _ram;
+        private MMU _ram;
         private PixelFIFO _pixelFIFO;
         private Fetcher _fetcher;
 
         const int startAddr = 0x104;
 
-        public PPU(RAM ram)
+        public PPU(MMU ram)
         {
             _ram = ram;
             _pixelFIFO = new PixelFIFO();

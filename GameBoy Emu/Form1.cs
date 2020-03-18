@@ -16,16 +16,26 @@ namespace GameBoy_Emu
         public Form1()
         {
             InitializeComponent();
-            var ram = new RAM();
-            //ram.LoadBios(@"C:\Users\Carlos\Desktop\cpu_instrs.gb");
-            ram.LoadBios(@"C:\Users\Carlos\Desktop\05-op rp.gb");
+            var ram = new MMU();
+            //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\cpu_instrs.gb");
+            //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\01-special.gb");
+            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\02-interrupts.gb");
+             ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\03-op sp,hl.gb");
+            //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\04-op r,imm.gb");
+            //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\05-op rp.gb");
+            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\06-ld r,r.gb");
+           // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\07-jr,jp,call,ret,rst.gb");
+             //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\08-misc instrs.gb");
+           // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\09-op r,r.gb");
+           //  ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\10-bit ops.gb");
+            //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\11-op a,(hl).gb");
+
             var cpu = new CPU(ram);
             var ppu = new PPU(ram);
             while (true)
             {
                 cpu.ProcessOpcode();
-               
-                 Console.WriteLine(String.Format("AF: {0:X}\nBC: {1:X}\nDE: {2:X}\nHL: {3:X}\nSP: {4:X}\nPC: {5:X}\n", cpu.Registers.GetAF(), cpu.Registers.GetBC(), cpu.Registers.GetDE(), cpu.Registers.GetHL(), cpu.SP, cpu.PC));
+                //Console.WriteLine(String.Format("AF: {0:X}\nBC: {1:X}\nDE: {2:X}\nHL: {3:X}\nSP: {4:X}\nPC: {5:X}\n", cpu.Registers.GetAF(), cpu.Registers.GetBC(), cpu.Registers.GetDE(), cpu.Registers.GetHL(), cpu.SP, cpu.PC));
                 var sc = ram.LoadU8Bits(0xff02);
                 if (sc == 0x81)
                 {
@@ -34,10 +44,10 @@ namespace GameBoy_Emu
 
                 }
 
-                if (cpu.PC == 0xCb31)
-                {
-                    Console.WriteLine("Done");
-                }
+                //if (cpu.PC == 0xC018)
+                //{
+                //    Console.WriteLine("Done");
+                //}
                 ppu.Process();
             }
         }

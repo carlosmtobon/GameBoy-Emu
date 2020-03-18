@@ -15,9 +15,9 @@ namespace GameBoy_Emu.Core
         internal Registers Registers { get; }
         public bool IME { get; set; } 
 
-        public RAM _ram;
+        public MMU _ram;
 
-        public CPU(RAM ram)
+        public CPU(MMU ram)
         {
             _ram = ram;
             Registers = new Registers();
@@ -63,7 +63,7 @@ namespace GameBoy_Emu.Core
             val++;
             Registers.SetZFLag((val == 0));
             Registers.SetNFLag(false);
-            Registers.SetHCYFLag((((oldVal & 0xF) + (oldVal & 0xF)) & 0x10) == 0x10);
+            Registers.SetHCYFLag((((oldVal & 0xF) + (1 & 0xF)) > 0xF));
             UpdatePCAndCycles(bytesRead, cycles);
             return val;
         }
@@ -74,7 +74,7 @@ namespace GameBoy_Emu.Core
             val--;
             Registers.SetZFLag((val == 0));
             Registers.SetNFLag(true);
-            Registers.SetHCYFLag((oldVal & 0xF) < (1 & 0xF));
+            Registers.SetHCYFLag((oldVal & 0xF) - (1 & 0xF) < 0);
             UpdatePCAndCycles(bytesRead, cycles);
             return val;
         }
@@ -84,7 +84,7 @@ namespace GameBoy_Emu.Core
             byte h = Registers.H;
             ushort hlVal = Registers.GetHL();
             Registers.SetNFLag(false);
-            Registers.SetHCYFLag((((h & 0xF) + (h & 0xF)) & 0x10) == 0x10);
+            Registers.SetHCYFLag((hlVal & 0xFFF) + (registerPair & 0xFFF) > 0xFFF);
             Registers.SetCYFLag((hlVal + registerPair) > 0xFFFF);
             Registers.AddToHL(registerPair);
             UpdatePCAndCycles(1, 8);
@@ -94,7 +94,7 @@ namespace GameBoy_Emu.Core
         {
             Registers.SetZFLag((byte)(Registers.A + register) == 0);
             Registers.SetNFLag(false);
-            Registers.SetHCYFLag((((Registers.A & 0xF) + (register & 0xF)) & 0x10) == 0x10);
+            Registers.SetHCYFLag(((Registers.A & 0xF) + (register & 0xF) > 0xF));
             Registers.SetCYFLag((Registers.A + register) > 0xFF);
             Registers.A += register;
             UpdatePCAndCycles(bytesRead, cycles);
@@ -104,7 +104,7 @@ namespace GameBoy_Emu.Core
             byte currentCY = Registers.GetCYFlag();
             Registers.SetZFLag((byte)(Registers.A + register + currentCY) == 0);
             Registers.SetNFLag(false);
-            Registers.SetHCYFLag((((Registers.A & 0xF) + (register & 0xF) + currentCY) & 0x10) == 0x10);
+            Registers.SetHCYFLag(((Registers.A & 0xF) + (register & 0xF) + currentCY) > 0xF);
             Registers.SetCYFLag((Registers.A + register + currentCY) > 0xFF);
             Registers.A += (byte)(register + currentCY);
             UpdatePCAndCycles(bytesRead, cycles);
@@ -124,8 +124,8 @@ namespace GameBoy_Emu.Core
             byte currentCY = Registers.GetCYFlag();
             Registers.SetZFLag((byte)(Registers.A - register - currentCY) == 0);
             Registers.SetNFLag(true);
-            Registers.SetHCYFLag((Registers.A & 0xF) < ((register & 0xF) - currentCY));
-            Registers.SetCYFLag((Registers.A < (register - currentCY)));
+            Registers.SetHCYFLag(((Registers.A & 0xF) - (register & 0xF) - currentCY) < 0);
+            Registers.SetCYFLag((Registers.A - register - currentCY) < 0);
             Registers.A = (byte)(Registers.A - register - currentCY);
             UpdatePCAndCycles(bytesRead, cycles);
         }
@@ -196,7 +196,7 @@ namespace GameBoy_Emu.Core
             }
             // these flags are always updated
             Registers.SetZFLag(Registers.A == 0); // the usual z flag
-            Registers.SetHCYFLag(true); // h flag is always cleared
+            Registers.SetHCYFLag(false); // h flag is always cleared
             UpdatePCAndCycles(1, 4);
         }
 
@@ -422,8 +422,7 @@ namespace GameBoy_Emu.Core
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x34:
-                    _ram.StoreU8Bits(Registers.GetHL(), 
-                        INC(_ram.LoadU8Bits(Registers.GetHL()), 1, 12));
+                    _ram.StoreU8Bits(Registers.GetHL(), INC(_ram.LoadU8Bits(Registers.GetHL()), 1, 12));
                     break;
                 case 0x35:
                     _ram.StoreU8Bits(Registers.GetHL(), 
@@ -921,9 +920,7 @@ namespace GameBoy_Emu.Core
                     ADD(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xC7:
-                    Push(PC);
-                    PC = 0;
-                    UpdatePCAndCycles(0, 16);
+                    RST(0x0);
                     break;
                 case 0xC8:
                     if (Registers.GetZFlag() == 1)
@@ -972,9 +969,7 @@ namespace GameBoy_Emu.Core
                     ADDC(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xCF:
-                    Push(PC);
-                    PC = 0x8;
-                    UpdatePCAndCycles(0, 16);
+                    RST(0x8);
                     break;
                 case 0xD0:
                     if (Registers.GetCYFlag() == 0)
@@ -1020,9 +1015,7 @@ namespace GameBoy_Emu.Core
                     SUB(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xD7:
-                    Push(PC);
-                    PC = 0x10;
-                    UpdatePCAndCycles(0, 16);
+                    RST(0x10);
                     break;
                 case 0xD8:
                     if (Registers.GetCYFlag() == 1)
@@ -1066,9 +1059,7 @@ namespace GameBoy_Emu.Core
                     SBC(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xDF:
-                    Push(PC);
-                    PC = 0x18;
-                    UpdatePCAndCycles(0, 16);
+                    RST(0x18);
                     break;
                 case 0xE0:
                     _ram.StoreU8Bits(0xFF00 + _ram.LoadU8Bits(PC + 1), Registers.A);
@@ -1090,9 +1081,7 @@ namespace GameBoy_Emu.Core
                     AND(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xE7:
-                    Push(PC);
-                    PC = 0x20;
-                    UpdatePCAndCycles(0, 16);
+                    RST(0x20);
                     break;
                 case 0xE8:
                     ADDSPI8();
@@ -1109,9 +1098,7 @@ namespace GameBoy_Emu.Core
                     XOR(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xEF:
-                    Push(PC);
-                    PC = 0x28;
-                    UpdatePCAndCycles(0, 16);
+                    RST(0x28);
                     break;
                 case 0xF0:
                     Registers.A = _ram.LoadU8Bits(0xFF00 + _ram.LoadU8Bits(PC + 1));
@@ -1138,9 +1125,7 @@ namespace GameBoy_Emu.Core
                     OR(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xF7:
-                    Push(PC);
-                    PC = 0x30;
-                    UpdatePCAndCycles(0, 16);
+                    RST(0x30);
                     break;
                 case 0xF8:
                     LDHLSPI8();
@@ -1160,13 +1145,18 @@ namespace GameBoy_Emu.Core
                     CP(_ram.LoadU8Bits(PC + 1), 2, 8);
                     break;
                 case 0xFF:
-                    Push(PC);
-                    PC = 0x38;
-                    UpdatePCAndCycles(0, 16);
+                    RST(0x38);
                     break;
             }
 
             CheckForInterrupts();
+        }
+
+        private void RST(ushort addr)
+        {
+            Push((ushort)(PC + 1));
+            PC = addr;
+            UpdatePCAndCycles(1, 16);
         }
 
         public void LDAHLINC()
@@ -1199,8 +1189,21 @@ namespace GameBoy_Emu.Core
             
             Registers.SetZFLag(false);
             Registers.SetNFLag(false);
-            Registers.SetHCYFLag(((((SP >> 8) & 0xF) + ((nextI8 >> 8) & 0xF)) & 0x10) == 0x10);
-            Registers.SetCYFLag((SP + nextI8) > 0xFFFF);
+            ushort lSP = (ushort)(SP + nextI8);
+
+            //Registers.SetCYFLag((((SP & 0xFF) + (nextI8 & 0xFF)) > 0xFF));
+            //Registers.SetHCYFLag((((SP & 0xF) + (nextI8 & 0xF)) > 0xF));
+
+            if (nextI8 >= 0)
+            {
+                Registers.SetHCYFLag((SP & 0xF) + (nextI8 & 0xF) > 0xF);
+                Registers.SetCYFLag(((SP & 0xFF) + nextI8) > 0xFF);
+            }
+            else
+            {
+                Registers.SetHCYFLag((lSP & 0xF) <= (SP & 0xF));
+                Registers.SetCYFLag(((lSP & 0xFF) <= (SP & 0xFF)));
+            }
             SP += (ushort)nextI8;
             UpdatePCAndCycles(2, 16);
         }
@@ -1211,7 +1214,7 @@ namespace GameBoy_Emu.Core
 
             Registers.SetZFLag(false);
             Registers.SetNFLag(false);
-            Registers.SetHCYFLag(((((SP >> 8) & 0xF) + ((nextI8 >> 8) & 0xF)) & 0x10) == 0x10);
+            Registers.SetHCYFLag((SP & 0xFFF) + (nextI8 & 0xFFF) > 0xFFF);
             Registers.SetCYFLag((SP + nextI8) > 0xFFFF);
             SP += (ushort)nextI8;
             Registers.SetHL(SP);
@@ -1504,7 +1507,7 @@ namespace GameBoy_Emu.Core
                     _ram.StoreU8Bits(Registers.GetHL(), RR(_ram.LoadU8Bits(Registers.GetHL()), 2, 16));
                     break;
                 case 0x1F:
-                    Registers.A = SLA(Registers.A, 2, 8);
+                    Registers.A = RR(Registers.A, 2, 8);
                     break;
                 case 0x20:
                     Registers.B = SLA(Registers.B, 2, 8);
@@ -1795,388 +1798,388 @@ namespace GameBoy_Emu.Core
                     Bit(Registers.A, 7, 2, 8);
                     break;
                 case 0x80:
-                    RES(Registers.B, 0, 2, 8);
+                    Registers.B = RES(Registers.B, 0, 2, 8);
                     break;
                 case 0x81:
-                    RES(Registers.C, 0, 2, 8);
+                    Registers.C = RES(Registers.C, 0, 2, 8);
                     break;
                 case 0x82:
-                    RES(Registers.D, 0, 2, 8);
+                    Registers.D = RES(Registers.D, 0, 2, 8);
                     break;
                 case 0x83:
-                    RES(Registers.E, 0, 2, 8);
+                    Registers.E = RES(Registers.E, 0, 2, 8);
                     break;
                 case 0x84:
-                    RES(Registers.H, 0, 2, 8);
+                    Registers.H = RES(Registers.H, 0, 2, 8);
                     break;
                 case 0x85:
-                    RES(Registers.L, 0, 2, 8);
+                    Registers.L = RES(Registers.L, 0, 2, 8);
                     break;
                 case 0x86:
-                    RES(_ram.LoadU8Bits(Registers.GetHL()), 0, 2, 16);
+                   _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 0, 2, 16));
                     break;
                 case 0x87:
-                    RES(Registers.A, 0, 2, 8);
+                    Registers.A = RES(Registers.A, 0, 2, 8);
                     break;
                 case 0x88:
-                    RES(Registers.B, 1, 2, 8);
+                    Registers.B = RES(Registers.B, 1, 2, 8);
                     break;
                 case 0x89:
-                    RES(Registers.C, 1, 2, 8);
+                    Registers.C = RES(Registers.C, 1, 2, 8);
                     break;
                 case 0x8A:
-                    RES(Registers.D, 1, 2, 8);
+                    Registers.D = RES(Registers.D, 1, 2, 8);
                     break;
                 case 0x8B:
-                    RES(Registers.E, 1, 2, 8);
+                    Registers.E = RES(Registers.E, 1, 2, 8);
                     break;
                 case 0x8C:
-                    RES(Registers.H, 1, 2, 8);
+                    Registers.H = RES(Registers.H, 1, 2, 8);
                     break;
                 case 0x8D:
-                    RES(Registers.L, 1, 2, 8);
+                    Registers.L = RES(Registers.L, 1, 2, 8);
                     break;
                 case 0x8E:
-                    RES(_ram.LoadU8Bits(Registers.GetHL()), 1, 2, 16);
+                    _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 1, 2, 16));
                     break;
                 case 0x8F:
-                    RES(Registers.A, 1, 2, 8);
+                    Registers.A = RES(Registers.A, 1, 2, 8);
                     break;
                 case 0x90:
-                    RES(Registers.B, 2, 2, 8);
+                    Registers.B = RES(Registers.B, 2, 2, 8);
                     break;
                 case 0x91:
-                    RES(Registers.C, 2, 2, 8);
+                    Registers.C = RES(Registers.C, 2, 2, 8);
                     break;
                 case 0x92:
-                    RES(Registers.D, 2, 2, 8);
+                    Registers.D = RES(Registers.D, 2, 2, 8);
                     break;
                 case 0x93:
-                    RES(Registers.E, 2, 2, 8);
+                    Registers.E = RES(Registers.E, 2, 2, 8);
                     break;
                 case 0x94:
-                    RES(Registers.H, 2, 2, 8);
+                    Registers.H = RES(Registers.H, 2, 2, 8);
                     break;
                 case 0x95:
-                    RES(Registers.L, 2, 2, 8);
+                    Registers.L = RES(Registers.L, 2, 2, 8);
                     break;
                 case 0x96:
-                    RES(_ram.LoadU8Bits(Registers.GetHL()), 2, 2, 16);
+                    _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 2, 2, 16));
                     break;
                 case 0x97:
-                    RES(Registers.A, 2, 2, 8);
+                    Registers.A = RES(Registers.A, 2, 2, 8);
                     break;
                 case 0x98:
-                    RES(Registers.B, 3, 2, 8);
+                    Registers.B = RES(Registers.B, 3, 2, 8);
                     break;
                 case 0x99:
-                    RES(Registers.C, 3, 2, 8);
+                    Registers.C = RES(Registers.C, 3, 2, 8);
                     break;
                 case 0x9A:
-                    RES(Registers.D, 3, 2, 8);
+                    Registers.D = RES(Registers.D, 3, 2, 8);
                     break;
                 case 0x9B:
-                    RES(Registers.E, 3, 2, 8);
+                    Registers.E = RES(Registers.E, 3, 2, 8);
                     break;
                 case 0x9C:
-                    RES(Registers.H, 3, 2, 8);
+                    Registers.H = RES(Registers.H, 3, 2, 8);
                     break;
                 case 0x9D:
-                    RES(Registers.L, 3, 2, 8);
+                    Registers.L = RES(Registers.L, 3, 2, 8);
                     break;
                 case 0x9E:
-                    RES(_ram.LoadU8Bits(Registers.GetHL()), 3, 2, 16);
+                    _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 3, 2, 16));
                     break;
                 case 0x9F:
-                    RES(Registers.A, 3, 2, 8);
+                    Registers.A = RES(Registers.A, 3, 2, 8);
                     break;
                 case 0xA0:
-                    RES(Registers.B, 4, 2, 8);
+                    Registers.B = RES(Registers.B, 4, 2, 8);
                     break;
                 case 0xA1:
-                    RES(Registers.C, 4, 2, 8);
+                    Registers.C = RES(Registers.C, 4, 2, 8);
                     break;
                 case 0xA2:
-                    RES(Registers.D, 4, 2, 8);
+                    Registers.D = RES(Registers.D, 4, 2, 8);
                     break;
                 case 0xA3:
-                    RES(Registers.E, 4, 2, 8);
+                    Registers.E = RES(Registers.E, 4, 2, 8);
                     break;
                 case 0xA4:
-                    RES(Registers.H, 4, 2, 8);
+                    Registers.H = RES(Registers.H, 4, 2, 8);
                     break;
                 case 0xA5:
-                    RES(Registers.L, 4, 2, 8);
+                    Registers.L = RES(Registers.L, 4, 2, 8);
                     break;
                 case 0xA6:
-                    RES(_ram.LoadU8Bits(Registers.GetHL()), 4, 2, 16);
+                    _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 4, 2, 16));
                     break;
                 case 0xA7:
-                    RES(Registers.A, 4, 2, 8);
+                    Registers.A = RES(Registers.A, 4, 2, 8);
                     break;
                 case 0xA8:
-                    RES(Registers.B, 5, 2, 8);
+                    Registers.B = RES(Registers.B, 5, 2, 8);
                     break;
                 case 0xA9:
-                    RES(Registers.C, 5, 2, 8);
+                    Registers.C = RES(Registers.C, 5, 2, 8);
                     break;
                 case 0xAA:
-                    RES(Registers.D, 5, 2, 8);
+                    Registers.D = RES(Registers.D, 5, 2, 8);
                     break;
                 case 0xAB:
-                    RES(Registers.E, 5, 2, 8);
+                    Registers.E = RES(Registers.E, 5, 2, 8);
                     break;
                 case 0xAC:
-                    RES(Registers.H, 5, 2, 8);
+                    Registers.H = RES(Registers.H, 5, 2, 8);
                     break;
                 case 0xAD:
-                    RES(Registers.L, 5, 2, 8);
+                    Registers.L = RES(Registers.L, 5, 2, 8);
                     break;
                 case 0xAE:
-                    RES(_ram.LoadU8Bits(Registers.GetHL()), 5, 2, 16);
+                    _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 5, 2, 16));
                     break;
                 case 0xAF:
-                    RES(Registers.A, 5, 2, 8);
+                    Registers.A = RES(Registers.A, 5, 2, 8);
                     break;
                 case 0xB0:
-                    RES(Registers.B, 6, 2, 8);
+                    Registers.B = RES(Registers.B, 6, 2, 8);
                     break;
                 case 0xB1:
-                    RES(Registers.C, 6, 2, 8);
+                    Registers.C = RES(Registers.C, 6, 2, 8);
                     break;
                 case 0xB2:
-                    RES(Registers.D, 6, 2, 8);
+                    Registers.D = RES(Registers.D, 6, 2, 8);
                     break;
                 case 0xB3:
-                    RES(Registers.E, 6, 2, 8);
+                    Registers.E = RES(Registers.E, 6, 2, 8);
                     break;
                 case 0xB4:
-                    RES(Registers.H, 6, 2, 8);
+                    Registers.H = RES(Registers.H, 6, 2, 8);
                     break;
                 case 0xB5:
-                    RES(Registers.L, 6, 2, 8);
+                    Registers.L = RES(Registers.L, 6, 2, 8);
                     break;
                 case 0xB6:
-                    RES(_ram.LoadU8Bits(Registers.GetHL()), 6, 2, 16);
+                    _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 6, 2, 16));
                     break;
                 case 0xB7:
-                    RES(Registers.A, 6, 2, 8);
+                    Registers.A = RES(Registers.A, 6, 2, 8);
                     break;
                 case 0xB8:
-                    RES(Registers.B, 7, 2, 8);
+                    Registers.B = RES(Registers.B, 7, 2, 8);
                     break;
                 case 0xB9:
-                    RES(Registers.C, 7, 2, 8);
+                    Registers.C = RES(Registers.C, 7, 2, 8);
                     break;
                 case 0xBA:
-                    RES(Registers.D, 7, 2, 8);
+                    Registers.D = RES(Registers.D, 7, 2, 8);
                     break;
                 case 0xBB:
-                    RES(Registers.E, 7, 2, 8);
+                    Registers.E = RES(Registers.E, 7, 2, 8);
                     break;
                 case 0xBC:
-                    RES(Registers.H, 7, 2, 8);
+                    Registers.H = RES(Registers.H, 7, 2, 8);
                     break;
                 case 0xBD:
-                    RES(Registers.L, 7, 2, 8);
+                    Registers.L = RES(Registers.L, 7, 2, 8);
                     break;
                 case 0xBE:
-                    RES(_ram.LoadU8Bits(Registers.GetHL()), 7, 2, 16);
+                    _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 7, 2, 16));
                     break;
                 case 0xBF:
-                    RES(Registers.A, 7, 2, 8);
+                    Registers.A = RES(Registers.A, 7, 2, 8);
                     break;
                 case 0xC0:
-                    SET(Registers.B, 0, 2, 8);
+                    Registers.B = SET(Registers.B, 0, 2, 8);
                     break;
                 case 0xC1:
-                    SET(Registers.C, 0, 2, 8);
+                    Registers.C = SET(Registers.C, 0, 2, 8);
                     break;
                 case 0xC2:
-                    SET(Registers.D, 0, 2, 8);
+                    Registers.D = SET(Registers.D, 0, 2, 8);
                     break;
                 case 0xC3:
-                    SET(Registers.E, 0, 2, 8);
+                    Registers.E = SET(Registers.E, 0, 2, 8);
                     break;
                 case 0xC4:
-                    SET(Registers.H, 0, 2, 8);
+                    Registers.H = SET(Registers.H, 0, 2, 8);
                     break;
                 case 0xC5:
-                    SET(Registers.L, 0, 2, 8);
+                    Registers.L = SET(Registers.L, 0, 2, 8);
                     break;
                 case 0xC6:
-                    SET(_ram.LoadU8Bits(Registers.GetHL()), 0, 2, 16);
+                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 0, 2, 16));
                     break;
                 case 0xC7:
-                    SET(Registers.A, 0, 2, 8);
+                    Registers.A = SET(Registers.A, 0, 2, 8);
                     break;
                 case 0xC8:
-                    SET(Registers.B, 1, 2, 8);
+                    Registers.B = SET(Registers.B, 1, 2, 8);
                     break;
                 case 0xC9:
-                    SET(Registers.C, 1, 2, 8);
+                    Registers.C = SET(Registers.C, 1, 2, 8);
                     break;
                 case 0xCA:
-                    SET(Registers.D, 1, 2, 8);
+                    Registers.D = SET(Registers.D, 1, 2, 8);
                     break;
                 case 0xCB:
-                    SET(Registers.E, 1, 2, 8);
+                    Registers.E = SET(Registers.E, 1, 2, 8);
                     break;
                 case 0xCC:
-                    SET(Registers.H, 1, 2, 8);
+                    Registers.H = SET(Registers.H, 1, 2, 8);
                     break;
                 case 0xCD:
-                    SET(Registers.L, 1, 2, 8);
+                    Registers.L = SET(Registers.L, 1, 2, 8);
                     break;
                 case 0xCE:
-                    SET(_ram.LoadU8Bits(Registers.GetHL()), 1, 2, 16);
+                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 1, 2, 16));
                     break;
                 case 0xCF:
-                    SET(Registers.A, 1, 2, 8);
+                    Registers.A = SET(Registers.A, 1, 2, 8);
                     break;
                 case 0xD0:
-                    SET(Registers.B, 2, 2, 8);
+                    Registers.B = SET(Registers.B, 2, 2, 8);
                     break;
                 case 0xD1:
-                    SET(Registers.C, 2, 2, 8);
+                    Registers.C = SET(Registers.C, 2, 2, 8);
                     break;
                 case 0xD2:
-                    SET(Registers.D, 2, 2, 8);
+                    Registers.D = SET(Registers.D, 2, 2, 8);
                     break;
                 case 0xD3:
-                    SET(Registers.E, 2, 2, 8);
+                    Registers.E = SET(Registers.E, 2, 2, 8);
                     break;
                 case 0xD4:
-                    SET(Registers.H, 2, 2, 8);
+                    Registers.H = SET(Registers.H, 2, 2, 8);
                     break;
                 case 0xD5:
-                    SET(Registers.L, 2, 2, 8);
+                    Registers.L = SET(Registers.L, 2, 2, 8);
                     break;
                 case 0xD6:
-                    SET(_ram.LoadU8Bits(Registers.GetHL()), 2, 2, 16);
+                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 2, 2, 16));
                     break;
                 case 0xD7:
-                    SET(Registers.A, 2, 2, 8);
+                    Registers.A = SET(Registers.A, 2, 2, 8);
                     break;
                 case 0xD8:
-                    SET(Registers.B, 3, 2, 8);
+                    Registers.B = SET(Registers.B, 3, 2, 8);
                     break;
                 case 0xD9:
-                    SET(Registers.C, 3, 2, 8);
+                    Registers.C = SET(Registers.C, 3, 2, 8);
                     break;
                 case 0xDA:
-                    SET(Registers.D, 3, 2, 8);
+                    Registers.D = SET(Registers.D, 3, 2, 8);
                     break;
                 case 0xDB:
-                    SET(Registers.E, 3, 2, 8);
+                    Registers.E = SET(Registers.E, 3, 2, 8);
                     break;
                 case 0xDC:
-                    SET(Registers.H, 3, 2, 8);
+                    Registers.H = SET(Registers.H, 3, 2, 8);
                     break;
                 case 0xDD:
-                    SET(Registers.L, 3, 2, 8);
+                    Registers.L = SET(Registers.L, 3, 2, 8);
                     break;
                 case 0xDE:
-                    SET(_ram.LoadU8Bits(Registers.GetHL()), 3, 2, 16);
+                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 3, 2, 16));
                     break;
                 case 0xDF:
-                    SET(Registers.A, 3, 2, 8);
+                    Registers.A = SET(Registers.A, 3, 2, 8);
                     break;
                 case 0xE0:
-                    SET(Registers.B, 4, 2, 8);
+                    Registers.B = SET(Registers.B, 4, 2, 8);
                     break;
                 case 0xE1:
-                    SET(Registers.C, 4, 2, 8);
+                    Registers.C = SET(Registers.C, 4, 2, 8);
                     break;
                 case 0xE2:
-                    SET(Registers.D, 4, 2, 8);
+                    Registers.D = SET(Registers.D, 4, 2, 8);
                     break;
                 case 0xE3:
-                    SET(Registers.E, 4, 2, 8);
+                    Registers.E = SET(Registers.E, 4, 2, 8);
                     break;
                 case 0xE4:
-                    SET(Registers.H, 4, 2, 8);
+                    Registers.H = SET(Registers.H, 4, 2, 8);
                     break;
                 case 0xE5:
-                    SET(Registers.L, 4, 2, 8);
+                    Registers.L = SET(Registers.L, 4, 2, 8);
                     break;
                 case 0xE6:
-                    SET(_ram.LoadU8Bits(Registers.GetHL()), 4, 2, 16);
+                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 4, 2, 16));
                     break;
                 case 0xE7:
-                    SET(Registers.A, 4, 2, 8);
+                    Registers.A = SET(Registers.A, 4, 2, 8);
                     break;
                 case 0xE8:
-                    SET(Registers.B, 5, 2, 8);
+                    Registers.B = SET(Registers.B, 5, 2, 8);
                     break;
                 case 0xE9:
-                    SET(Registers.C, 5, 2, 8);
+                    Registers.C = SET(Registers.C, 5, 2, 8);
                     break;
                 case 0xEA:
-                    SET(Registers.D, 5, 2, 8);
+                    Registers.D = SET(Registers.D, 5, 2, 8);
                     break;
                 case 0xEB:
-                    SET(Registers.E, 5, 2, 8);
+                    Registers.E = SET(Registers.E, 5, 2, 8);
                     break;
                 case 0xEC:
-                    SET(Registers.H, 5, 2, 8);
+                    Registers.H = SET(Registers.H, 5, 2, 8);
                     break;
                 case 0xED:
-                    SET(Registers.L, 5, 2, 8);
+                    Registers.L = SET(Registers.L, 5, 2, 8);
                     break;
                 case 0xEE:
-                    SET(_ram.LoadU8Bits(Registers.GetHL()), 5, 2, 16);
+                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 5, 2, 16));
                     break;
                 case 0xEF:
-                    SET(Registers.A, 5, 2, 8);
+                    Registers.A = SET(Registers.A, 5, 2, 8);
                     break;
                 case 0xF0:
-                    SET(Registers.B, 6, 2, 8);
+                    Registers.B = SET(Registers.B, 6, 2, 8);
                     break;
                 case 0xF1:
-                    SET(Registers.C, 6, 2, 8);
+                    Registers.C = SET(Registers.C, 6, 2, 8);
                     break;
                 case 0xF2:
-                    SET(Registers.D, 6, 2, 8);
+                    Registers.D = SET(Registers.D, 6, 2, 8);
                     break;
                 case 0xF3:
-                    SET(Registers.E, 6, 2, 8);
+                    Registers.E = SET(Registers.E, 6, 2, 8);
                     break;
                 case 0xF4:
-                    SET(Registers.H, 6, 2, 8);
+                    Registers.H = SET(Registers.H, 6, 2, 8);
                     break;
                 case 0xF5:
-                    SET(Registers.L, 6, 2, 8);
+                    Registers.L = SET(Registers.L, 6, 2, 8);
                     break;
                 case 0xF6:
-                    SET(_ram.LoadU8Bits(Registers.GetHL()), 6, 2, 16);
+                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 6, 2, 16));
                     break;
                 case 0xF7:
-                    SET(Registers.A, 6, 2, 8);
+                    Registers.A = SET(Registers.A, 6, 2, 8);
                     break;
                 case 0xF8:
-                    SET(Registers.B, 7, 2, 8);
+                    Registers.B = SET(Registers.B, 7, 2, 8);
                     break;
                 case 0xF9:
-                    SET(Registers.C, 7, 2, 8);
+                    Registers.C = SET(Registers.C, 7, 2, 8);
                     break;
                 case 0xFA:
-                    SET(Registers.D, 7, 2, 8);
+                    Registers.D = SET(Registers.D, 7, 2, 8);
                     break;
                 case 0xFB:
-                    SET(Registers.E, 7, 2, 8);
+                    Registers.E = SET(Registers.E, 7, 2, 8);
                     break;
                 case 0xFC:
-                    SET(Registers.H, 7, 2, 8);
+                    Registers.H = SET(Registers.H, 7, 2, 8);
                     break;
                 case 0xFD:
-                    SET(Registers.L, 7, 2, 8);
+                    Registers.L = SET(Registers.L, 7, 2, 8);
                     break;
                 case 0xFE:
-                    SET(_ram.LoadU8Bits(Registers.GetHL()), 7, 2, 16);
+                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 7, 2, 16));
                     break;
                 case 0xFF:
-                    SET(Registers.A, 7, 2, 8);
+                    Registers.A = SET(Registers.A, 7, 2, 8);
                     break;
             }
         }
