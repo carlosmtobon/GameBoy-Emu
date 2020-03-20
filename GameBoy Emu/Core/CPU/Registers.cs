@@ -20,10 +20,6 @@ namespace GameBoy_Emu.Core
 
         public Registers()
         {
-            //SetAF(0x1180);
-            //SetBC(0x0000);
-            //SetDE(0xff56);
-            //SetHL(0x000D);
             SetAF(0x01B0);
             SetBC(0x0013);
             SetDE(0x00D8);
@@ -31,24 +27,25 @@ namespace GameBoy_Emu.Core
         }
         public void SetAF(ushort value)
         {
-            A = (byte)(value >> 8);
-            F = (byte)(value & 0x00FF);
+           
+            A = BitUtils.GetHighOrderByte(value);
+            F = BitUtils.GetLowOrderByte(value);
         }
 
         public ushort GetAF()
         {
-            return (ushort)(A << 8 | F);
+            return BitUtils.GetU16(A, F);
         }
        
         public void SetBC(ushort value)
         {
-            B = (byte)(value >> 8);
-            C = (byte)(value & 0x00FF);
+            B = BitUtils.GetHighOrderByte(value);
+            C = BitUtils.GetLowOrderByte(value);
         }
 
         public ushort GetBC()
         {
-            return (ushort)(B << 8 | C);
+            return BitUtils.GetU16(B, C);
         }
 
         public void AddToBC(ushort val)
@@ -64,13 +61,13 @@ namespace GameBoy_Emu.Core
 
         public void SetDE(ushort value)
         {
-            D = (byte)(value >> 8);
-            E = (byte)(value & 0x00FF);
+            D = BitUtils.GetHighOrderByte(value);
+            E = BitUtils.GetLowOrderByte(value);
         }
 
         public ushort GetDE()
         {
-            return (ushort)(D << 8 | E);
+            return BitUtils.GetU16(D, E);
         }
 
         public void AddToDE(ushort val)
@@ -83,12 +80,12 @@ namespace GameBoy_Emu.Core
         }
         public void SetHL(ushort value)
         {
-            H = (byte)(value >> 8);
-            L = (byte)(value & 0x00FF);
+            H = BitUtils.GetHighOrderByte(value);
+            L = BitUtils.GetLowOrderByte(value);
         }
         public ushort GetHL()
         {
-            return (ushort)(H << 8 | L);
+            return BitUtils.GetU16(H, L);
         }
 
         public void AddToHL(ushort val)
@@ -102,7 +99,7 @@ namespace GameBoy_Emu.Core
        
         public void SetZFLag(bool zSet)
         {
-            F = zSet ? SetBit(F, ZERO_FLAG) : ClearBit(F, ZERO_FLAG);
+            F = zSet ? BitUtils.SetBit(F, ZERO_FLAG) : BitUtils.ClearBit(F, ZERO_FLAG);
         }
 
         public byte GetZFlag()
@@ -111,7 +108,7 @@ namespace GameBoy_Emu.Core
         }
         public void SetNFLag(bool nSet)
         {
-            F = nSet ? SetBit(F, SUBTRACT_FLAG) : ClearBit(F, SUBTRACT_FLAG);
+            F = nSet ? BitUtils.SetBit(F, SUBTRACT_FLAG) : BitUtils.ClearBit(F, SUBTRACT_FLAG);
         }
 
         public byte GetNFlag()
@@ -121,7 +118,7 @@ namespace GameBoy_Emu.Core
 
         public void SetHCYFLag(bool hcySet)
         {
-             F = hcySet ? SetBit(F, HALF_CARRY_FLAG) : ClearBit(F, HALF_CARRY_FLAG);
+             F = hcySet ? BitUtils.SetBit(F, HALF_CARRY_FLAG) : BitUtils.ClearBit(F, HALF_CARRY_FLAG);
         }
         public byte GetHCYFlag()
         {
@@ -129,23 +126,13 @@ namespace GameBoy_Emu.Core
         }
         public void SetCYFLag(bool cySet)
         {
-            F = cySet ? SetBit(F, FULL_CARRY_FLAG) : ClearBit(F, FULL_CARRY_FLAG);
+            F = cySet ? BitUtils.SetBit(F, FULL_CARRY_FLAG) : BitUtils.ClearBit(F, FULL_CARRY_FLAG);
         }
         public byte GetCYFlag()
         {
             return (byte)((F & FULL_CARRY_FLAG) >> 4);
         }
 
-        public byte ClearBit(byte val, byte bitToClear)
-        {
-            val &= (byte)~(bitToClear);
-            return val;
-        }
-
-        public byte SetBit(byte val, byte bitToSet)
-        {
-            val |= (byte)(bitToSet);
-            return val;
-        }
+        
     }
 }

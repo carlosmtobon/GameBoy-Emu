@@ -13,7 +13,7 @@ namespace GameBoy_Emu.Core
         public ushort PC { get; set; }
         public ushort SP { get; set; }
         internal Registers Registers { get; }
-        public bool IME { get; set; } 
+        internal InterruptController InterruptController { get; }
 
         public MMU _ram;
 
@@ -21,9 +21,9 @@ namespace GameBoy_Emu.Core
         {
             _ram = ram;
             Registers = new Registers();
+            InterruptController = new InterruptController();
             PC = 0x100;
             SP = 0xFFFE;
-            IME = false;
         }
 
         public void UpdatePCAndCycles(ushort val, int cycles)
@@ -1030,8 +1030,8 @@ namespace GameBoy_Emu.Core
                     break;
                 case 0xD9:
                     // RETI
+                    InterruptController.IME = true;
                     PC = Pop();
-                    IME = false;
                     UpdatePCAndCycles(0, 16);
                     break;
                 case 0xDA:
@@ -1152,6 +1152,13 @@ namespace GameBoy_Emu.Core
             CheckForInterrupts();
         }
 
+        private void CheckForInterrupts()
+        {
+            byte interruptFlag = _ram.LoadU8Bits(InterruptController.IF_REGISTER_ADDRESS);
+            byte interruptEnable = _ram.LoadU8Bits(InterruptController.IE_REGISTER_ADDRESS);
+            InterruptController.CheckForInterrupts(interruptFlag, interruptEnable);
+        }
+
         private void RST(ushort addr)
         {
             Push((ushort)(PC + 1));
@@ -1229,23 +1236,14 @@ namespace GameBoy_Emu.Core
             UpdatePCAndCycles(1, 4);
         }
 
-        public void CheckForInterrupts()
-        {
-            if (IME)
-            {
-                Console.WriteLine(_ram.GetIE());
-                Console.WriteLine(_ram.GetIF());
-            }
-        }
-
         public void DI()
         {
-            IME = false;
+            InterruptController.IME = false;
             UpdatePCAndCycles(1, 4);
         }
         public void EI()
         {
-            IME = true;
+            InterruptController.IME = true;
             UpdatePCAndCycles(1, 4);
         }
 
@@ -1397,14 +1395,14 @@ namespace GameBoy_Emu.Core
 
         public byte RES(byte val, byte bitToClear, ushort bytesRead, int cycles)
         {
-            val = Registers.ClearBit(val, (byte)(1 << bitToClear));
+            val = BitUtils.ClearBit(val, (byte)(1 << bitToClear));
             UpdatePCAndCycles(bytesRead, cycles);
             return val;
         }
 
         public byte SET(byte val, byte bitToSet, ushort bytesRead, int cycles)
         {
-            val = Registers.SetBit(val, (byte)(1 << bitToSet));
+            val = BitUtils.SetBit(val, (byte)(1 << bitToSet));
             UpdatePCAndCycles(bytesRead, cycles);
             return val;
         }

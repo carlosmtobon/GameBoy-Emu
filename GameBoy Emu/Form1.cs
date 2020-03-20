@@ -19,11 +19,11 @@ namespace GameBoy_Emu
             var ram = new MMU();
             //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\cpu_instrs.gb");
             //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\01-special.gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\02-interrupts.gb");
-             ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\03-op sp,hl.gb");
+             //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\02-interrupts.gb");
+            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\03-op sp,hl.gb");
             //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\04-op r,imm.gb");
             //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\05-op rp.gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\06-ld r,r.gb");
+             ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\06-ld r,r.gb");
            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\07-jr,jp,call,ret,rst.gb");
              //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\08-misc instrs.gb");
            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\09-op r,r.gb");
@@ -43,11 +43,6 @@ namespace GameBoy_Emu
                     ram.StoreU8Bits(0xff02, 0);
 
                 }
-
-                //if (cpu.PC == 0xC018)
-                //{
-                //    Console.WriteLine("Done");
-                //}
                 ppu.Process();
             }
         }

@@ -46,12 +46,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\CPU.cs" />
-    <Compile Include="Core\Fetcher.cs" />
-    <Compile Include="Core\PixelFIFO.cs" />
-    <Compile Include="Core\PPU.cs" />
-    <Compile Include="Core\MMU.cs" />
-    <Compile Include="Core\Registers.cs" />
+    <Compile Include="Core\BitUtils.cs" />
+    <Compile Include="Core\CPU\CPU.cs" />
+    <Compile Include="Core\PPU\Fetcher.cs" />
+    <Compile Include="Core\CPU\InterruptController.cs" />
+    <Compile Include="Core\PPU\PixelFIFO.cs" />
+    <Compile Include="Core\PPU\PPU.cs" />
+    <Compile Include="Core\RAM\MMU.cs" />
+    <Compile Include="Core\CPU\Registers.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
