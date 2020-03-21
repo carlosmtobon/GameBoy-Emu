@@ -1,4 +1,4 @@
-﻿namespace GameBoy_Emu.Core
+﻿namespace ChichoGB.Core
 {
     internal class Fetcher
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GameBoy_Emu.Core
+namespace ChichoGB.Core
 {
     internal class Registers
     {

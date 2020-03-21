@@ -4,24 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameBoy_Emu.Core
+namespace ChichoGB.Core
 {
-    public class PPU
+    public class Ppu
     {
-        private MMU _ram;
+        private Mmu _ram;
         private PixelFIFO _pixelFIFO;
         private Fetcher _fetcher;
 
         const int startAddr = 0x104;
 
-        public PPU(MMU ram)
+        public Ppu(Mmu ram)
         {
             _ram = ram;
             _pixelFIFO = new PixelFIFO();
             _fetcher = new Fetcher();
         }
 
-        public void Process()
+        public void Tick()
         {
             
         }

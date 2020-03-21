@@ -1,4 +1,4 @@
-﻿namespace GameBoy_Emu
+﻿namespace ChichoGB
 {
     partial class Form1
     {

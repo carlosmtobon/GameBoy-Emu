@@ -1,27 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ChichoGB.Core.CPU.Interrupts;
+using ChichoGB.Core.Timer;
+using System;
 
-namespace GameBoy_Emu.Core
+namespace ChichoGB.Core.CPU
 {
-    public class CPU
+    public class Cpu
     {
         public int CpuCycles { get; set; }
         public byte Opcode { get; set; }
         public ushort PC { get; set; }
         public ushort SP { get; set; }
+
+        private bool _halt;
+     
         internal Registers Registers { get; }
         internal InterruptController InterruptController { get; }
+        internal TimerController Timer { get; }
 
-        public MMU _ram;
+        public static readonly int CYCLES_PER_SECOND = 4194304;
 
-        public CPU(MMU ram)
+        public Mmu _ram;
+
+        public Cpu(Mmu ram)
         {
             _ram = ram;
             Registers = new Registers();
             InterruptController = new InterruptController();
+            Timer = new TimerController(_ram); 
             PC = 0x100;
             SP = 0xFFFE;
         }
@@ -200,10 +205,37 @@ namespace GameBoy_Emu.Core
             UpdatePCAndCycles(1, 4);
         }
 
-        public void ProcessOpcode()
+        public void Tick()
         {
+            ProcessOpcode();
+            ProcessInterrupt();
+            ProcessTimer();
+        }
+
+        private void ProcessTimer()
+        {
+
+            Timer.Tick(CpuCycles, _halt);
+            if (Timer.InterruptRequest)
+            {
+                InterruptController.IME = true;
+                Timer.InterruptRequest = false;
+            }
+        }
+
+        private void ProcessInterrupt()
+        {
+            if (InterruptController.IME)
+            {
+                CheckForInterrupts();
+            }
+        }
+
+        private void ProcessOpcode()
+        {
+            if (_halt) return;
             Opcode = _ram.Memory[PC];
-            
+
             switch (Opcode)
             {
                 case 0x00:
@@ -308,7 +340,7 @@ namespace GameBoy_Emu.Core
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x1C:
-                    Registers.E = INC(Registers.E, 1, 4); 
+                    Registers.E = INC(Registers.E, 1, 4);
                     break;
                 case 0x1D:
                     Registers.E = DEC(Registers.E, 1, 4);
@@ -331,7 +363,7 @@ namespace GameBoy_Emu.Core
                     {
                         UpdatePCAndCycles(2, 8);
                     }
-                    
+
                     break;
                 case 0x21:
                     Registers.SetHL(_ram.LoadU16Bits(PC + 1));
@@ -347,10 +379,10 @@ namespace GameBoy_Emu.Core
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x24:
-                    Registers.H = INC(Registers.H, 1, 4); 
+                    Registers.H = INC(Registers.H, 1, 4);
                     break;
                 case 0x25:
-                    Registers.H = DEC(Registers.H, 1, 4); 
+                    Registers.H = DEC(Registers.H, 1, 4);
                     break;
                 case 0x26:
                     Registers.H = _ram.LoadU8Bits(PC + 1);
@@ -402,7 +434,7 @@ namespace GameBoy_Emu.Core
                     {
                         PC += (ushort)(_ram.LoadI8Bits(PC + 1));
                         UpdatePCAndCycles(2, 12);
-                    } 
+                    }
                     else
                     {
                         UpdatePCAndCycles(2, 8);
@@ -425,7 +457,7 @@ namespace GameBoy_Emu.Core
                     _ram.StoreU8Bits(Registers.GetHL(), INC(_ram.LoadU8Bits(Registers.GetHL()), 1, 12));
                     break;
                 case 0x35:
-                    _ram.StoreU8Bits(Registers.GetHL(), 
+                    _ram.StoreU8Bits(Registers.GetHL(),
                         DEC(_ram.LoadU8Bits(Registers.GetHL()), 1, 12));
                     break;
                 case 0x36:
@@ -642,6 +674,7 @@ namespace GameBoy_Emu.Core
                     break;
                 case 0x76:
                     //halt;
+                    _halt = true;
                     UpdatePCAndCycles(1, 4);
                     break;
                 case 0x77:
@@ -896,7 +929,7 @@ namespace GameBoy_Emu.Core
                     else
                     {
                         UpdatePCAndCycles(3, 12);
-                    }  
+                    }
                     break;
                 case 0xC3:
                     JP((ushort)(PC + 1));
@@ -1148,15 +1181,21 @@ namespace GameBoy_Emu.Core
                     RST(0x38);
                     break;
             }
-
-            CheckForInterrupts();
         }
 
         private void CheckForInterrupts()
         {
-            byte interruptFlag = _ram.LoadU8Bits(InterruptController.IF_REGISTER_ADDRESS);
-            byte interruptEnable = _ram.LoadU8Bits(InterruptController.IE_REGISTER_ADDRESS);
-            InterruptController.CheckForInterrupts(interruptFlag, interruptEnable);
+            byte interruptFlag = _ram.LoadU8Bits(Mmu.IF_ADDRESS);
+            byte interruptEnable = _ram.LoadU8Bits(Mmu.IE_ADDRESS);
+            Interrupt interrupt = InterruptController.Process(interruptFlag, interruptEnable);
+            if (interrupt != null)
+            {
+                _halt = false;
+                InterruptController.IME = false;
+                _ram.StoreU8Bits(Mmu.IF_ADDRESS, BitUtils.ClearBit(interruptFlag, interrupt.Flag));
+                Push(PC);
+                PC = interrupt.Address;
+            }
         }
 
         private void RST(ushort addr)
@@ -1386,7 +1425,7 @@ namespace GameBoy_Emu.Core
 
         public void Bit(byte val, int bitPosition, ushort bytesRead, int cycles)
         {
-            val = (byte)((val >> bitPosition) & 1);
+            val = BitUtils.Bit(val, bitPosition);
             Registers.SetZFLag((val == 0));
             Registers.SetNFLag(false);
             Registers.SetHCYFLag(true);

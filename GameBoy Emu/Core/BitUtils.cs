@@ -1,20 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GameBoy_Emu.Core
+﻿namespace ChichoGB.Core
 {
     public static class BitUtils
     {
-        public static byte ClearBit(byte val, byte bitToClear)
+        public static byte ClearBit(byte val, int bitToClear)
         {
             val &= (byte)~(bitToClear);
             return val;
         }
 
-        public static byte SetBit(byte val, byte bitToSet)
+        public static byte SetBit(byte val, int bitToSet)
         {
             val |= (byte)(bitToSet);
             return val;
@@ -33,6 +27,16 @@ namespace GameBoy_Emu.Core
         public static ushort GetU16(byte highByte, byte lowByte)
         {
             return (ushort)(highByte << 8 | lowByte);
+        }
+
+        public static byte Bit(byte value, int bitPosition)
+        {
+            return (byte)((value >> bitPosition) & 1);
+        }
+
+        public static bool isBitSet(byte value, int bitPosition)
+        {
+            return Bit(value, bitPosition) == 1;
         }
     }
 }

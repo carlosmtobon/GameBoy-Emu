@@ -1,27 +1,30 @@
 ﻿using System;
 using System.IO;
 
-namespace GameBoy_Emu.Core
+namespace ChichoGB.Core
 {
-    public class MMU
+    public class Mmu
     {
         private byte[] logoBytes = { 0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03,
             0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D, 0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00,
             0x0E, 0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E,
             0x0E, 0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E };
-
         
         private const int RAM_SIZE = 0x10000;
         private const int BIOS_OFFSET = 0;
         private const int ROM_OFFSET = 0x100;
 
-
-        const int IE = 0xFFFF;
-        const int IF = 0xFF0F; 
+        // special register address
+        public const int IE_ADDRESS = 0xFFFF;
+        public const int IF_ADDRESS = 0xFF0F;
+        public const int DIV_ADDRESS = 0xFF04;
+        public const int TIMA_ADDRESS = 0xFF05;
+        public const int TMA_ADDRESS = 0xFF06;
+        public const int TAC_ADDRESS = 0xFF07;
 
         public byte[] Memory { get; }
 
-        public MMU()
+        public Mmu()
         {
             Memory = new byte[RAM_SIZE];
             BootupValues();
@@ -59,7 +62,7 @@ namespace GameBoy_Emu.Core
             Memory[0xFF49] = 0xFF; //OBP1
             Memory[0xFF4A] = 0x00; //WY
             Memory[0xFF4B] = 0x00; //WX
-            Memory[0xFFFF] = 0x00; //IE
+            Memory[IE_ADDRESS] = 0x00; //IE
         }
 
         private void LoadNintendoLogo()
@@ -113,12 +116,12 @@ namespace GameBoy_Emu.Core
 
         public byte GetIE()
         {
-            return Memory[IE];
+            return Memory[IE_ADDRESS];
         }
 
         public byte GetIF()
         {
-            return Memory[IF];
+            return Memory[IF_ADDRESS];
         }
     }
 }
