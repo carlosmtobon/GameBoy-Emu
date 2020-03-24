@@ -210,24 +210,33 @@ namespace ChichoGB.Core.CPU
             ProcessOpcode();
             ProcessInterrupt();
             ProcessTimer();
+
         }
 
         private void ProcessTimer()
         {
-
             Timer.Tick(CpuCycles, _halt);
-            if (Timer.InterruptRequest)
-            {
-                InterruptController.IME = true;
-                Timer.InterruptRequest = false;
-            }
         }
 
         private void ProcessInterrupt()
         {
-            if (InterruptController.IME)
+            byte interruptFlag = _ram.LoadU8Bits(Mmu.IF_ADDRESS);
+            byte interruptEnable = _ram.LoadU8Bits(Mmu.IE_ADDRESS);
+            Interrupt interrupt = InterruptController.Process(interruptFlag, interruptEnable);
+            if (interrupt != null)
             {
-                CheckForInterrupts();
+                if (InterruptController.IME)
+                {
+                    _halt = false;
+                    InterruptController.IME = false;
+                    _ram.StoreU8Bits(Mmu.IF_ADDRESS, BitUtils.ClearBit(interruptFlag, interrupt.Flag));
+                    Push(PC);
+                    PC = interrupt.Address;
+                }
+                else
+                {
+                    _halt = false;
+                }
             }
         }
 
@@ -1134,7 +1143,8 @@ namespace ChichoGB.Core.CPU
                     RST(0x28);
                     break;
                 case 0xF0:
-                    Registers.A = _ram.LoadU8Bits(0xFF00 + _ram.LoadU8Bits(PC + 1));
+                    int addr = 0xFF00 + _ram.LoadU8Bits(PC + 1);
+                    Registers.A = _ram.LoadU8Bits(addr);
                     UpdatePCAndCycles(2, 12);
                     break;
                 case 0xF1:
@@ -1180,21 +1190,6 @@ namespace ChichoGB.Core.CPU
                 case 0xFF:
                     RST(0x38);
                     break;
-            }
-        }
-
-        private void CheckForInterrupts()
-        {
-            byte interruptFlag = _ram.LoadU8Bits(Mmu.IF_ADDRESS);
-            byte interruptEnable = _ram.LoadU8Bits(Mmu.IE_ADDRESS);
-            Interrupt interrupt = InterruptController.Process(interruptFlag, interruptEnable);
-            if (interrupt != null)
-            {
-                _halt = false;
-                InterruptController.IME = false;
-                _ram.StoreU8Bits(Mmu.IF_ADDRESS, BitUtils.ClearBit(interruptFlag, interrupt.Flag));
-                Push(PC);
-                PC = interrupt.Address;
             }
         }
 

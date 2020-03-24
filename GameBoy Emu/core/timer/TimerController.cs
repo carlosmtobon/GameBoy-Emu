@@ -27,7 +27,7 @@ namespace ChichoGB.Core.Timer
         public int cpuClockSince;
         public void Tick(int cpuCycles, bool halt)
         {
-            IncrementDiv(cpuCycles);
+            IncrementDiv(cpuCycles, halt);
 
             byte tac = _ram.LoadU8Bits(Mmu.TAC_ADDRESS);
            
@@ -73,8 +73,11 @@ namespace ChichoGB.Core.Timer
                         // enable interrupt;
                         InterruptRequest = true;
                         tima = tma;
+                    } else
+                    {
+                        tima++;
                     }
-                    tima++;
+                    
                     _ram.StoreU8Bits(Mmu.TIMA_ADDRESS, tima);
                 }
             }
@@ -85,16 +88,17 @@ namespace ChichoGB.Core.Timer
                 // set timer overflow
                 interruptFlag = BitUtils.SetBit(interruptFlag, 0x4);
                 _ram.StoreU8Bits(Mmu.IF_ADDRESS, interruptFlag);
+                InterruptRequest = false;
             }
         }
 
         public int totalDivUpdates;
-        private void IncrementDiv(int cpuCycles)
+        private void IncrementDiv(int cpuCycles, bool halt)
         {
-            _divAccumalator += cpuCycles - _totalElaspedDiv;
+            _divAccumalator += halt ? 4 : cpuCycles - _totalElaspedDiv;
             _totalElaspedDiv = cpuCycles;
 
-            if (_divAccumalator > 256)
+            if (_divAccumalator >= 256)
             {
                 totalDivUpdates++;
                 _divAccumalator -= 256;

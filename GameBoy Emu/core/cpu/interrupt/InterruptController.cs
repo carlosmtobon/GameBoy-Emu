@@ -61,31 +61,26 @@
         {
             if (isVBlankSet(interruptFlag) && isVBlankSet(interruptEnable))
             {
-                _vblank.Process = true;
                 return _vblank;
             }
 
             if (isLCDCSet(interruptFlag) && isLCDCSet(interruptEnable))
             {
-                _lcdc.Process = true;
                 return _lcdc;
             }
 
             if (isTimerOverflowSet(interruptFlag) && isTimerOverflowSet(interruptEnable))
             {
-                _timer.Process = true;
                 return _timer;
             }
 
             if (isSerialCompleteSet(interruptFlag) && isSerialCompleteSet(interruptEnable))
             {
-                _serial.Process = true;
                 return _serial;
             }
 
             if (isJoypadSet(interruptFlag) && isJoypadSet(interruptEnable))
             {
-                _joypad.Process = true;
                 return _joypad;
             }
 

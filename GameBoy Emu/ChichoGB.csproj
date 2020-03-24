@@ -49,10 +49,12 @@
     <Compile Include="core\BitUtils.cs" />
     <Compile Include="core\cpu\Cpu.cs" />
     <Compile Include="core\cpu\interrupt\Interrupt.cs" />
+    <Compile Include="core\ppu\BackgroundTileMap.cs" />
     <Compile Include="core\ppu\Fetcher.cs" />
     <Compile Include="core\cpu\interrupt\InterruptController.cs" />
     <Compile Include="core\ppu\PixelFIFO.cs" />
     <Compile Include="core\ppu\Ppu.cs" />
+    <Compile Include="core\ppu\TileData.cs" />
     <Compile Include="core\ram\Mmu.cs" />
     <Compile Include="core\cpu\Registers.cs" />
     <Compile Include="core\timer\TimerController.cs" />

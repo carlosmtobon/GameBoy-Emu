@@ -10,8 +10,6 @@ namespace ChichoGB.Core.CPU.Interrupts
     {
         public ushort Address { get; set; }
         public int Flag { get; set; }
-
-        public bool Process { get; set; }
         
         public Interrupt(ushort address, int flag)
         {
