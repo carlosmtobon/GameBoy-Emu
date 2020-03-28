@@ -91,47 +91,47 @@ namespace ChichoGB.Core
                 fs.Read(Memory, ROM_OFFSET, Memory.Length - ROM_OFFSET);
             }
         } 
-        public void StoreU8Bits(int addr, byte value)
+        public void StoreUnsigned8(int addr, byte value)
         {
             Memory[addr] = value;
         }
-        public void StoreU16Bits(int addr, ushort value)
+        public void StoreUnsigned16(int addr, ushort value)
         {
             Memory[addr] = (byte)(value >> 8);
             Memory[addr + 1] = (byte)(value & 0x00FF);
         }
 
-        public byte LoadU8Bits(int addr)
+        public byte LoadUnsigned8(int addr)
         {
             return Memory[addr];
         }
 
-        public sbyte LoadI8Bits(int addr)
+        public sbyte LoadSigned8(int addr)
         {
             return unchecked((sbyte)Memory[addr]);
         }
 
-        public ushort LoadU16Bits(int addr)
+        public ushort LoadUnsigned16(int addr)
         {
             return (ushort)(Memory[addr] | Memory[addr + 1] << 8);
         }
 
-        public byte GetIE()
+        public byte LoadInterruptEnable()
         {
             return Memory[IE_ADDRESS];
         }
 
-        public byte GetIF()
+        public byte LoadInterruptFlag()
         {
             return Memory[IF_ADDRESS];
         }
 
-        public byte GetLCY()
+        public byte LoadLy()
         {
             return Memory[LY_ADDRESS];
         }
 
-        public byte GetLCDCSTAT()
+        public byte LoadLcdcStat()
         {
             return Memory[LCDC_STAT];
         }

@@ -16,8 +16,7 @@ namespace ChichoGB.Core
 
         public int OAM_SEARCH_CYCLES = 80;
         public int PIXEL_PROCESS_CYCLES = 172;
-        
-        private int _totalElasped;
+        public int HBLANK_CYCLES = 204;
 
         enum PpuStatus { HBLANK, VBLANK, OAM_SEARCH, PIXEL_TRANSFER };
 
@@ -34,7 +33,6 @@ namespace ChichoGB.Core
         public void Tick(int cpuCycles)
         {
             clocks += cpuCycles;
-
             if (_ppuStatus == PpuStatus.OAM_SEARCH)
             {
                 if (clocks >= OAM_SEARCH_CYCLES)
@@ -46,34 +44,15 @@ namespace ChichoGB.Core
             }
             else if (_ppuStatus == PpuStatus.PIXEL_TRANSFER)
             {
-                if (_fetcher.State == Fetcher.FetcherState.TRANSFER_READY && _pixelFifo.State == PixelFifo.PixelFifoState.IDLE)
-                {
-                    Console.WriteLine("Load Fifo");
-                    _pixelFifo.LoadFifo(_fetcher);
-                    _fetcher.State = Fetcher.FetcherState.READ_TILE_NUM;
-                    _pixelFifo.State = PixelFifo.PixelFifoState.PUSHING;
-                }
-
-                while (cpuCycles > 0)
-                {
-                    _fetcher.Process(1);
-                    _pixelFifo.Process(1);
-                    
-                    totalUpdates++;
-                    cpuCycles--;
-                }
-              
-                if (clocks >= PIXEL_PROCESS_CYCLES)
-                {
-                    Console.WriteLine(totalUpdates);
-                    totalUpdates = 0;
-                    clocks -= PIXEL_PROCESS_CYCLES;
-                    _ppuStatus = PpuStatus.OAM_SEARCH;
-                }
+                PixelTransfer(cpuCycles);
             }
             else if (_ppuStatus == PpuStatus.HBLANK)
             {
-                Console.WriteLine();
+                if (clocks >= HBLANK_CYCLES)
+                {
+                    clocks -= HBLANK_CYCLES;
+                    Console.WriteLine($"Total Cycles Per Line: {clocks}");
+                }
             }
             else if (_ppuStatus == PpuStatus.VBLANK)
             {
@@ -81,9 +60,41 @@ namespace ChichoGB.Core
             }
         }
 
+        private void PixelTransfer(int cpuCycles)
+        {
+            while (cpuCycles > 0)
+            {
+                int work = _pixelFifo.Process();
+                _fetcher.Process();
+                cpuCycles -= work;
+
+                if (_fetcher.State == Fetcher.FetcherState.TRANSFER_READY && _pixelFifo.State == PixelFifo.PixelFifoState.IDLE)
+                {
+                    Console.WriteLine("Load Fifo");
+                    _pixelFifo.LoadFifo(_fetcher);
+                    _fetcher.State = Fetcher.FetcherState.READ_TILE_NUM;
+                    _pixelFifo.State = PixelFifo.PixelFifoState.PUSHING;
+                }
+            }
+
+            if (clocks >= PIXEL_PROCESS_CYCLES)
+            {
+                Console.WriteLine($"PUSH TIMES: {_pixelFifo.pushTimes}");
+                _pixelFifo.pushTimes = 0;
+                clocks -= PIXEL_PROCESS_CYCLES;
+                _ppuStatus = PpuStatus.HBLANK;
+            }
+        }
+
         private void OamSearch()
         {
            // throw new NotImplementedException();
         }
+
+        public byte GetLcdcStat()
+        {
+            return _ram.LoadLcdcStat();
+        }
+
     }
 }

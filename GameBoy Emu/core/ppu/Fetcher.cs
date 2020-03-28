@@ -42,7 +42,7 @@ namespace ChichoGB.Core
             else if (State == FetcherState.READ_DATA_1)
             {
                 Console.WriteLine("Fetch: Data1");
-                for (int i =0; i< 8; i++)
+                for (int i = 0; i < 8; i++)
                 {
                     PixelData pixel = new PixelData();
                     pixel.ColorData = 3;
@@ -51,26 +51,19 @@ namespace ChichoGB.Core
                 }
                 
                 State = FetcherState.TRANSFER_READY;
-            }
-            else if (State == FetcherState.TRANSFER_READY)
-            {
                 Console.WriteLine("Fetch: Idle");
             }
         }
 
-        public void Process(int cpuCycles)
+        public void Process()
         {
             if (State != FetcherState.TRANSFER_READY)
             {
-                _fetchAccumalator += cpuCycles;
-
+                _fetchAccumalator++;
                 if (_fetchAccumalator >= FETCHER_FREQUENCY)
                 {
-                    while (_fetchAccumalator > 0)
-                    {
-                        _fetchAccumalator -= FETCHER_FREQUENCY;
-                        Fetch();
-                    }
+                    _fetchAccumalator -= FETCHER_FREQUENCY;
+                    Fetch();
                 }
             }
         }

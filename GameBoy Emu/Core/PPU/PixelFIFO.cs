@@ -8,7 +8,7 @@ namespace ChichoGB.Core
         public PixelFifoState State { get; set; }
         private Queue<PixelData> _pixels;
         private Mmu _ram;
-        private int _fifoAccumalator;
+        public int _fifoAccumalator;
         public const int FIFO_FREQUENCY = 1;
 
         public enum PixelFifoState { PUSHING, IDLE }
@@ -19,21 +19,28 @@ namespace ChichoGB.Core
             _ram = ram;
         }
 
-        public void Process(int cpuCycles)
+        public int Process()
         {
-            _fifoAccumalator += cpuCycles;
-            if (_fifoAccumalator >= FIFO_FREQUENCY)
+            if (State != PixelFifoState.IDLE)
             {
-                _fifoAccumalator -= FIFO_FREQUENCY;
-                if (State != PixelFifoState.IDLE)
+                if (_pixels.Count <= 8)
                 {
-                    Push();
+                    Console.WriteLine("FIFO: IDLE");
+                    State = PixelFifoState.IDLE;
+                    return 0;
                 }
                 else
                 {
-                    Idle();
+                    Push();
+                    return 1;
                 }
             }
+            else
+            {
+                Idle();
+                return 0;
+            }
+           
         }
 
         private void Idle()
@@ -44,19 +51,13 @@ namespace ChichoGB.Core
             }
         }
 
+        public int pushTimes; 
         private void Push()
         {
-            if (_pixels.Count <= 8)
-            {
-                Console.WriteLine("FIFO: IDLE");
-                State = PixelFifoState.IDLE;
-            }
-            else
-            {
-                Console.WriteLine("FIFO: Push Pixel");
-                // push pixel to display
-                _pixels.Dequeue();
-            }
+            pushTimes++;
+            Console.WriteLine("FIFO: Push Pixel");
+            // push pixel to display
+            _pixels.Dequeue();
         }
 
         public void LoadFifo(Fetcher fetcher)

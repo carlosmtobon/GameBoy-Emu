@@ -8,7 +8,7 @@ namespace ChichoGB.Core.CPU
     {
         public int CpuCycles { get; set; } // total running cpu cycles
 
-        public int CpuCyclesTick { get; set; } // cycle this tick 
+        public int CpuTickCycles { get; set; } // cycle this tick 
         public byte Opcode { get; set; }
         public ushort PC { get; set; }
         public ushort SP { get; set; }
@@ -37,7 +37,7 @@ namespace ChichoGB.Core.CPU
         {
             PC += val;
             CpuCycles += cycles;
-            CpuCyclesTick = cycles;
+            CpuTickCycles = cycles;
         }
 
         public void Push(ushort val)
@@ -56,7 +56,7 @@ namespace ChichoGB.Core.CPU
 
         public void JP(ushort addr)
         {
-            PC = _ram.LoadU16Bits(addr);
+            PC = _ram.LoadUnsigned16(addr);
         }
 
         public byte LD(byte register, ushort bytesRead, int cycles)
@@ -213,18 +213,17 @@ namespace ChichoGB.Core.CPU
             ProcessOpcode();
             ProcessInterrupt();
             ProcessTimer();
-
         }
 
         private void ProcessTimer()
         {
-            Timer.Tick(CpuCycles, _halt);
+            Timer.Tick(CpuTickCycles, _halt);
         }
 
         private void ProcessInterrupt()
         {
-            byte interruptFlag = _ram.GetIF();
-            byte interruptEnable = _ram.GetIE();
+            byte interruptFlag = _ram.LoadInterruptFlag();
+            byte interruptEnable = _ram.LoadInterruptEnable();
             Interrupt interrupt = InterruptController.Process(interruptFlag, interruptEnable);
             if (interrupt != null)
             {
@@ -232,7 +231,7 @@ namespace ChichoGB.Core.CPU
                 {
                     _halt = false;
                     InterruptController.IME = false;
-                    _ram.StoreU8Bits(Mmu.IF_ADDRESS, BitUtils.ClearBit(interruptFlag, interrupt.Flag));
+                    _ram.StoreUnsigned8(Mmu.IF_ADDRESS, BitUtils.ClearBit(interruptFlag, interrupt.Flag));
                     Push(PC);
                     PC = interrupt.Address;
                 }
@@ -254,11 +253,11 @@ namespace ChichoGB.Core.CPU
                     UpdatePCAndCycles(1, 4);
                     break;
                 case 0x01:
-                    Registers.SetBC(_ram.LoadU16Bits(PC + 1));
+                    Registers.SetBC(_ram.LoadUnsigned16(PC + 1));
                     UpdatePCAndCycles(3, 12);
                     break;
                 case 0x02:
-                    _ram.StoreU8Bits(Registers.GetBC(), Registers.A);
+                    _ram.StoreUnsigned8(Registers.GetBC(), Registers.A);
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x03:
@@ -272,22 +271,22 @@ namespace ChichoGB.Core.CPU
                     Registers.B = DEC(Registers.B, 1, 4);
                     break;
                 case 0x06:
-                    Registers.B = _ram.LoadU8Bits(PC + 1);
+                    Registers.B = _ram.LoadUnsigned8(PC + 1);
                     UpdatePCAndCycles(2, 8);
                     break;
                 case 0x07:
                     RLCA();
                     break;
                 case 0x08:
-                    ushort storeAddr = _ram.LoadU16Bits(PC + 1);
-                    _ram.StoreU16Bits(storeAddr, SP);
+                    ushort storeAddr = _ram.LoadUnsigned16(PC + 1);
+                    _ram.StoreUnsigned16(storeAddr, SP);
                     UpdatePCAndCycles(3, 20);
                     break;
                 case 0x09:
                     AddToHL(Registers.GetBC());
                     break;
                 case 0x0A:
-                    Registers.A = _ram.LoadU8Bits(Registers.GetBC());
+                    Registers.A = _ram.LoadUnsigned8(Registers.GetBC());
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x0B:
@@ -301,7 +300,7 @@ namespace ChichoGB.Core.CPU
                     Registers.C = DEC(Registers.C, 1, 4);
                     break;
                 case 0x0E:
-                    Registers.C = _ram.LoadU8Bits(PC + 1);
+                    Registers.C = _ram.LoadUnsigned8(PC + 1);
                     UpdatePCAndCycles(2, 8);
                     break;
                 case 0x0F:
@@ -312,11 +311,11 @@ namespace ChichoGB.Core.CPU
                     PC += 2;
                     break;
                 case 0x11:
-                    Registers.SetDE(_ram.LoadU16Bits(PC + 1));
+                    Registers.SetDE(_ram.LoadUnsigned16(PC + 1));
                     UpdatePCAndCycles(3, 12);
                     break;
                 case 0x12:
-                    _ram.StoreU8Bits(Registers.GetDE(), Registers.A);
+                    _ram.StoreUnsigned8(Registers.GetDE(), Registers.A);
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x13:
@@ -330,21 +329,21 @@ namespace ChichoGB.Core.CPU
                     Registers.D = DEC(Registers.D, 1, 4);
                     break;
                 case 0x16:
-                    Registers.D = _ram.LoadU8Bits(PC + 1);
+                    Registers.D = _ram.LoadUnsigned8(PC + 1);
                     UpdatePCAndCycles(2, 8);
                     break;
                 case 0x17:
                     RLA();
                     break;
                 case 0x18:
-                    PC += (ushort)(_ram.LoadI8Bits(PC + 1));
+                    PC += (ushort)(_ram.LoadSigned8(PC + 1));
                     UpdatePCAndCycles(2, 12);
                     break;
                 case 0x19:
                     AddToHL(Registers.GetDE());
                     break;
                 case 0x1A:
-                    Registers.A = _ram.LoadU8Bits(Registers.GetDE());
+                    Registers.A = _ram.LoadUnsigned8(Registers.GetDE());
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x1B:
@@ -358,7 +357,7 @@ namespace ChichoGB.Core.CPU
                     Registers.E = DEC(Registers.E, 1, 4);
                     break;
                 case 0x1E:
-                    Registers.E = _ram.LoadU8Bits(PC + 1);
+                    Registers.E = _ram.LoadUnsigned8(PC + 1);
                     UpdatePCAndCycles(2, 8);
                     break;
                 case 0x1F:
@@ -368,7 +367,7 @@ namespace ChichoGB.Core.CPU
                     // JR NZ,i8
                     if (Registers.GetZFlag() == 0)
                     {
-                        PC += (ushort)(_ram.LoadI8Bits(PC + 1));
+                        PC += (ushort)(_ram.LoadSigned8(PC + 1));
                         UpdatePCAndCycles(2, 12);
                     }
                     else
@@ -378,11 +377,11 @@ namespace ChichoGB.Core.CPU
 
                     break;
                 case 0x21:
-                    Registers.SetHL(_ram.LoadU16Bits(PC + 1));
+                    Registers.SetHL(_ram.LoadUnsigned16(PC + 1));
                     UpdatePCAndCycles(3, 12);
                     break;
                 case 0x22:
-                    _ram.StoreU8Bits(Registers.GetHL(), Registers.A);
+                    _ram.StoreUnsigned8(Registers.GetHL(), Registers.A);
                     Registers.AddToHL(1);
                     UpdatePCAndCycles(1, 8);
                     break;
@@ -397,7 +396,7 @@ namespace ChichoGB.Core.CPU
                     Registers.H = DEC(Registers.H, 1, 4);
                     break;
                 case 0x26:
-                    Registers.H = _ram.LoadU8Bits(PC + 1);
+                    Registers.H = _ram.LoadUnsigned8(PC + 1);
                     UpdatePCAndCycles(2, 8);
                     break;
                 case 0x27:
@@ -407,7 +406,7 @@ namespace ChichoGB.Core.CPU
                     //JR Z,i8 
                     if (Registers.GetZFlag() == 1)
                     {
-                        PC += (ushort)(_ram.LoadI8Bits(PC + 1));
+                        PC += (ushort)(_ram.LoadSigned8(PC + 1));
                         UpdatePCAndCycles(2, 12);
                     }
                     else
@@ -432,7 +431,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = DEC(Registers.L, 1, 4);
                     break;
                 case 0x2E:
-                    Registers.L = _ram.LoadU8Bits(PC + 1);
+                    Registers.L = _ram.LoadUnsigned8(PC + 1);
                     UpdatePCAndCycles(2, 8);
                     break;
                 case 0x2F:
@@ -444,7 +443,7 @@ namespace ChichoGB.Core.CPU
                 case 0x30:
                     if (Registers.GetCYFlag() == 0)
                     {
-                        PC += (ushort)(_ram.LoadI8Bits(PC + 1));
+                        PC += (ushort)(_ram.LoadSigned8(PC + 1));
                         UpdatePCAndCycles(2, 12);
                     }
                     else
@@ -453,11 +452,11 @@ namespace ChichoGB.Core.CPU
                     }
                     break;
                 case 0x31:
-                    SP = _ram.LoadU16Bits(PC + 1);
+                    SP = _ram.LoadUnsigned16(PC + 1);
                     UpdatePCAndCycles(3, 12);
                     break;
                 case 0x32:
-                    _ram.StoreU8Bits(Registers.GetHL(), Registers.A);
+                    _ram.StoreUnsigned8(Registers.GetHL(), Registers.A);
                     Registers.SubToHL(1);
                     UpdatePCAndCycles(1, 8);
                     break;
@@ -466,14 +465,14 @@ namespace ChichoGB.Core.CPU
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x34:
-                    _ram.StoreU8Bits(Registers.GetHL(), INC(_ram.LoadU8Bits(Registers.GetHL()), 1, 12));
+                    _ram.StoreUnsigned8(Registers.GetHL(), INC(_ram.LoadUnsigned8(Registers.GetHL()), 1, 12));
                     break;
                 case 0x35:
-                    _ram.StoreU8Bits(Registers.GetHL(),
-                        DEC(_ram.LoadU8Bits(Registers.GetHL()), 1, 12));
+                    _ram.StoreUnsigned8(Registers.GetHL(),
+                        DEC(_ram.LoadUnsigned8(Registers.GetHL()), 1, 12));
                     break;
                 case 0x36:
-                    _ram.StoreU8Bits(Registers.GetHL(), _ram.LoadU8Bits(PC + 1));
+                    _ram.StoreUnsigned8(Registers.GetHL(), _ram.LoadUnsigned8(PC + 1));
                     UpdatePCAndCycles(2, 12);
                     break;
                 case 0x37:
@@ -485,7 +484,7 @@ namespace ChichoGB.Core.CPU
                 case 0x38:
                     if (Registers.GetCYFlag() == 1)
                     {
-                        PC += (ushort)(_ram.LoadI8Bits(PC + 1));
+                        PC += (ushort)(_ram.LoadSigned8(PC + 1));
                         UpdatePCAndCycles(2, 12);
                     }
                     else
@@ -510,7 +509,7 @@ namespace ChichoGB.Core.CPU
                     Registers.A = DEC(Registers.A, 1, 4);
                     break;
                 case 0x3E:
-                    Registers.A = _ram.LoadU8Bits(PC + 1);
+                    Registers.A = _ram.LoadUnsigned8(PC + 1);
                     UpdatePCAndCycles(2, 8);
                     break;
                 case 0x3F:
@@ -535,7 +534,7 @@ namespace ChichoGB.Core.CPU
                     Registers.B = LD(Registers.L, 1, 4);
                     break;
                 case 0x46:
-                    Registers.B = LD(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
+                    Registers.B = LD(_ram.LoadUnsigned8(Registers.GetHL()), 1, 8);
                     break;
                 case 0x47:
                     Registers.B = LD(Registers.A, 1, 4);
@@ -559,7 +558,7 @@ namespace ChichoGB.Core.CPU
                     Registers.C = LD(Registers.L, 1, 4);
                     break;
                 case 0x4E:
-                    Registers.C = LD(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
+                    Registers.C = LD(_ram.LoadUnsigned8(Registers.GetHL()), 1, 8);
                     break;
                 case 0x4F:
                     Registers.C = LD(Registers.A, 1, 4);
@@ -583,7 +582,7 @@ namespace ChichoGB.Core.CPU
                     Registers.D = LD(Registers.L, 1, 4);
                     break;
                 case 0x56:
-                    Registers.D = LD(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
+                    Registers.D = LD(_ram.LoadUnsigned8(Registers.GetHL()), 1, 8);
                     break;
                 case 0x57:
                     Registers.D = LD(Registers.A, 1, 4);
@@ -607,7 +606,7 @@ namespace ChichoGB.Core.CPU
                     Registers.E = LD(Registers.L, 1, 4);
                     break;
                 case 0x5E:
-                    Registers.E = LD(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
+                    Registers.E = LD(_ram.LoadUnsigned8(Registers.GetHL()), 1, 8);
                     break;
                 case 0x5F:
                     Registers.E = LD(Registers.A, 1, 4);
@@ -631,7 +630,7 @@ namespace ChichoGB.Core.CPU
                     Registers.H = LD(Registers.L, 1, 4);
                     break;
                 case 0x66:
-                    Registers.H = LD(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
+                    Registers.H = LD(_ram.LoadUnsigned8(Registers.GetHL()), 1, 8);
                     break;
                 case 0x67:
                     Registers.H = LD(Registers.A, 1, 4);
@@ -655,33 +654,33 @@ namespace ChichoGB.Core.CPU
                     Registers.L = LD(Registers.L, 1, 4);
                     break;
                 case 0x6E:
-                    Registers.L = LD(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
+                    Registers.L = LD(_ram.LoadUnsigned8(Registers.GetHL()), 1, 8);
                     break;
                 case 0x6F:
                     Registers.L = LD(Registers.A, 1, 4);
                     break;
                 case 0x70:
-                    _ram.StoreU8Bits(Registers.GetHL(), Registers.B);
+                    _ram.StoreUnsigned8(Registers.GetHL(), Registers.B);
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x71:
-                    _ram.StoreU8Bits(Registers.GetHL(), Registers.C);
+                    _ram.StoreUnsigned8(Registers.GetHL(), Registers.C);
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x72:
-                    _ram.StoreU8Bits(Registers.GetHL(), Registers.D);
+                    _ram.StoreUnsigned8(Registers.GetHL(), Registers.D);
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x73:
-                    _ram.StoreU8Bits(Registers.GetHL(), Registers.E);
+                    _ram.StoreUnsigned8(Registers.GetHL(), Registers.E);
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x74:
-                    _ram.StoreU8Bits(Registers.GetHL(), Registers.H);
+                    _ram.StoreUnsigned8(Registers.GetHL(), Registers.H);
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x75:
-                    _ram.StoreU8Bits(Registers.GetHL(), Registers.L);
+                    _ram.StoreUnsigned8(Registers.GetHL(), Registers.L);
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x76:
@@ -690,7 +689,7 @@ namespace ChichoGB.Core.CPU
                     UpdatePCAndCycles(1, 4);
                     break;
                 case 0x77:
-                    _ram.StoreU8Bits(Registers.GetHL(), Registers.A);
+                    _ram.StoreUnsigned8(Registers.GetHL(), Registers.A);
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x78:
@@ -718,7 +717,7 @@ namespace ChichoGB.Core.CPU
                     UpdatePCAndCycles(1, 4);
                     break;
                 case 0x7E:
-                    Registers.A = _ram.LoadU8Bits(Registers.GetHL());
+                    Registers.A = _ram.LoadUnsigned8(Registers.GetHL());
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0x7F:
@@ -744,7 +743,7 @@ namespace ChichoGB.Core.CPU
                     ADD(Registers.L, 1, 4);
                     break;
                 case 0x86:
-                    ADD(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
+                    ADD(_ram.LoadUnsigned8(Registers.GetHL()), 1, 8);
                     break;
                 case 0x87:
                     ADD(Registers.A, 1, 4);
@@ -768,7 +767,7 @@ namespace ChichoGB.Core.CPU
                     ADDC(Registers.L, 1, 4);
                     break;
                 case 0x8E:
-                    ADDC(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
+                    ADDC(_ram.LoadUnsigned8(Registers.GetHL()), 1, 8);
                     break;
                 case 0x8F:
                     ADDC(Registers.A, 1, 4);
@@ -792,7 +791,7 @@ namespace ChichoGB.Core.CPU
                     SUB(Registers.L, 1, 4);
                     break;
                 case 0x96:
-                    SUB(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
+                    SUB(_ram.LoadUnsigned8(Registers.GetHL()), 1, 8);
                     break;
                 case 0x97:
                     SUB(Registers.A, 1, 4);
@@ -816,7 +815,7 @@ namespace ChichoGB.Core.CPU
                     SBC(Registers.L, 1, 4);
                     break;
                 case 0x9E:
-                    SBC(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
+                    SBC(_ram.LoadUnsigned8(Registers.GetHL()), 1, 8);
                     break;
                 case 0x9F:
                     SBC(Registers.A, 1, 4);
@@ -840,7 +839,7 @@ namespace ChichoGB.Core.CPU
                     AND(Registers.L, 1, 4);
                     break;
                 case 0xA6:
-                    AND(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
+                    AND(_ram.LoadUnsigned8(Registers.GetHL()), 1, 8);
                     break;
                 case 0xA7:
                     AND(Registers.A, 1, 4);
@@ -864,7 +863,7 @@ namespace ChichoGB.Core.CPU
                     XOR(Registers.L, 1, 4);
                     break;
                 case 0xAE:
-                    XOR(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
+                    XOR(_ram.LoadUnsigned8(Registers.GetHL()), 1, 8);
                     break;
                 case 0xAF:
                     XOR(Registers.A, 1, 4);
@@ -888,7 +887,7 @@ namespace ChichoGB.Core.CPU
                     OR(Registers.L, 1, 4);
                     break;
                 case 0xB6:
-                    OR(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
+                    OR(_ram.LoadUnsigned8(Registers.GetHL()), 1, 8);
                     break;
                 case 0xB7:
                     OR(Registers.A, 1, 4);
@@ -912,7 +911,7 @@ namespace ChichoGB.Core.CPU
                     CP(Registers.L, 1, 4);
                     break;
                 case 0xBE:
-                    CP(_ram.LoadU8Bits(Registers.GetHL()), 1, 8);
+                    CP(_ram.LoadUnsigned8(Registers.GetHL()), 1, 8);
                     break;
                 case 0xBF:
                     CP(Registers.A, 1, 4);
@@ -962,7 +961,7 @@ namespace ChichoGB.Core.CPU
                     UpdatePCAndCycles(1, 16);
                     break;
                 case 0xC6:
-                    ADD(_ram.LoadU8Bits(PC + 1), 2, 8);
+                    ADD(_ram.LoadUnsigned8(PC + 1), 2, 8);
                     break;
                 case 0xC7:
                     RST(0x0);
@@ -1011,7 +1010,7 @@ namespace ChichoGB.Core.CPU
                     CALL();
                     break;
                 case 0xCE:
-                    ADDC(_ram.LoadU8Bits(PC + 1), 2, 8);
+                    ADDC(_ram.LoadUnsigned8(PC + 1), 2, 8);
                     break;
                 case 0xCF:
                     RST(0x8);
@@ -1057,7 +1056,7 @@ namespace ChichoGB.Core.CPU
                     UpdatePCAndCycles(1, 16);
                     break;
                 case 0xD6:
-                    SUB(_ram.LoadU8Bits(PC + 1), 2, 8);
+                    SUB(_ram.LoadUnsigned8(PC + 1), 2, 8);
                     break;
                 case 0xD7:
                     RST(0x10);
@@ -1101,13 +1100,13 @@ namespace ChichoGB.Core.CPU
                     }
                     break;
                 case 0xDE:
-                    SBC(_ram.LoadU8Bits(PC + 1), 2, 8);
+                    SBC(_ram.LoadUnsigned8(PC + 1), 2, 8);
                     break;
                 case 0xDF:
                     RST(0x18);
                     break;
                 case 0xE0:
-                    _ram.StoreU8Bits(0xFF00 + _ram.LoadU8Bits(PC + 1), Registers.A);
+                    _ram.StoreUnsigned8(0xFF00 + _ram.LoadUnsigned8(PC + 1), Registers.A);
                     UpdatePCAndCycles(2, 12);
                     break;
                 case 0xE1:
@@ -1115,7 +1114,7 @@ namespace ChichoGB.Core.CPU
                     UpdatePCAndCycles(1, 12);
                     break;
                 case 0xE2:
-                    _ram.StoreU8Bits(0xFF00 + Registers.C, Registers.A);
+                    _ram.StoreUnsigned8(0xFF00 + Registers.C, Registers.A);
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0xE5:
@@ -1123,7 +1122,7 @@ namespace ChichoGB.Core.CPU
                     UpdatePCAndCycles(1, 16);
                     break;
                 case 0xE6:
-                    AND(_ram.LoadU8Bits(PC + 1), 2, 8);
+                    AND(_ram.LoadUnsigned8(PC + 1), 2, 8);
                     break;
                 case 0xE7:
                     RST(0x20);
@@ -1136,18 +1135,18 @@ namespace ChichoGB.Core.CPU
                     UpdatePCAndCycles(0, 4);
                     break;
                 case 0xEA:
-                    _ram.StoreU8Bits(_ram.LoadU16Bits(PC + 1), Registers.A);
+                    _ram.StoreUnsigned8(_ram.LoadUnsigned16(PC + 1), Registers.A);
                     UpdatePCAndCycles(3, 16);
                     break;
                 case 0xEE:
-                    XOR(_ram.LoadU8Bits(PC + 1), 2, 8);
+                    XOR(_ram.LoadUnsigned8(PC + 1), 2, 8);
                     break;
                 case 0xEF:
                     RST(0x28);
                     break;
                 case 0xF0:
-                    int addr = 0xFF00 + _ram.LoadU8Bits(PC + 1);
-                    Registers.A = _ram.LoadU8Bits(addr);
+                    int addr = 0xFF00 + _ram.LoadUnsigned8(PC + 1);
+                    Registers.A = _ram.LoadUnsigned8(addr);
                     UpdatePCAndCycles(2, 12);
                     break;
                 case 0xF1:
@@ -1156,7 +1155,7 @@ namespace ChichoGB.Core.CPU
                     UpdatePCAndCycles(1, 12);
                     break;
                 case 0xF2:
-                    Registers.A = _ram.LoadU8Bits(0xFF00 + Registers.C);
+                    Registers.A = _ram.LoadUnsigned8(0xFF00 + Registers.C);
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0xF3:
@@ -1168,7 +1167,7 @@ namespace ChichoGB.Core.CPU
                     UpdatePCAndCycles(1, 16);
                     break;
                 case 0xF6:
-                    OR(_ram.LoadU8Bits(PC + 1), 2, 8);
+                    OR(_ram.LoadUnsigned8(PC + 1), 2, 8);
                     break;
                 case 0xF7:
                     RST(0x30);
@@ -1181,14 +1180,14 @@ namespace ChichoGB.Core.CPU
                     UpdatePCAndCycles(1, 8);
                     break;
                 case 0xFA:
-                    Registers.A = _ram.LoadU8Bits(_ram.LoadU16Bits(PC + 1));
+                    Registers.A = _ram.LoadUnsigned8(_ram.LoadUnsigned16(PC + 1));
                     UpdatePCAndCycles(3, 16);
                     break;
                 case 0xFB:
                     EI();
                     break;
                 case 0xFE:
-                    CP(_ram.LoadU8Bits(PC + 1), 2, 8);
+                    CP(_ram.LoadUnsigned8(PC + 1), 2, 8);
                     break;
                 case 0xFF:
                     RST(0x38);
@@ -1205,7 +1204,7 @@ namespace ChichoGB.Core.CPU
 
         public void LDAHLINC()
         {
-            byte hlContents = _ram.LoadU8Bits(Registers.GetHL());
+            byte hlContents = _ram.LoadUnsigned8(Registers.GetHL());
             Registers.A = hlContents;
             Registers.AddToHL(1);
             UpdatePCAndCycles(1, 8);
@@ -1213,7 +1212,7 @@ namespace ChichoGB.Core.CPU
 
         public void LDAHLDEC()
         {
-            byte hlContents = _ram.LoadU8Bits(Registers.GetHL());
+            byte hlContents = _ram.LoadUnsigned8(Registers.GetHL());
             Registers.A = hlContents;
             Registers.SubToHL(1);
             UpdatePCAndCycles(1, 8);
@@ -1229,7 +1228,7 @@ namespace ChichoGB.Core.CPU
 
         public void ADDSPI8()
         {
-            sbyte nextI8 = _ram.LoadI8Bits(PC + 1);
+            sbyte nextI8 = _ram.LoadSigned8(PC + 1);
             
             Registers.SetZFLag(false);
             Registers.SetNFLag(false);
@@ -1254,7 +1253,7 @@ namespace ChichoGB.Core.CPU
 
         public void LDHLSPI8()
         {
-            sbyte nextI8 = _ram.LoadI8Bits(PC + 1);
+            sbyte nextI8 = _ram.LoadSigned8(PC + 1);
 
             Registers.SetZFLag(false);
             Registers.SetNFLag(false);
@@ -1467,7 +1466,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = RLC(Registers.L, 2, 8);
                     break;
                 case 0x06:
-                    _ram.StoreU8Bits(Registers.GetHL(), RLC(_ram.LoadU8Bits(Registers.GetHL()), 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), RLC(_ram.LoadUnsigned8(Registers.GetHL()), 2, 16));
                     break;
                 case 0x07:
                     Registers.A = RLC(Registers.A, 2, 8);
@@ -1491,7 +1490,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = RRC(Registers.L, 2, 8);
                     break;
                 case 0x0E:
-                    _ram.StoreU8Bits(Registers.GetHL(), RRC(_ram.LoadU8Bits(Registers.GetHL()), 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), RRC(_ram.LoadUnsigned8(Registers.GetHL()), 2, 16));
                     break;
                 case 0x0F:
                     Registers.A = RRC(Registers.A, 2, 8);
@@ -1515,7 +1514,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = RL(Registers.L, 2, 8);
                     break;
                 case 0x16:
-                    _ram.StoreU8Bits(Registers.GetHL(), RL(_ram.LoadU8Bits(Registers.GetHL()), 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), RL(_ram.LoadUnsigned8(Registers.GetHL()), 2, 16));
                     break;
                 case 0x17:
                     Registers.A = RL(Registers.A, 2, 8);
@@ -1539,7 +1538,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = RR(Registers.L, 2, 8);
                     break;
                 case 0x1E:
-                    _ram.StoreU8Bits(Registers.GetHL(), RR(_ram.LoadU8Bits(Registers.GetHL()), 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), RR(_ram.LoadUnsigned8(Registers.GetHL()), 2, 16));
                     break;
                 case 0x1F:
                     Registers.A = RR(Registers.A, 2, 8);
@@ -1563,7 +1562,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = SLA(Registers.L, 2, 8);
                     break;
                 case 0x26:
-                    _ram.StoreU8Bits(Registers.GetHL(), SLA(_ram.LoadU8Bits(Registers.GetHL()), 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), SLA(_ram.LoadUnsigned8(Registers.GetHL()), 2, 16));
                     break;
                 case 0x27:
                     Registers.A = SLA(Registers.A, 2, 8);
@@ -1587,7 +1586,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = SRA(Registers.L, 2, 8);
                     break;
                 case 0x2E:
-                    _ram.StoreU8Bits(Registers.GetHL(), SRA(_ram.LoadU8Bits(Registers.GetHL()), 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), SRA(_ram.LoadUnsigned8(Registers.GetHL()), 2, 16));
                     break;
                 case 0x2F:
                     Registers.A = SRA(Registers.A, 2, 8);
@@ -1611,7 +1610,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = Swap(Registers.L, 2, 8);
                     break;
                 case 0x36:
-                    _ram.StoreU8Bits(Registers.GetHL(), Swap(_ram.LoadU8Bits(Registers.GetHL()), 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), Swap(_ram.LoadUnsigned8(Registers.GetHL()), 2, 16));
                     break;
                 case 0x37:
                     Registers.A = Swap(Registers.A, 2, 8);
@@ -1635,7 +1634,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = SRL(Registers.L, 2, 8);
                     break;
                 case 0x3E:
-                    _ram.StoreU8Bits(Registers.GetHL(), SRL(_ram.LoadU8Bits(Registers.GetHL()), 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), SRL(_ram.LoadUnsigned8(Registers.GetHL()), 2, 16));
                     break;
                 case 0x3F:
                     Registers.A = SRL(Registers.A, 2, 8);
@@ -1659,7 +1658,7 @@ namespace ChichoGB.Core.CPU
                     Bit(Registers.L, 0, 2, 8);
                     break;
                 case 0x46:
-                    Bit(_ram.LoadU8Bits(Registers.GetHL()), 0, 2, 12);
+                    Bit(_ram.LoadUnsigned8(Registers.GetHL()), 0, 2, 12);
                     break;
                 case 0x47:
                     Bit(Registers.A, 0, 2, 8);
@@ -1683,7 +1682,7 @@ namespace ChichoGB.Core.CPU
                     Bit(Registers.L, 1, 2, 8);
                     break;
                 case 0x4E:
-                    Bit(_ram.LoadU8Bits(Registers.GetHL()), 1, 2, 12);
+                    Bit(_ram.LoadUnsigned8(Registers.GetHL()), 1, 2, 12);
                     break;
                 case 0x4F:
                     Bit(Registers.A, 1, 2, 8);
@@ -1707,7 +1706,7 @@ namespace ChichoGB.Core.CPU
                     Bit(Registers.L, 2, 2, 8);
                     break;
                 case 0x56:
-                    Bit(_ram.LoadU8Bits(Registers.GetHL()), 2, 2, 12);
+                    Bit(_ram.LoadUnsigned8(Registers.GetHL()), 2, 2, 12);
                     break;
                 case 0x57:
                     Bit(Registers.A, 2, 2, 8);
@@ -1731,7 +1730,7 @@ namespace ChichoGB.Core.CPU
                     Bit(Registers.L, 3, 2, 8);
                     break;
                 case 0x5E:
-                    Bit(_ram.LoadU8Bits(Registers.GetHL()), 3, 2, 12);
+                    Bit(_ram.LoadUnsigned8(Registers.GetHL()), 3, 2, 12);
                     break;
                 case 0x5F:
                     Bit(Registers.A, 3, 2, 8);
@@ -1755,7 +1754,7 @@ namespace ChichoGB.Core.CPU
                     Bit(Registers.L, 4, 2, 8);
                     break;
                 case 0x66:
-                    Bit(_ram.LoadU8Bits(Registers.GetHL()), 4, 2, 12);
+                    Bit(_ram.LoadUnsigned8(Registers.GetHL()), 4, 2, 12);
                     break;
                 case 0x67:
                     Bit(Registers.A, 4, 2, 8);
@@ -1779,7 +1778,7 @@ namespace ChichoGB.Core.CPU
                     Bit(Registers.L, 5, 2, 8);
                     break;
                 case 0x6E:
-                    Bit(_ram.LoadU8Bits(Registers.GetHL()), 5, 2, 12);
+                    Bit(_ram.LoadUnsigned8(Registers.GetHL()), 5, 2, 12);
                     break;
                 case 0x6F:
                     Bit(Registers.A, 5, 2, 8);
@@ -1803,7 +1802,7 @@ namespace ChichoGB.Core.CPU
                     Bit(Registers.L, 6, 2, 8);
                     break;
                 case 0x76:
-                    Bit(_ram.LoadU8Bits(Registers.GetHL()), 6, 2, 12);
+                    Bit(_ram.LoadUnsigned8(Registers.GetHL()), 6, 2, 12);
                     break;
                 case 0x77:
                     Bit(Registers.A, 6, 2, 8);
@@ -1827,7 +1826,7 @@ namespace ChichoGB.Core.CPU
                     Bit(Registers.L, 7, 2, 8);
                     break;
                 case 0x7E:
-                    Bit(_ram.LoadU8Bits(Registers.GetHL()), 7, 2, 12);
+                    Bit(_ram.LoadUnsigned8(Registers.GetHL()), 7, 2, 12);
                     break;
                 case 0x7F:
                     Bit(Registers.A, 7, 2, 8);
@@ -1851,7 +1850,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = RES(Registers.L, 0, 2, 8);
                     break;
                 case 0x86:
-                   _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 0, 2, 16));
+                   _ram.StoreUnsigned8(Registers.GetHL(), RES(_ram.LoadUnsigned8(Registers.GetHL()), 0, 2, 16));
                     break;
                 case 0x87:
                     Registers.A = RES(Registers.A, 0, 2, 8);
@@ -1875,7 +1874,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = RES(Registers.L, 1, 2, 8);
                     break;
                 case 0x8E:
-                    _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 1, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), RES(_ram.LoadUnsigned8(Registers.GetHL()), 1, 2, 16));
                     break;
                 case 0x8F:
                     Registers.A = RES(Registers.A, 1, 2, 8);
@@ -1899,7 +1898,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = RES(Registers.L, 2, 2, 8);
                     break;
                 case 0x96:
-                    _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 2, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), RES(_ram.LoadUnsigned8(Registers.GetHL()), 2, 2, 16));
                     break;
                 case 0x97:
                     Registers.A = RES(Registers.A, 2, 2, 8);
@@ -1923,7 +1922,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = RES(Registers.L, 3, 2, 8);
                     break;
                 case 0x9E:
-                    _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 3, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), RES(_ram.LoadUnsigned8(Registers.GetHL()), 3, 2, 16));
                     break;
                 case 0x9F:
                     Registers.A = RES(Registers.A, 3, 2, 8);
@@ -1947,7 +1946,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = RES(Registers.L, 4, 2, 8);
                     break;
                 case 0xA6:
-                    _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 4, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), RES(_ram.LoadUnsigned8(Registers.GetHL()), 4, 2, 16));
                     break;
                 case 0xA7:
                     Registers.A = RES(Registers.A, 4, 2, 8);
@@ -1971,7 +1970,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = RES(Registers.L, 5, 2, 8);
                     break;
                 case 0xAE:
-                    _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 5, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), RES(_ram.LoadUnsigned8(Registers.GetHL()), 5, 2, 16));
                     break;
                 case 0xAF:
                     Registers.A = RES(Registers.A, 5, 2, 8);
@@ -1995,7 +1994,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = RES(Registers.L, 6, 2, 8);
                     break;
                 case 0xB6:
-                    _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 6, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), RES(_ram.LoadUnsigned8(Registers.GetHL()), 6, 2, 16));
                     break;
                 case 0xB7:
                     Registers.A = RES(Registers.A, 6, 2, 8);
@@ -2019,7 +2018,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = RES(Registers.L, 7, 2, 8);
                     break;
                 case 0xBE:
-                    _ram.StoreU8Bits(Registers.GetHL(), RES(_ram.LoadU8Bits(Registers.GetHL()), 7, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), RES(_ram.LoadUnsigned8(Registers.GetHL()), 7, 2, 16));
                     break;
                 case 0xBF:
                     Registers.A = RES(Registers.A, 7, 2, 8);
@@ -2043,7 +2042,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = SET(Registers.L, 0, 2, 8);
                     break;
                 case 0xC6:
-                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 0, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), SET(_ram.LoadUnsigned8(Registers.GetHL()), 0, 2, 16));
                     break;
                 case 0xC7:
                     Registers.A = SET(Registers.A, 0, 2, 8);
@@ -2067,7 +2066,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = SET(Registers.L, 1, 2, 8);
                     break;
                 case 0xCE:
-                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 1, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), SET(_ram.LoadUnsigned8(Registers.GetHL()), 1, 2, 16));
                     break;
                 case 0xCF:
                     Registers.A = SET(Registers.A, 1, 2, 8);
@@ -2091,7 +2090,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = SET(Registers.L, 2, 2, 8);
                     break;
                 case 0xD6:
-                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 2, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), SET(_ram.LoadUnsigned8(Registers.GetHL()), 2, 2, 16));
                     break;
                 case 0xD7:
                     Registers.A = SET(Registers.A, 2, 2, 8);
@@ -2115,7 +2114,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = SET(Registers.L, 3, 2, 8);
                     break;
                 case 0xDE:
-                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 3, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), SET(_ram.LoadUnsigned8(Registers.GetHL()), 3, 2, 16));
                     break;
                 case 0xDF:
                     Registers.A = SET(Registers.A, 3, 2, 8);
@@ -2139,7 +2138,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = SET(Registers.L, 4, 2, 8);
                     break;
                 case 0xE6:
-                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 4, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), SET(_ram.LoadUnsigned8(Registers.GetHL()), 4, 2, 16));
                     break;
                 case 0xE7:
                     Registers.A = SET(Registers.A, 4, 2, 8);
@@ -2163,7 +2162,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = SET(Registers.L, 5, 2, 8);
                     break;
                 case 0xEE:
-                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 5, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), SET(_ram.LoadUnsigned8(Registers.GetHL()), 5, 2, 16));
                     break;
                 case 0xEF:
                     Registers.A = SET(Registers.A, 5, 2, 8);
@@ -2187,7 +2186,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = SET(Registers.L, 6, 2, 8);
                     break;
                 case 0xF6:
-                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 6, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), SET(_ram.LoadUnsigned8(Registers.GetHL()), 6, 2, 16));
                     break;
                 case 0xF7:
                     Registers.A = SET(Registers.A, 6, 2, 8);
@@ -2211,7 +2210,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = SET(Registers.L, 7, 2, 8);
                     break;
                 case 0xFE:
-                    _ram.StoreU8Bits(Registers.GetHL(), SET(_ram.LoadU8Bits(Registers.GetHL()), 7, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), SET(_ram.LoadUnsigned8(Registers.GetHL()), 7, 2, 16));
                     break;
                 case 0xFF:
                     Registers.A = SET(Registers.A, 7, 2, 8);

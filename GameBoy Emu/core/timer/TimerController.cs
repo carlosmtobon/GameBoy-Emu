@@ -8,13 +8,11 @@ namespace ChichoGB.Core.Timer
         public bool InterruptRequest { get; set; }
         public int Frequency { get; set; }
 
-        private int _totalElaspedDiv;
-
         private int _divAccumalator;
 
-        private int _totalElaspedTimer;
-
         private int _timerAccumalator;
+
+        public const int DIV_FREQUENCY = 256;
 
         private readonly Mmu _ram;
 
@@ -29,7 +27,7 @@ namespace ChichoGB.Core.Timer
         {
             IncrementDiv(cpuCycles, halt);
 
-            byte tac = _ram.LoadU8Bits(Mmu.TAC_ADDRESS);
+            byte tac = _ram.LoadUnsigned8(Mmu.TAC_ADDRESS);
            
             if (IsTimerOn(tac))
             {
@@ -54,20 +52,15 @@ namespace ChichoGB.Core.Timer
                     }
                 }
 
-                if (_totalElaspedTimer == 0)
-                {
-                    _totalElaspedTimer = cpuCycles;
-                }
-                _timerAccumalator += halt ? 4 : cpuCycles - _totalElaspedTimer;
-                cpuClockSince += cpuCycles - _totalElaspedTimer;
-                _totalElaspedTimer = cpuCycles;
+                _timerAccumalator += halt ? 4 : cpuCycles;
+                cpuClockSince += cpuCycles;
 
                 if (_timerAccumalator >= Frequency)
                 {
                     totalTimerUpdates++;
                     _timerAccumalator -= Frequency;
-                    byte tma = _ram.LoadU8Bits(Mmu.TMA_ADDRESS);
-                    byte tima = _ram.LoadU8Bits(Mmu.TIMA_ADDRESS);
+                    byte tma = _ram.LoadUnsigned8(Mmu.TMA_ADDRESS);
+                    byte tima = _ram.LoadUnsigned8(Mmu.TIMA_ADDRESS);
                     if (tima + 1 > 0xff)
                     {
                         // enable interrupt;
@@ -78,7 +71,7 @@ namespace ChichoGB.Core.Timer
                         tima++;
                     }
                     
-                    _ram.StoreU8Bits(Mmu.TIMA_ADDRESS, tima);
+                    _ram.StoreUnsigned8(Mmu.TIMA_ADDRESS, tima);
                 }
             }
 
@@ -87,7 +80,7 @@ namespace ChichoGB.Core.Timer
                 byte interruptFlag = _ram.Memory[Mmu.IF_ADDRESS];
                 // set timer overflow
                 interruptFlag = BitUtils.SetBit(interruptFlag, 0x4);
-                _ram.StoreU8Bits(Mmu.IF_ADDRESS, interruptFlag);
+                _ram.StoreUnsigned8(Mmu.IF_ADDRESS, interruptFlag);
                 InterruptRequest = false;
             }
         }
@@ -95,16 +88,15 @@ namespace ChichoGB.Core.Timer
         public int totalDivUpdates;
         private void IncrementDiv(int cpuCycles, bool halt)
         {
-            _divAccumalator += halt ? 4 : cpuCycles - _totalElaspedDiv;
-            _totalElaspedDiv = cpuCycles;
+            _divAccumalator += halt ? 4 : cpuCycles;
 
-            if (_divAccumalator >= 256)
+            if (_divAccumalator >= DIV_FREQUENCY)
             {
                 totalDivUpdates++;
-                _divAccumalator -= 256;
-                byte div = _ram.LoadU8Bits(Mmu.DIV_ADDRESS);
+                _divAccumalator -= DIV_FREQUENCY;
+                byte div = _ram.LoadUnsigned8(Mmu.DIV_ADDRESS);
                 div++;
-                _ram.StoreU8Bits(Mmu.DIV_ADDRESS, div);
+                _ram.StoreUnsigned8(Mmu.DIV_ADDRESS, div);
             }
         }
 

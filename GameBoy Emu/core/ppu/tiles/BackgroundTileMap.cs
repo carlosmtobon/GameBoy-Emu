@@ -23,12 +23,12 @@ namespace GameBoy_Emu.core.ppu
 
         public int GetTileNumber(int address)
         {
-            return _ram.LoadU8Bits(address);
+            return _ram.LoadUnsigned8(address);
         }
 
         public int GetTileNumber(int x, int y)
         {
-            return _ram.LoadU8Bits(BG_MAP_ADDRESS_1 + (y * 32) + x);
+            return _ram.LoadUnsigned8(BG_MAP_ADDRESS_1 + (y * 32) + x);
         }
 
         public Tile GetTile(int tileNumber)
@@ -37,7 +37,7 @@ namespace GameBoy_Emu.core.ppu
             byte[] tileData = new byte[16];
             for (int i = 0; i < 16; i++)
             {
-                tileData[i] = _ram.LoadU8Bits(startAddr + i);
+                tileData[i] = _ram.LoadUnsigned8(startAddr + i);
             }
             return new Tile(startAddr, tileData);
         }
@@ -49,7 +49,7 @@ namespace GameBoy_Emu.core.ppu
             byte[] tileData = new byte[16];
             for (int i = 0; i < 16; i++)
             {
-                tileData[i] = _ram.LoadU8Bits(startAddr + i);
+                tileData[i] = _ram.LoadUnsigned8(startAddr + i);
             }
             return new Tile(startAddr, tileData);
         }
@@ -60,7 +60,7 @@ namespace GameBoy_Emu.core.ppu
             {
                 for (int j = 0; j < 32; j++)
                 {
-                    byte tileNumber = _ram.LoadU8Bits(BG_MAP_ADDRESS_1  + (i * 32) + j);
+                    byte tileNumber = _ram.LoadUnsigned8(BG_MAP_ADDRESS_1  + (i * 32) + j);
                     Tile tile = _tileMap[tileNumber];
                     DisplayTile(tile.Address, tile.TileData);
                 }
@@ -81,7 +81,7 @@ namespace GameBoy_Emu.core.ppu
                 byte[] tileData = new byte[16];
                 for (int i = 0; i < 16; i++)
                 {
-                    tileData[i] = _ram.LoadU8Bits(startAddr + i);
+                    tileData[i] = _ram.LoadUnsigned8(startAddr + i);
                 }
                 _tileMap.Remove(tileNumber);
                 _tileMap.Add(tileNumber, new Tile(startAddr, tileData));

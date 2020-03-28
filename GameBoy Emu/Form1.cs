@@ -32,15 +32,15 @@ namespace ChichoGB
             while (true)
             {
                 cpu.Tick();  
-              //  ppu.Tick(cpu.CpuCyclesTick);
+                ppu.Tick(cpu.CpuTickCycles);
                 
 
                // Console.WriteLine(String.Format("AF: {0:X}\nBC: {1:X}\nDE: {2:X}\nHL: {3:X}\nSP: {4:X}\nPC: {5:X}\n", cpu.Registers.GetAF(), cpu.Registers.GetBC(), cpu.Registers.GetDE(), cpu.Registers.GetHL(), cpu.SP, cpu.PC));
-                var sc = ram.LoadU8Bits(0xff02);
+                var sc = ram.LoadUnsigned8(0xff02);
                 if (sc == 0x81)
                 {
-                    Console.Write((char)ram.LoadU8Bits(0xff01));
-                    ram.StoreU8Bits(0xff02, 0);
+                    Console.Write((char)ram.LoadUnsigned8(0xff01));
+                    ram.StoreUnsigned8(0xff02, 0);
 
                 }
             }
