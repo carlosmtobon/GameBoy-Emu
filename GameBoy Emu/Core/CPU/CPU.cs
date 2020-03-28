@@ -6,7 +6,9 @@ namespace ChichoGB.Core.CPU
 {
     public class Cpu
     {
-        public int CpuCycles { get; set; }
+        public int CpuCycles { get; set; } // total running cpu cycles
+
+        public int CpuCyclesTick { get; set; } // cycle this tick 
         public byte Opcode { get; set; }
         public ushort PC { get; set; }
         public ushort SP { get; set; }
@@ -35,6 +37,7 @@ namespace ChichoGB.Core.CPU
         {
             PC += val;
             CpuCycles += cycles;
+            CpuCyclesTick = cycles;
         }
 
         public void Push(ushort val)
@@ -220,8 +223,8 @@ namespace ChichoGB.Core.CPU
 
         private void ProcessInterrupt()
         {
-            byte interruptFlag = _ram.LoadU8Bits(Mmu.IF_ADDRESS);
-            byte interruptEnable = _ram.LoadU8Bits(Mmu.IE_ADDRESS);
+            byte interruptFlag = _ram.GetIF();
+            byte interruptEnable = _ram.GetIE();
             Interrupt interrupt = InterruptController.Process(interruptFlag, interruptEnable);
             if (interrupt != null)
             {

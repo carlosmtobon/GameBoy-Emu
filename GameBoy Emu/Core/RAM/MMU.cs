@@ -21,6 +21,8 @@ namespace ChichoGB.Core
         public const int TIMA_ADDRESS = 0xFF05;
         public const int TMA_ADDRESS = 0xFF06;
         public const int TAC_ADDRESS = 0xFF07;
+        public const int LY_ADDRESS = 0xFF44;
+        public const int LCDC_STAT = 0xFF41;
 
         public byte[] Memory { get; }
 
@@ -122,6 +124,16 @@ namespace ChichoGB.Core
         public byte GetIF()
         {
             return Memory[IF_ADDRESS];
+        }
+
+        public byte GetLCY()
+        {
+            return Memory[LY_ADDRESS];
+        }
+
+        public byte GetLCDCSTAT()
+        {
+            return Memory[LCDC_STAT];
         }
     }
 }
