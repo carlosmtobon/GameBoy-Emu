@@ -29,7 +29,7 @@ namespace ChichoGB.Core.CPU
             Registers = new Registers();
             InterruptController = new InterruptController();
             Timer = new TimerController(_ram); 
-            PC = 0x100;
+            PC = 0x000;
             SP = 0xFFFE;
         }
 
@@ -1422,7 +1422,7 @@ namespace ChichoGB.Core.CPU
 
         public void Bit(byte val, int bitPosition, ushort bytesRead, int cycles)
         {
-            val = BitUtils.Bit(val, bitPosition);
+            val = BitUtils.GetBit(val, bitPosition);
             Registers.SetZFLag((val == 0));
             Registers.SetNFLag(false);
             Registers.SetHCYFLag(true);

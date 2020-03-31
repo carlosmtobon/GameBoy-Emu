@@ -17,12 +17,21 @@ namespace ChichoGB.Core
         // special register address
         public const int IE_ADDRESS = 0xFFFF;
         public const int IF_ADDRESS = 0xFF0F;
+
         public const int DIV_ADDRESS = 0xFF04;
         public const int TIMA_ADDRESS = 0xFF05;
         public const int TMA_ADDRESS = 0xFF06;
         public const int TAC_ADDRESS = 0xFF07;
+
+        public const int LCDC_ADDRESS = 0xFF40;
+        public const int STAT_ADDRESS = 0xFF41;
+        public const int SCY_ADDRESS = 0xFF42;
+        public const int SCX_ADDRESS = 0xFF43;
         public const int LY_ADDRESS = 0xFF44;
-        public const int LCDC_STAT = 0xFF41;
+        public const int LCY_ADDRESS = 0xFF45;
+        public const int WY_ADDRESS = 0xFF4A;
+        public const int WX_ADDRESS = 0xFF4B;
+
 
         public byte[] Memory { get; }
 
@@ -133,7 +142,7 @@ namespace ChichoGB.Core
 
         public byte LoadLcdcStat()
         {
-            return Memory[LCDC_STAT];
+            return Memory[STAT_ADDRESS];
         }
     }
 }

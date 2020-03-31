@@ -28,7 +28,8 @@ namespace GameBoy_Emu.core.ppu
 
         public int GetTileNumber(int x, int y)
         {
-            return _ram.LoadUnsigned8(BG_MAP_ADDRESS_1 + (y * 32) + x);
+            var addr = BG_MAP_ADDRESS_1 + (y * 32) + x;
+            return _ram.LoadUnsigned8(addr);
         }
 
         public Tile GetTile(int tileNumber)
@@ -56,6 +57,7 @@ namespace GameBoy_Emu.core.ppu
 
         public void DisplayBgMap1()
         {
+            LoadTileMap();
             for (int i = 0; i < 32; i++)
             {
                 for (int j = 0; j < 32; j++)
@@ -96,7 +98,7 @@ namespace GameBoy_Emu.core.ppu
             {
                 byte h = tileData[i];
                 byte l = tileData[i + 1];
-                for (int j = 7; j > 0; j--)
+                for (int j = 8; j > 0; j--)
                 {
                     int pixel = (l >> j) & 1 | (h >> (j - 1) & 2);
 

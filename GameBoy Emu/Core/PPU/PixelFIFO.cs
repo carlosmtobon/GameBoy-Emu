@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameBoy_Emu.core.ppu;
+using System;
 using System.Collections.Generic;
 
 namespace ChichoGB.Core
@@ -7,31 +8,29 @@ namespace ChichoGB.Core
     {
         public PixelFifoState State { get; set; }
         private Queue<PixelData> _pixels;
-        private Mmu _ram;
         public int _fifoAccumalator;
         public const int FIFO_FREQUENCY = 1;
 
         public enum PixelFifoState { PUSHING, IDLE }
-        public PixelFifo(Mmu ram)
+        public PixelFifo()
         {
             _pixels = new Queue<PixelData>();
             State = PixelFifoState.IDLE;
-            _ram = ram;
         }
 
-        public int Process()
+        public int Process(LcdScreen lcdScreen)
         {
             if (State != PixelFifoState.IDLE)
             {
                 if (_pixels.Count <= 8)
                 {
-                    Console.WriteLine("FIFO: IDLE");
+                    //Console.WriteLine("FIFO: IDLE");
                     State = PixelFifoState.IDLE;
                     return 0;
                 }
                 else
                 {
-                    Push();
+                    Push(lcdScreen);
                     return 1;
                 }
             }
@@ -40,7 +39,6 @@ namespace ChichoGB.Core
                 Idle();
                 return 0;
             }
-           
         }
 
         private void Idle()
@@ -51,13 +49,10 @@ namespace ChichoGB.Core
             }
         }
 
-        public int pushTimes; 
-        private void Push()
+        private void Push(LcdScreen lcdScreen)
         {
-            pushTimes++;
-            Console.WriteLine("FIFO: Push Pixel");
-            // push pixel to display
-            _pixels.Dequeue();
+            var pix = _pixels.Dequeue();
+            lcdScreen.Add(pix.ColorData);
         }
 
         public void LoadFifo(Fetcher fetcher)
@@ -67,6 +62,13 @@ namespace ChichoGB.Core
                 _pixels.Enqueue(pixel);
             }
             fetcher.Pixels.Clear();
+            fetcher.State = Fetcher.FetcherState.READ_TILE_NUM;
+            State = PixelFifo.PixelFifoState.PUSHING;
+        }
+
+        public void Reset()
+        {
+            _pixels.Clear();
         }
     }
 }

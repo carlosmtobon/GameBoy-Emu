@@ -20,11 +20,11 @@
         public InterruptController()
         {
             IME = false;
-            _vblank = new Interrupt(0x40, VBLANK_FLAG);
-            _lcdc = new Interrupt(0x48, LCDC_FLAG);
-            _timer = new Interrupt(0x50, TIMER_FLAG);
-            _serial = new Interrupt(0x58, SERIAL_FLAG);
-            _joypad = new Interrupt(0x60, JOYPAD_FLAG);
+            _vblank = new Interrupt(0x40, VBLANK_FLAG, Interrupt.InterruptType.VBLANK);
+            _lcdc = new Interrupt(0x48, LCDC_FLAG, Interrupt.InterruptType.LCDC);
+            _timer = new Interrupt(0x50, TIMER_FLAG, Interrupt.InterruptType.TIMER);
+            _serial = new Interrupt(0x58, SERIAL_FLAG, Interrupt.InterruptType.SERIAL);
+            _joypad = new Interrupt(0x60, JOYPAD_FLAG, Interrupt.InterruptType.JOYPAD);
         }
 
         public bool isVBlankSet(byte interruptFlag)

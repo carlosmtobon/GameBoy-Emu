@@ -1,4 +1,5 @@
 ﻿using ChichoGB.Core.CPU;
+using ChichoGB.Core.CPU.Interrupts;
 using System;
 
 namespace ChichoGB.Core.Timer
@@ -79,7 +80,7 @@ namespace ChichoGB.Core.Timer
             {
                 byte interruptFlag = _ram.Memory[Mmu.IF_ADDRESS];
                 // set timer overflow
-                interruptFlag = BitUtils.SetBit(interruptFlag, 0x4);
+                interruptFlag = BitUtils.SetBit(interruptFlag, InterruptController.TIMER_FLAG);
                 _ram.StoreUnsigned8(Mmu.IF_ADDRESS, interruptFlag);
                 InterruptRequest = false;
             }

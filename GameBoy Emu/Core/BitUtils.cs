@@ -29,14 +29,14 @@
             return (ushort)(highByte << 8 | lowByte);
         }
 
-        public static byte Bit(byte value, int bitPosition)
+        public static byte GetBit(byte value, int bitPosition)
         {
             return (byte)((value >> bitPosition) & 1);
         }
 
         public static bool isBitSet(byte value, int bitPosition)
         {
-            return Bit(value, bitPosition) == 1;
+            return GetBit(value, bitPosition) == 1;
         }
     }
 }
