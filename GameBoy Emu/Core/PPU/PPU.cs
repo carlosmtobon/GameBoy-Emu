@@ -24,13 +24,13 @@ namespace ChichoGB.Core
 
         public enum PpuStatus { HBLANK, VBLANK, OAM_SEARCH, PIXEL_TRANSFER };
 
-        public Ppu(Mmu ram)
+        public Ppu(Mmu ram, LcdScreen screen)
         {
             _ram = ram;
             _bgTileMap = new BackgroundTileMap(ram);
             _pixelFifo = new PixelFifo();
             _fetcher = new Fetcher(_bgTileMap, ram);
-            LcdScreen = new LcdScreen(160, 144, 1);
+            LcdScreen = screen;
             Status = PpuStatus.OAM_SEARCH;
         }
 
@@ -127,7 +127,7 @@ namespace ChichoGB.Core
                 clocks -= VBLANK_CYCLES;
                 if (LcdScreen.Y > (LcdScreen.Height + 9))
                 {
-                    LcdScreen.DisplayScreen();
+                   // LcdScreen.DisplayScreen();
                     LcdScreen.Y = 0;
                     Status = PpuStatus.OAM_SEARCH;
                 }
