@@ -31,37 +31,32 @@ namespace ChichoGB.Core
         {
             if (State == FetcherState.READ_TILE_NUM)
             {
-                //Console.WriteLine("Fetch: Tile Num");
+                var scx = _ram.LoadUnsigned8(Mmu.SCX_ADDRESS) % lcdScreen.Width;
+                var scy = _ram.LoadUnsigned8(Mmu.SCY_ADDRESS) % lcdScreen.Height;
 
-                var scx = _ram.LoadUnsigned8(Mmu.SCX_ADDRESS);
-                var scy = _ram.LoadUnsigned8(Mmu.SCY_ADDRESS);
 
-                _currentBgTileAddress = BackgroundTileMap.BG_MAP_ADDRESS_1 + ((((lcdScreen.Y + scy)/8) * 32) + ((_currentBgTile/8) + scx));
+                _currentBgTileAddress = BackgroundTileMap.BG_MAP_ADDRESS_1 + (((((lcdScreen.Y) / 8) + scy) * 32) + ((_currentBgTile / 8) + scx));
                 _currentBgTile += 8;
 
                 if (lcdScreen.X > lcdScreen.Width)
                 {
                     _currentBgTile = 0;
                 }
-                   
+
                 int tileNum = _bgTileMap.GetTileNumber(_currentBgTileAddress);
 
-                // Console.WriteLine(String.Format("Tile Map Address: {0:X}",_currentBgTileAddress));
                 _tile = _bgTileMap.GetTile(tileNum);
                 State = FetcherState.READ_DATA_0;
             }
             else if (State == FetcherState.READ_DATA_0)
             {
-                //Console.WriteLine("Fetch: Data0");
                 State = FetcherState.READ_DATA_1;
             }
             else if (State == FetcherState.READ_DATA_1)
             {
-                Pixels = _tile.GetRowPixelData(lcdScreen.Y%8);
-                
-                State = FetcherState.TRANSFER_READY;
+                Pixels = _tile.GetRowPixelData(lcdScreen.Y % 8);
 
-                //Console.WriteLine("Fetch: Idle");
+                State = FetcherState.TRANSFER_READY;
             }
         }
 

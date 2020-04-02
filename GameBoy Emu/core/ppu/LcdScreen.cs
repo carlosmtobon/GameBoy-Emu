@@ -13,7 +13,9 @@ namespace GameBoy_Emu.core.ppu
         public int Scale { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
-        public int[][] _screenData;
+        public int[][] pixels;
+
+        public bool Draw;
 
         public LcdScreen(int width, int height, int scale)
         {
@@ -25,10 +27,10 @@ namespace GameBoy_Emu.core.ppu
 
         public void InitScreen()
         {
-            _screenData = new int[Height][];
-            for (int row = 0; row < _screenData.Length; row++)
+            pixels = new int[Height][];
+            for (int row = 0; row < pixels.Length; row++)
             {
-                _screenData[row] = new int[Width];
+                pixels[row] = new int[Width];
             }
         }
         
@@ -36,7 +38,7 @@ namespace GameBoy_Emu.core.ppu
         {
             if (X < Width && Y < Height)
             {
-                _screenData[Y][X] = color;
+                pixels[Y][X] = color;
             }
             X++;
         }
@@ -47,7 +49,7 @@ namespace GameBoy_Emu.core.ppu
             {
                 for (int col = 0; col < Width; col++)
                 {
-                    Console.Write(_screenData[row][col] == 0 ? ' ' : '%');
+                    Console.Write(pixels[row][col] == 0 ? ' ' : '%');
                 }
                 Console.WriteLine();
             }

@@ -125,9 +125,11 @@ namespace ChichoGB.Core
 
                 IncrementLy();
                 clocks -= VBLANK_CYCLES;
+               
                 if (LcdScreen.Y > (LcdScreen.Height + 9))
                 {
-                   // LcdScreen.DisplayScreen();
+                    LcdScreen.Draw = true;
+                    //LcdScreen.DisplayScreen();
                     LcdScreen.Y = 0;
                     Status = PpuStatus.OAM_SEARCH;
                 }
