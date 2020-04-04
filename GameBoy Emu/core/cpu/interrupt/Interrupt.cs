@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ChichoGB.Core.CPU.Interrupts
+﻿namespace ChichoGB.Core.CPU.Interrupts
 {
     public class Interrupt
     {
@@ -12,7 +6,7 @@ namespace ChichoGB.Core.CPU.Interrupts
         public int Flag { get; set; }
         public InterruptType Type { get; set; }
         public enum InterruptType { VBLANK, LCDC, TIMER, SERIAL, JOYPAD }
-        
+
         public Interrupt(ushort address, int flag, InterruptType type)
         {
             Address = address;

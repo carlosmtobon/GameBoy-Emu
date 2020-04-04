@@ -1,9 +1,6 @@
 ﻿using ChichoGB.Core;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameBoy_Emu.core.ppu
 {
@@ -13,7 +10,7 @@ namespace GameBoy_Emu.core.ppu
         public const int TILE_DATA_START = 0x8000;
         private Dictionary<int, Tile> _tileMap;
 
-        private Mmu _ram;
+        private readonly Mmu _ram;
 
         public BackgroundTileMap(Mmu ram)
         {
@@ -62,7 +59,7 @@ namespace GameBoy_Emu.core.ppu
             {
                 for (int j = 0; j < 32; j++)
                 {
-                    byte tileNumber = _ram.LoadUnsigned8(BG_MAP_ADDRESS_1  + (i * 32) + j);
+                    byte tileNumber = _ram.LoadUnsigned8(BG_MAP_ADDRESS_1 + (i * 32) + j);
                     Tile tile = _tileMap[tileNumber];
                     DisplayTile(tile.Address, tile.TileData);
                 }
@@ -103,13 +100,24 @@ namespace GameBoy_Emu.core.ppu
                     int pixel = (l >> j) & 1 | (h >> (j - 1) & 2);
 
                     if (pixel == 3)
+                    {
                         Console.Write('3');
+                    }
+
                     if (pixel == 2)
+                    {
                         Console.Write('2');
+                    }
+
                     if (pixel == 1)
+                    {
                         Console.Write('1');
+                    }
+
                     if (pixel == 0)
+                    {
                         Console.Write('0');
+                    }
                 }
                 Console.WriteLine("");
 

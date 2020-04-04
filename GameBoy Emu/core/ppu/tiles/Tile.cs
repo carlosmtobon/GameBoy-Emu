@@ -1,9 +1,5 @@
 ﻿using ChichoGB.Core;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameBoy_Emu.core.ppu
 {
@@ -22,7 +18,7 @@ namespace GameBoy_Emu.core.ppu
         {
             Queue<PixelData> pixels = new Queue<PixelData>();
             byte h = TileData[(row * 2)];
-            byte l = TileData[(row * 2)  + 1];
+            byte l = TileData[(row * 2) + 1];
             for (int j = 7; j >= 0; j--)
             {
                 int pixelColor = (l >> j) & 1 | (h >> j & 1);

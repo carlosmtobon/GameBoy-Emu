@@ -1,6 +1,5 @@
 ﻿using ChichoGB.Core.CPU;
 using ChichoGB.Core.CPU.Interrupts;
-using System;
 
 namespace ChichoGB.Core.Timer
 {
@@ -29,7 +28,7 @@ namespace ChichoGB.Core.Timer
             IncrementDiv(cpuCycles, halt);
 
             byte tac = _ram.LoadUnsigned8(Mmu.TAC_ADDRESS);
-           
+
             if (IsTimerOn(tac))
             {
                 if (Frequency == 0)
@@ -67,11 +66,12 @@ namespace ChichoGB.Core.Timer
                         // enable interrupt;
                         InterruptRequest = true;
                         tima = tma;
-                    } else
+                    }
+                    else
                     {
                         tima++;
                     }
-                    
+
                     _ram.StoreUnsigned8(Mmu.TIMA_ADDRESS, tima);
                 }
             }

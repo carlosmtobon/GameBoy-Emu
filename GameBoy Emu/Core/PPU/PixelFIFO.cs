@@ -1,5 +1,4 @@
 ﻿using GameBoy_Emu.core.ppu;
-using System;
 using System.Collections.Generic;
 
 namespace ChichoGB.Core
@@ -7,7 +6,7 @@ namespace ChichoGB.Core
     public class PixelFifo
     {
         public PixelFifoState State { get; set; }
-        private Queue<PixelData> _pixels;
+        private readonly Queue<PixelData> _pixels;
         public int _fifoAccumalator;
         public const int FIFO_FREQUENCY = 1;
 
@@ -56,7 +55,7 @@ namespace ChichoGB.Core
         }
 
         public void LoadFifo(Fetcher fetcher)
-        { 
+        {
             foreach (var pixel in fetcher.Pixels)
             {
                 _pixels.Enqueue(pixel);

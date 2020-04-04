@@ -10,11 +10,11 @@
 
         public bool IME { get; set; }
 
-        private Interrupt _vblank;
-        private Interrupt _lcdc;
-        private Interrupt _timer;
-        private Interrupt _serial;
-        private Interrupt _joypad;
+        private readonly Interrupt _vblank;
+        private readonly Interrupt _lcdc;
+        private readonly Interrupt _timer;
+        private readonly Interrupt _serial;
+        private readonly Interrupt _joypad;
 
 
         public InterruptController()
@@ -54,7 +54,7 @@
 
         public Interrupt Process(byte interruptFlag, byte interruptEnable)
         {
-           return CheckForInterruptRequests(interruptFlag, interruptEnable);
+            return CheckForInterruptRequests(interruptFlag, interruptEnable);
         }
 
         private Interrupt CheckForInterruptRequests(byte interruptFlag, byte interruptEnable)

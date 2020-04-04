@@ -16,7 +16,7 @@
 
         public static byte GetHighOrderByte(ushort value)
         {
-           return (byte)(value >> 8);
+            return (byte)(value >> 8);
         }
 
         public static byte GetLowOrderByte(ushort value)

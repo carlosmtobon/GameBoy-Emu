@@ -1,5 +1,4 @@
 ﻿using GameBoy_Emu.core.ppu;
-using System;
 using System.Collections.Generic;
 
 namespace ChichoGB.Core
@@ -9,8 +8,8 @@ namespace ChichoGB.Core
         private int _currentBgTileAddress;
         private int _currentBgTile;
         private int _fetchAccumalator;
-        private BackgroundTileMap _bgTileMap;
-        private Mmu _ram;
+        private readonly BackgroundTileMap _bgTileMap;
+        private readonly Mmu _ram;
         public Queue<PixelData> Pixels { get; set; }
         private Tile _tile;
 

@@ -1,15 +1,14 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 namespace ChichoGB.Core
 {
     public class Mmu
     {
-        private byte[] logoBytes = { 0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03,
+        private readonly byte[] logoBytes = { 0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03,
             0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D, 0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00,
             0x0E, 0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E,
             0x0E, 0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E };
-        
+
         private const int RAM_SIZE = 0x10000;
         private const int BIOS_OFFSET = 0;
         private const int ROM_OFFSET = 0x100;
@@ -80,7 +79,7 @@ namespace ChichoGB.Core
         {
             for (int i = 0; i < logoBytes.Length; i++)
             {
-                Memory[0x104 + i] = logoBytes[i]; 
+                Memory[0x104 + i] = logoBytes[i];
             }
         }
 
@@ -99,7 +98,7 @@ namespace ChichoGB.Core
             {
                 fs.Read(Memory, ROM_OFFSET, Memory.Length - ROM_OFFSET);
             }
-        } 
+        }
         public void StoreUnsigned8(int addr, byte value)
         {
             Memory[addr] = value;

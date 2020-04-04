@@ -1,6 +1,5 @@
 ﻿using ChichoGB.Core.CPU.Interrupts;
 using ChichoGB.Core.Timer;
-using System;
 
 namespace ChichoGB.Core.CPU
 {
@@ -14,7 +13,7 @@ namespace ChichoGB.Core.CPU
         public ushort SP { get; set; }
 
         private bool _halt;
-     
+
         internal Registers Registers { get; }
         internal InterruptController InterruptController { get; }
         internal TimerController Timer { get; }
@@ -28,8 +27,8 @@ namespace ChichoGB.Core.CPU
             _ram = ram;
             Registers = new Registers();
             InterruptController = new InterruptController();
-            Timer = new TimerController(_ram); 
-            PC = 0x000;
+            Timer = new TimerController(_ram);
+            PC = 0x100;
             SP = 0xFFFE;
         }
 
@@ -181,24 +180,24 @@ namespace ChichoGB.Core.CPU
         {
             if (Registers.GetNFlag() == 0)
             {  // after an addition, adjust if (half-)carry occurred or if result is out of bounds
-                if (Registers.GetCYFlag() == 1 || Registers.A > 0x99) 
+                if (Registers.GetCYFlag() == 1 || Registers.A > 0x99)
                 {
-                    Registers.A += 0x60; 
-                    Registers.SetCYFLag(true); 
+                    Registers.A += 0x60;
+                    Registers.SetCYFLag(true);
                 }
-                if (Registers.GetHCYFlag() == 1 || (Registers.A & 0x0f) > 0x09) 
-                { 
-                    Registers.A += 0x6; 
+                if (Registers.GetHCYFlag() == 1 || (Registers.A & 0x0f) > 0x09)
+                {
+                    Registers.A += 0x6;
                 }
             }
             else
             {  // after a subtraction, only adjust if (half-)carry occurred
-                if (Registers.GetCYFlag() == 1) 
-                { 
-                    Registers.A -= 0x60; 
+                if (Registers.GetCYFlag() == 1)
+                {
+                    Registers.A -= 0x60;
                 }
-                if (Registers.GetHCYFlag() == 1) 
-                { 
+                if (Registers.GetHCYFlag() == 1)
+                {
                     Registers.A -= 0x6;
                 }
             }
@@ -244,7 +243,11 @@ namespace ChichoGB.Core.CPU
 
         private void ProcessOpcode()
         {
-            if (_halt) return;
+            if (_halt)
+            {
+                return;
+            }
+
             Opcode = _ram.Memory[PC];
 
             switch (Opcode)
@@ -336,8 +339,7 @@ namespace ChichoGB.Core.CPU
                     RLA();
                     break;
                 case 0x18:
-                    PC += (ushort)(_ram.LoadSigned8(PC + 1));
-                    UpdatePCAndCycles(2, 12);
+                    JR();
                     break;
                 case 0x19:
                     AddToHL(Registers.GetDE());
@@ -365,15 +367,7 @@ namespace ChichoGB.Core.CPU
                     break;
                 case 0x20:
                     // JR NZ,i8
-                    if (Registers.GetZFlag() == 0)
-                    {
-                        PC += (ushort)(_ram.LoadSigned8(PC + 1));
-                        UpdatePCAndCycles(2, 12);
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(2, 8);
-                    }
+                    JRNZ();
 
                     break;
                 case 0x21:
@@ -404,15 +398,7 @@ namespace ChichoGB.Core.CPU
                     break;
                 case 0x28:
                     //JR Z,i8 
-                    if (Registers.GetZFlag() == 1)
-                    {
-                        PC += (ushort)(_ram.LoadSigned8(PC + 1));
-                        UpdatePCAndCycles(2, 12);
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(2, 8);
-                    }
+                    JRZ();
                     break;
                 case 0X29:
                     AddToHL(Registers.GetHL());
@@ -441,15 +427,7 @@ namespace ChichoGB.Core.CPU
                     UpdatePCAndCycles(1, 4);
                     break;
                 case 0x30:
-                    if (Registers.GetCYFlag() == 0)
-                    {
-                        PC += (ushort)(_ram.LoadSigned8(PC + 1));
-                        UpdatePCAndCycles(2, 12);
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(2, 8);
-                    }
+                    JRNC();
                     break;
                 case 0x31:
                     SP = _ram.LoadUnsigned16(PC + 1);
@@ -482,15 +460,7 @@ namespace ChichoGB.Core.CPU
                     UpdatePCAndCycles(1, 4);
                     break;
                 case 0x38:
-                    if (Registers.GetCYFlag() == 1)
-                    {
-                        PC += (ushort)(_ram.LoadSigned8(PC + 1));
-                        UpdatePCAndCycles(2, 12);
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(2, 8);
-                    }
+                    JRC();
                     break;
                 case 0x39:
                     AddToHL(SP);
@@ -1195,6 +1165,60 @@ namespace ChichoGB.Core.CPU
             }
         }
 
+        private void JR()
+        {
+            PC += (ushort)(_ram.LoadSigned8(PC + 1));
+            UpdatePCAndCycles(2, 12);
+        }
+
+        private void JRC()
+        {
+            if (Registers.GetCYFlag() == 1)
+            {
+                JR();
+            }
+            else
+            {
+                UpdatePCAndCycles(2, 8);
+            }
+        }
+
+        private void JRNC()
+        {
+            if (Registers.GetCYFlag() == 0)
+            {
+                JR();
+            }
+            else
+            {
+                UpdatePCAndCycles(2, 8);
+            }
+        }
+
+        private void JRZ()
+        {
+            if (Registers.GetZFlag() == 1)
+            {
+                JR();
+            }
+            else
+            {
+                UpdatePCAndCycles(2, 8);
+            }
+        }
+
+        private void JRNZ()
+        {
+            if (Registers.GetZFlag() == 0)
+            {
+                JR();
+            }
+            else
+            {
+                UpdatePCAndCycles(2, 8);
+            }
+        }
+
         private void RST(ushort addr)
         {
             Push((ushort)(PC + 1));
@@ -1229,7 +1253,7 @@ namespace ChichoGB.Core.CPU
         public void ADDSPI8()
         {
             sbyte nextI8 = _ram.LoadSigned8(PC + 1);
-            
+
             Registers.SetZFLag(false);
             Registers.SetNFLag(false);
             ushort lSP = (ushort)(SP + nextI8);
@@ -1850,7 +1874,7 @@ namespace ChichoGB.Core.CPU
                     Registers.L = RES(Registers.L, 0, 2, 8);
                     break;
                 case 0x86:
-                   _ram.StoreUnsigned8(Registers.GetHL(), RES(_ram.LoadUnsigned8(Registers.GetHL()), 0, 2, 16));
+                    _ram.StoreUnsigned8(Registers.GetHL(), RES(_ram.LoadUnsigned8(Registers.GetHL()), 0, 2, 16));
                     break;
                 case 0x87:
                     Registers.A = RES(Registers.A, 0, 2, 8);

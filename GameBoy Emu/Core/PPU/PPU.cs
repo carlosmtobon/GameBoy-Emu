@@ -1,19 +1,14 @@
 ﻿using ChichoGB.Core.CPU.Interrupts;
 using GameBoy_Emu.core.ppu;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ChichoGB.Core
 {
     public class Ppu
     {
-        private Mmu _ram;
-        private BackgroundTileMap _bgTileMap;
-        private PixelFifo _pixelFifo;
-        private Fetcher _fetcher;
+        private readonly Mmu _ram;
+        private readonly BackgroundTileMap _bgTileMap;
+        private readonly PixelFifo _pixelFifo;
+        private readonly Fetcher _fetcher;
         public LcdScreen LcdScreen { get; set; }
         public PpuStatus Status { get; set; }
 
@@ -87,7 +82,7 @@ namespace ChichoGB.Core
                 clocks -= OAM_SEARCH_CYCLES;
                 Status = PpuStatus.PIXEL_TRANSFER;
             }
-        } 
+        }
 
         private void Hblank()
         {
@@ -125,7 +120,7 @@ namespace ChichoGB.Core
 
                 IncrementLy();
                 clocks -= VBLANK_CYCLES;
-               
+
                 if (LcdScreen.Y > (LcdScreen.Height + 9))
                 {
                     LcdScreen.Draw = true;

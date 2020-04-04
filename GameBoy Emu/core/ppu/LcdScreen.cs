@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameBoy_Emu.core.ppu
 {
@@ -33,7 +29,7 @@ namespace GameBoy_Emu.core.ppu
                 pixels[row] = new int[Width];
             }
         }
-        
+
         public void Add(int color)
         {
             if (X < Width && Y < Height)

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ChichoGB.Core
+﻿namespace ChichoGB.Core
 {
     internal class Registers
     {
@@ -27,7 +25,7 @@ namespace ChichoGB.Core
         }
         public void SetAF(ushort value)
         {
-           
+
             A = BitUtils.GetHighOrderByte(value);
             F = BitUtils.GetLowOrderByte(value);
         }
@@ -36,7 +34,7 @@ namespace ChichoGB.Core
         {
             return BitUtils.GetU16(A, F);
         }
-       
+
         public void SetBC(ushort value)
         {
             B = BitUtils.GetHighOrderByte(value);
@@ -96,7 +94,7 @@ namespace ChichoGB.Core
         {
             SetHL((ushort)(GetHL() - val));
         }
-       
+
         public void SetZFLag(bool zSet)
         {
             F = zSet ? BitUtils.SetBit(F, ZERO_FLAG) : BitUtils.ClearBit(F, ZERO_FLAG);
@@ -118,7 +116,7 @@ namespace ChichoGB.Core
 
         public void SetHCYFLag(bool hcySet)
         {
-             F = hcySet ? BitUtils.SetBit(F, HALF_CARRY_FLAG) : BitUtils.ClearBit(F, HALF_CARRY_FLAG);
+            F = hcySet ? BitUtils.SetBit(F, HALF_CARRY_FLAG) : BitUtils.ClearBit(F, HALF_CARRY_FLAG);
         }
         public byte GetHCYFlag()
         {
@@ -133,6 +131,6 @@ namespace ChichoGB.Core
             return (byte)((F & FULL_CARRY_FLAG) >> 4);
         }
 
-        
+
     }
 }
