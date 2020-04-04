@@ -1,12 +1,13 @@
 ﻿using ChichoGB.Core.CPU.Interrupts;
 using GameBoy_Emu.core.ppu;
+using GameBoy_Emu.core.ppu.oam;
 
 namespace ChichoGB.Core
 {
     public class Ppu
     {
         private readonly Mmu _ram;
-        private readonly BackgroundTileMap _bgTileMap;
+        private readonly BgTileMapManager _bgTileMapManager;
         private readonly PixelFifo _pixelFifo;
         private readonly Fetcher _fetcher;
         public LcdScreen LcdScreen { get; set; }
@@ -22,9 +23,9 @@ namespace ChichoGB.Core
         public Ppu(Mmu ram, LcdScreen screen)
         {
             _ram = ram;
-            _bgTileMap = new BackgroundTileMap(ram);
+            _bgTileMapManager = new BgTileMapManager(ram);
             _pixelFifo = new PixelFifo();
-            _fetcher = new Fetcher(_bgTileMap, ram);
+            _fetcher = new Fetcher(_bgTileMapManager, ram);
             LcdScreen = screen;
             Status = PpuStatus.OAM_SEARCH;
         }
@@ -52,6 +53,24 @@ namespace ChichoGB.Core
                 Vblank();
             }
         }
+
+        private void OamSearch()
+        {
+            if (clocks >= OAM_SEARCH_CYCLES)
+            {
+                clocks -= OAM_SEARCH_CYCLES;
+                Status = PpuStatus.PIXEL_TRANSFER;
+
+                byte lcdc = _ram.LoadLcdc();
+                int spriteHeight = 8;
+                if (BitUtils.GetBit(lcdc, 2) == 1)
+                {
+                    spriteHeight = 16;
+                }
+                _bgTileMapManager.FindVisibleSprites(LcdScreen.Y, spriteHeight);
+            }
+        }
+
         private void PixelTransfer(int cpuCycles)
         {
             while (cpuCycles > 0)
@@ -75,20 +94,11 @@ namespace ChichoGB.Core
             }
         }
 
-        private void OamSearch()
-        {
-            if (clocks >= OAM_SEARCH_CYCLES)
-            {
-                clocks -= OAM_SEARCH_CYCLES;
-                Status = PpuStatus.PIXEL_TRANSFER;
-            }
-        }
-
         private void Hblank()
         {
             if (clocks >= HBLANK_CYCLES)
             {
-                byte stat = GetLcdcStat();
+                byte stat = _ram.LoadStat();
                 if (!BitUtils.isBitSet(stat, 3))
                 {
                     SetHblankInterrupt(stat, 0x8);
@@ -112,7 +122,7 @@ namespace ChichoGB.Core
         {
             if (clocks >= VBLANK_CYCLES)
             {
-                byte stat = GetLcdcStat();
+                byte stat = _ram.LoadStat();
                 if (!BitUtils.isBitSet(stat, 4))
                 {
                     SetVblankInterrupt(stat, 0x11);
@@ -124,7 +134,6 @@ namespace ChichoGB.Core
                 if (LcdScreen.Y > (LcdScreen.Height + 9))
                 {
                     LcdScreen.Draw = true;
-                    //LcdScreen.DisplayScreen();
                     LcdScreen.Y = 0;
                     Status = PpuStatus.OAM_SEARCH;
                 }
@@ -151,11 +160,5 @@ namespace ChichoGB.Core
             _ram.StoreUnsigned8(Mmu.IF_ADDRESS, interruptFlag);
             _ram.StoreUnsigned8(Mmu.STAT_ADDRESS, BitUtils.SetBit(stat, flag));
         }
-
-        public byte GetLcdcStat()
-        {
-            return _ram.LoadLcdcStat();
-        }
-
     }
 }

@@ -6,7 +6,6 @@ namespace ChichoGB.Core.CPU
     public class Cpu
     {
         public int CpuCycles { get; set; } // total running cpu cycles
-
         public int CpuTickCycles { get; set; } // cycle this tick 
         public byte Opcode { get; set; }
         public ushort PC { get; set; }
@@ -28,7 +27,7 @@ namespace ChichoGB.Core.CPU
             Registers = new Registers();
             InterruptController = new InterruptController();
             Timer = new TimerController(_ram);
-            PC = 0x100;
+            PC = 0x000;
             SP = 0xFFFE;
         }
 

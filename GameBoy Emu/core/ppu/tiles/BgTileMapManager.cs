@@ -1,21 +1,40 @@
 ﻿using ChichoGB.Core;
+using GameBoy_Emu.core.ppu.oam;
 using System;
 using System.Collections.Generic;
 
 namespace GameBoy_Emu.core.ppu
 {
-    public class BackgroundTileMap
+    public class BgTileMapManager
     {
         public const int BG_MAP_ADDRESS_1 = 0x9800;
-        public const int TILE_DATA_START = 0x8000;
+        public const int BG_MAP_ADDRESS_2 = 0x9C00;
+
+        public const int TILE_DATA_START_1 = 0x8000;
+        public const int TILE_DATA_START_2 = 0x8800;
+
+        private int _bgTileAddr;
         private Dictionary<int, Tile> _tileMap;
+        private OamEntryManager _oamEntryManager;
 
         private readonly Mmu _ram;
 
-        public BackgroundTileMap(Mmu ram)
+        public BgTileMapManager(Mmu ram)
         {
             _ram = ram;
             _tileMap = new Dictionary<int, Tile>();
+            _oamEntryManager = new OamEntryManager(ram);
+        }
+
+        public int GetBgTileAddr()
+        {
+            byte lcdc = _ram.LoadLcdc();
+            int tileMapAddr = BgTileMapManager.BG_MAP_ADDRESS_1;
+            if (BitUtils.isBitSet(lcdc, 3))
+            {
+                tileMapAddr = BgTileMapManager.BG_MAP_ADDRESS_2;
+            }
+            return tileMapAddr;
         }
 
         public int GetTileNumber(int address)
@@ -31,7 +50,7 @@ namespace GameBoy_Emu.core.ppu
 
         public Tile GetTile(int tileNumber)
         {
-            int startAddr = TILE_DATA_START + (tileNumber * 16);
+            int startAddr = TILE_DATA_START_1 + (tileNumber * 16);
             byte[] tileData = new byte[16];
             for (int i = 0; i < 16; i++)
             {
@@ -43,7 +62,7 @@ namespace GameBoy_Emu.core.ppu
         public Tile GetTile(int x, int y)
         {
             int tileNumber = GetTileNumber(x, y);
-            int startAddr = TILE_DATA_START + (tileNumber * 16);
+            int startAddr = TILE_DATA_START_1 + (tileNumber * 16);
             byte[] tileData = new byte[16];
             for (int i = 0; i < 16; i++)
             {
@@ -76,7 +95,7 @@ namespace GameBoy_Emu.core.ppu
             int tileNumber = 0;
             for (int tilesToLoad = 0; tilesToLoad < 128 * 3; tilesToLoad++)
             {
-                int startAddr = TILE_DATA_START + (tilesToLoad * 16);
+                int startAddr = TILE_DATA_START_1 + (tilesToLoad * 16);
                 byte[] tileData = new byte[16];
                 for (int i = 0; i < 16; i++)
                 {
@@ -86,6 +105,11 @@ namespace GameBoy_Emu.core.ppu
                 _tileMap.Add(tileNumber, new Tile(startAddr, tileData));
                 tileNumber++;
             }
+        }
+
+        public void FindVisibleSprites(int y, int spriteHeight)
+        {
+            _oamEntryManager.FindVisibleSprites(y, spriteHeight);
         }
 
         private void DisplayTile(int addr, byte[] tileData)

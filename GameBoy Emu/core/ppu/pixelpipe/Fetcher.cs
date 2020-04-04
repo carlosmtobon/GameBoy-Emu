@@ -8,7 +8,7 @@ namespace ChichoGB.Core
         private int _currentBgTileAddress;
         private int _currentBgTile;
         private int _fetchAccumalator;
-        private readonly BackgroundTileMap _bgTileMap;
+        private readonly BgTileMapManager _bgTileMap;
         private readonly Mmu _ram;
         public Queue<PixelData> Pixels { get; set; }
         private Tile _tile;
@@ -17,9 +17,9 @@ namespace ChichoGB.Core
         public const int FETCHER_FREQUENCY = 2;
 
         public enum FetcherState { READ_TILE_NUM, READ_DATA_0, READ_DATA_1, TRANSFER_READY };
-        public Fetcher(BackgroundTileMap bgTileMap, Mmu ram)
+        public Fetcher(BgTileMapManager bgTileMap, Mmu ram)
         {
-            _currentBgTileAddress = BackgroundTileMap.BG_MAP_ADDRESS_1;
+            _currentBgTileAddress = BgTileMapManager.BG_MAP_ADDRESS_1;
             _bgTileMap = bgTileMap;
             _ram = ram;
             Pixels = new Queue<PixelData>();
@@ -33,8 +33,7 @@ namespace ChichoGB.Core
                 var scx = _ram.LoadUnsigned8(Mmu.SCX_ADDRESS) % lcdScreen.Width;
                 var scy = _ram.LoadUnsigned8(Mmu.SCY_ADDRESS) % lcdScreen.Height;
 
-
-                _currentBgTileAddress = BackgroundTileMap.BG_MAP_ADDRESS_1 + (((((lcdScreen.Y) / 8) + scy) * 32) + ((_currentBgTile / 8) + scx));
+                _currentBgTileAddress = _bgTileMap.GetBgTileAddr() + (((((lcdScreen.Y) / 8) + scy) * 32) + ((_currentBgTile / 8) + scx));
                 _currentBgTile += 8;
 
                 if (lcdScreen.X > lcdScreen.Width)

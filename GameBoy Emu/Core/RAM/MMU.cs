@@ -31,7 +31,6 @@ namespace ChichoGB.Core
         public const int WY_ADDRESS = 0xFF4A;
         public const int WX_ADDRESS = 0xFF4B;
 
-
         public byte[] Memory { get; }
 
         public Mmu()
@@ -139,9 +138,14 @@ namespace ChichoGB.Core
             return Memory[LY_ADDRESS];
         }
 
-        public byte LoadLcdcStat()
+        public byte LoadStat()
         {
             return Memory[STAT_ADDRESS];
+        }
+
+        public byte LoadLcdc()
+        {
+            return Memory[LCDC_ADDRESS];
         }
     }
 }
