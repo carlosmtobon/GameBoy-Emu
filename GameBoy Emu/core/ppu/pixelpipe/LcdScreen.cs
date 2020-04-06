@@ -9,7 +9,7 @@ namespace GameBoy_Emu.core.ppu
         public int Scale { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
-        public int[][] pixels;
+        public int[][] Pixels { get; set; }
 
         public bool Draw;
 
@@ -23,10 +23,10 @@ namespace GameBoy_Emu.core.ppu
 
         public void InitScreen()
         {
-            pixels = new int[Height][];
-            for (int row = 0; row < pixels.Length; row++)
+            Pixels = new int[Height][];
+            for (int row = 0; row < Pixels.Length; row++)
             {
-                pixels[row] = new int[Width];
+                Pixels[row] = new int[Width];
             }
         }
 
@@ -34,7 +34,7 @@ namespace GameBoy_Emu.core.ppu
         {
             if (X < Width && Y < Height)
             {
-                pixels[Y][X] = color;
+                Pixels[Y][X] = color;
             }
             X++;
         }
@@ -45,7 +45,7 @@ namespace GameBoy_Emu.core.ppu
             {
                 for (int col = 0; col < Width; col++)
                 {
-                    Console.Write(pixels[row][col] == 0 ? ' ' : '%');
+                    Console.Write(Pixels[row][col] == 0 ? ' ' : '%');
                 }
                 Console.WriteLine();
             }

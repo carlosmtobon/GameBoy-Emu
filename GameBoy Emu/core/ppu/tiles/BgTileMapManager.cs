@@ -11,9 +11,8 @@ namespace GameBoy_Emu.core.ppu
         public const int BG_MAP_ADDRESS_2 = 0x9C00;
 
         public const int TILE_DATA_START_1 = 0x8000;
-        public const int TILE_DATA_START_2 = 0x8800;
+        public const int TILE_DATA_START_2 = 0x9000;
 
-        private int _bgTileAddr;
         private Dictionary<int, Tile> _tileMap;
         private OamEntryManager _oamEntryManager;
 
@@ -28,9 +27,8 @@ namespace GameBoy_Emu.core.ppu
 
         public int GetBgTileAddr()
         {
-            byte lcdc = _ram.LoadLcdc();
             int tileMapAddr = BgTileMapManager.BG_MAP_ADDRESS_1;
-            if (BitUtils.isBitSet(lcdc, 3))
+            if (BitUtils.isBitSet(_ram.LoadLcdc(), 3))
             {
                 tileMapAddr = BgTileMapManager.BG_MAP_ADDRESS_2;
             }
@@ -42,27 +40,14 @@ namespace GameBoy_Emu.core.ppu
             return _ram.LoadUnsigned8(address);
         }
 
-        public int GetTileNumber(int x, int y)
-        {
-            var addr = BG_MAP_ADDRESS_1 + (y * 32) + x;
-            return _ram.LoadUnsigned8(addr);
-        }
-
         public Tile GetTile(int tileNumber)
         {
-            int startAddr = TILE_DATA_START_1 + (tileNumber * 16);
-            byte[] tileData = new byte[16];
-            for (int i = 0; i < 16; i++)
+            int tileDataStart = TILE_DATA_START_1;
+            if (!BitUtils.isBitSet(_ram.LoadLcdc(), 4))
             {
-                tileData[i] = _ram.LoadUnsigned8(startAddr + i);
+                tileDataStart = TILE_DATA_START_2;
             }
-            return new Tile(startAddr, tileData);
-        }
-
-        public Tile GetTile(int x, int y)
-        {
-            int tileNumber = GetTileNumber(x, y);
-            int startAddr = TILE_DATA_START_1 + (tileNumber * 16);
+            int startAddr = tileDataStart + ((tileNumber > 127 ? (sbyte)tileNumber : tileNumber) * 16);
             byte[] tileData = new byte[16];
             for (int i = 0; i < 16; i++)
             {

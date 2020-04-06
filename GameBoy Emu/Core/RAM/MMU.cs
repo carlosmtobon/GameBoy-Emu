@@ -28,6 +28,7 @@ namespace ChichoGB.Core
         public const int SCX_ADDRESS = 0xFF43;
         public const int LY_ADDRESS = 0xFF44;
         public const int LCY_ADDRESS = 0xFF45;
+        public const int BGP_ADDRESS = 0xFF47;
         public const int WY_ADDRESS = 0xFF4A;
         public const int WX_ADDRESS = 0xFF4B;
 

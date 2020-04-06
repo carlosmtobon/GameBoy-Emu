@@ -27,7 +27,7 @@ namespace ChichoGB.Core.CPU
             Registers = new Registers();
             InterruptController = new InterruptController();
             Timer = new TimerController(_ram);
-            PC = 0x000;
+            PC = 0x100;
             SP = 0xFFFE;
         }
 
@@ -229,7 +229,7 @@ namespace ChichoGB.Core.CPU
                 {
                     _halt = false;
                     InterruptController.IME = false;
-                    _ram.StoreUnsigned8(Mmu.IF_ADDRESS, BitUtils.ClearBit(interruptFlag, interrupt.Flag));
+                    _ram.StoreUnsigned8(Mmu.IF_ADDRESS, BitUtils.ClearBitsWithMask(interruptFlag, interrupt.Flag));
                     Push(PC);
                     PC = interrupt.Address;
                 }
@@ -1454,14 +1454,14 @@ namespace ChichoGB.Core.CPU
 
         public byte RES(byte val, byte bitToClear, ushort bytesRead, int cycles)
         {
-            val = BitUtils.ClearBit(val, (byte)(1 << bitToClear));
+            val = BitUtils.ClearBit(val,  bitToClear);
             UpdatePCAndCycles(bytesRead, cycles);
             return val;
         }
 
         public byte SET(byte val, byte bitToSet, ushort bytesRead, int cycles)
         {
-            val = BitUtils.SetBit(val, (byte)(1 << bitToSet));
+            val = BitUtils.SetBit(val, bitToSet);
             UpdatePCAndCycles(bytesRead, cycles);
             return val;
         }

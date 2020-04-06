@@ -17,11 +17,11 @@ namespace GameBoy_Emu.core.ppu
         public Queue<PixelData> GetRowPixelData(int row)
         {
             Queue<PixelData> pixels = new Queue<PixelData>();
-            byte h = TileData[(row * 2)];
-            byte l = TileData[(row * 2) + 1];
+            byte lsb = TileData[(row * 2)];
+            byte msb = TileData[(row * 2) + 1];
             for (int j = 7; j >= 0; j--)
             {
-                int pixelColor = (l >> j) & 1 | (h >> j & 1);
+                int pixelColor = (msb >> j) & 1 | (((lsb >> j) & 1) << 1);
                 PixelData pixel = new PixelData();
                 pixel.ColorData = pixelColor;
                 pixel.Type = PixelData.PixelType.BG;

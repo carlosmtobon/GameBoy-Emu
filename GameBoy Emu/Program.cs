@@ -28,7 +28,7 @@ namespace ChichoGB
             InitSDL(display, out renderer, out rect);
 
             bool running = true;
-            cpu.CpuCycles = 23440332;
+           // cpu.CpuCycles = 23440332;
 
             // var sw = new StreamWriter("emu.log");
             while (running)
@@ -74,7 +74,6 @@ namespace ChichoGB
 
             if (display.Draw)
             {
-
                 display.Draw = false;
                 for (int row = 0; row < ppu.LcdScreen.Height; row++)
                 {
@@ -83,13 +82,21 @@ namespace ChichoGB
                         rect.x = col * display.Scale;
                         rect.y = row * display.Scale;
 
-                        if (ppu.LcdScreen.pixels[row][col] == 1)
+                        if (ppu.LcdScreen.Pixels[row][col] == 1)
+                        {
+                            SDL.SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+                        }
+                        else if (ppu.LcdScreen.Pixels[row][col] == 2)
+                        {
+                            SDL.SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                        }
+                        else if (ppu.LcdScreen.Pixels[row][col] == 3)
                         {
                             SDL.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                         }
                         else
                         {
-                            SDL.SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                            SDL.SDL_SetRenderDrawColor(renderer, 211, 211, 211, 255);
                         }
 
                         SDL.SDL_RenderFillRect(renderer, ref rect);
@@ -97,6 +104,7 @@ namespace ChichoGB
                 }
 
                 SDL.SDL_RenderPresent(renderer);
+                SDL.SDL_Delay(16);
             }
 
             var sc = ram.LoadUnsigned8(0xff02);
@@ -107,6 +115,7 @@ namespace ChichoGB
 
             }
 
+            //SDL.SDL_Delay(1);
             return sdlEvent;
         }
 
@@ -114,13 +123,14 @@ namespace ChichoGB
         {
             var ram = new Mmu();
             //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\testGame.gb");
-             //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\07-jr,jp,call,ret,rst.gb");
-             //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\08-misc instrs.gb");
+            //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\07-jr,jp,call,ret,rst.gb");
+            //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\08-misc instrs.gb");
             //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\03-op sp,hl.gb");
 
             //passed
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
-            ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\DMG_ROM.bin");
+             ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
+            //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
+            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\DMG_ROM.bin");
             //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\cpu_instrs.gb");
             //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\01-special.gb");
             //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\02-interrupts.gb");

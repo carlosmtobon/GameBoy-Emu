@@ -53,10 +53,10 @@ namespace GameBoy_Emu.core.ppu.oam
 
                 if (sprite.XPos != 0 && currentLine + 16 >= sprite.YPos && currentLine + 16 < sprite.YPos + spriteHeight)
                 {
-                    Sprites.Add(sprite);
+                    VisibleSprites.Add(sprite);
                 }
 
-                if (Sprites.Count == 10) break;
+                if (VisibleSprites.Count == 10) break;
             }
         }
     }

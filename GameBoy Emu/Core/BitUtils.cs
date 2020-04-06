@@ -2,15 +2,27 @@
 {
     public static class BitUtils
     {
+        public static byte ClearBitsWithMask(byte val, int mask)
+        {
+            val &= (byte)~(mask);
+            return val;
+        }
+
         public static byte ClearBit(byte val, int bitToClear)
         {
-            val &= (byte)~(bitToClear);
+            val &= (byte)~(1 << bitToClear);
+            return val;
+        }
+
+        public static byte SetBitsWithMask(byte val, int mask)
+        {
+            val |= (byte)(mask);
             return val;
         }
 
         public static byte SetBit(byte val, int bitToSet)
         {
-            val |= (byte)(bitToSet);
+            val |= (byte)(1 << bitToSet);
             return val;
         }
 

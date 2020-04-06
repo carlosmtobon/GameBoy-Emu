@@ -97,7 +97,7 @@
 
         public void SetZFLag(bool zSet)
         {
-            F = zSet ? BitUtils.SetBit(F, ZERO_FLAG) : BitUtils.ClearBit(F, ZERO_FLAG);
+            F = zSet ? BitUtils.SetBitsWithMask(F, ZERO_FLAG) : BitUtils.ClearBitsWithMask(F, ZERO_FLAG);
         }
 
         public byte GetZFlag()
@@ -106,7 +106,7 @@
         }
         public void SetNFLag(bool nSet)
         {
-            F = nSet ? BitUtils.SetBit(F, SUBTRACT_FLAG) : BitUtils.ClearBit(F, SUBTRACT_FLAG);
+            F = nSet ? BitUtils.SetBitsWithMask(F, SUBTRACT_FLAG) : BitUtils.ClearBitsWithMask(F, SUBTRACT_FLAG);
         }
 
         public byte GetNFlag()
@@ -116,7 +116,7 @@
 
         public void SetHCYFLag(bool hcySet)
         {
-            F = hcySet ? BitUtils.SetBit(F, HALF_CARRY_FLAG) : BitUtils.ClearBit(F, HALF_CARRY_FLAG);
+            F = hcySet ? BitUtils.SetBitsWithMask(F, HALF_CARRY_FLAG) : BitUtils.ClearBitsWithMask(F, HALF_CARRY_FLAG);
         }
         public byte GetHCYFlag()
         {
@@ -124,7 +124,7 @@
         }
         public void SetCYFLag(bool cySet)
         {
-            F = cySet ? BitUtils.SetBit(F, FULL_CARRY_FLAG) : BitUtils.ClearBit(F, FULL_CARRY_FLAG);
+            F = cySet ? BitUtils.SetBitsWithMask(F, FULL_CARRY_FLAG) : BitUtils.ClearBitsWithMask(F, FULL_CARRY_FLAG);
         }
         public byte GetCYFlag()
         {

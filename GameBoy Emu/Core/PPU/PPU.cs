@@ -1,6 +1,7 @@
 ﻿using ChichoGB.Core.CPU.Interrupts;
 using GameBoy_Emu.core.ppu;
 using GameBoy_Emu.core.ppu.oam;
+using System;
 
 namespace ChichoGB.Core
 {
@@ -36,6 +37,7 @@ namespace ChichoGB.Core
         {
             totalClockPerFrame += cpuCycles;
             clocks += cpuCycles;
+            SetMode();
             if (Status == PpuStatus.OAM_SEARCH)
             {
                 OamSearch();
@@ -54,13 +56,37 @@ namespace ChichoGB.Core
             }
         }
 
+        public void SetMode()
+        {
+            byte stat = _ram.LoadStat();
+            switch (Status)
+            {
+                case PpuStatus.OAM_SEARCH:
+                    stat = BitUtils.SetBit(stat, 1);
+                    stat = BitUtils.ClearBit(stat, 0);
+                    break;
+                case PpuStatus.PIXEL_TRANSFER:
+                    stat = BitUtils.SetBit(stat, 1);
+                    stat = BitUtils.SetBit(stat, 0);
+                    break;
+                case PpuStatus.HBLANK:
+                    stat = BitUtils.ClearBit(stat, 1);
+                    stat = BitUtils.ClearBit(stat, 0);
+                    break;
+                case PpuStatus.VBLANK:
+                    stat = BitUtils.ClearBit(stat, 1);
+                    stat = BitUtils.SetBit(stat, 0);
+                    break;
+            }
+            _ram.StoreUnsigned8(Mmu.STAT_ADDRESS, stat);
+        }
         private void OamSearch()
         {
             if (clocks >= OAM_SEARCH_CYCLES)
             {
                 clocks -= OAM_SEARCH_CYCLES;
                 Status = PpuStatus.PIXEL_TRANSFER;
-
+                SetLcdcInterruptIfNeeded(5);
                 byte lcdc = _ram.LoadLcdc();
                 int spriteHeight = 8;
                 if (BitUtils.GetBit(lcdc, 2) == 1)
@@ -98,12 +124,7 @@ namespace ChichoGB.Core
         {
             if (clocks >= HBLANK_CYCLES)
             {
-                byte stat = _ram.LoadStat();
-                if (!BitUtils.isBitSet(stat, 3))
-                {
-                    SetHblankInterrupt(stat, 0x8);
-                }
-
+                SetLcdcInterruptIfNeeded(3);
                 clocks -= HBLANK_CYCLES;
                 IncrementLy();
                 LcdScreen.X = 0;
@@ -122,16 +143,16 @@ namespace ChichoGB.Core
         {
             if (clocks >= VBLANK_CYCLES)
             {
-                byte stat = _ram.LoadStat();
-                if (!BitUtils.isBitSet(stat, 4))
+                if (LcdScreen.Y == 143)
                 {
-                    SetVblankInterrupt(stat, 0x11);
+                    SetInterrupt(InterruptController.VBLANK_FLAG);
                 }
-
+                SetLcdcInterruptIfNeeded(4);               
+               
                 IncrementLy();
                 clocks -= VBLANK_CYCLES;
-
-                if (LcdScreen.Y > (LcdScreen.Height + 9))
+                byte bgp =_ram.LoadUnsigned8(Mmu.BGP_ADDRESS);
+                if (LcdScreen.Y > 153)
                 {
                     LcdScreen.Draw = true;
                     LcdScreen.Y = 0;
@@ -140,25 +161,26 @@ namespace ChichoGB.Core
             }
         }
 
+        private void SetLcdcInterruptIfNeeded(int bitToCheck)
+        {
+            // set lcdc vblank?
+            byte stat = _ram.LoadStat();
+            if (BitUtils.isBitSet(stat, bitToCheck))
+            {
+                SetInterrupt(InterruptController.LCDC_FLAG);
+            }
+        }
+
         private void IncrementLy()
         {
             _ram.StoreUnsigned8(Mmu.LY_ADDRESS, (byte)LcdScreen.Y++);
         }
 
-        private void SetVblankInterrupt(byte stat, byte flag)
+        private void SetInterrupt(byte flag)
         {
             byte interruptFlag = _ram.Memory[Mmu.IF_ADDRESS];
-            interruptFlag = BitUtils.SetBit(interruptFlag, InterruptController.VBLANK_FLAG);
+            interruptFlag = BitUtils.SetBitsWithMask(interruptFlag, InterruptController.VBLANK_FLAG);
             _ram.StoreUnsigned8(Mmu.IF_ADDRESS, interruptFlag);
-            _ram.StoreUnsigned8(Mmu.STAT_ADDRESS, BitUtils.SetBit(stat, flag));
-        }
-
-        private void SetHblankInterrupt(byte stat, byte flag)
-        {
-            byte interruptFlag = _ram.Memory[Mmu.IF_ADDRESS];
-            interruptFlag = BitUtils.SetBit(interruptFlag, InterruptController.LCDC_FLAG);
-            _ram.StoreUnsigned8(Mmu.IF_ADDRESS, interruptFlag);
-            _ram.StoreUnsigned8(Mmu.STAT_ADDRESS, BitUtils.SetBit(stat, flag));
         }
     }
 }
