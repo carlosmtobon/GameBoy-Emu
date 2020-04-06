@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace ChichoGB.Core
 {
@@ -14,23 +15,24 @@ namespace ChichoGB.Core
         private const int ROM_OFFSET = 0x100;
 
         // special register address
-        public const int IE_ADDRESS = 0xFFFF;
-        public const int IF_ADDRESS = 0xFF0F;
+        public const int IE_REGISTER = 0xFFFF;
+        public const int IF_REGISTER = 0xFF0F;
 
-        public const int DIV_ADDRESS = 0xFF04;
-        public const int TIMA_ADDRESS = 0xFF05;
-        public const int TMA_ADDRESS = 0xFF06;
-        public const int TAC_ADDRESS = 0xFF07;
+        public const int DIV_REGISTER = 0xFF04;
+        public const int TIMA_REGISTER = 0xFF05;
+        public const int TMA_REGISTER = 0xFF06;
+        public const int TAC_REGISTER = 0xFF07;
 
-        public const int LCDC_ADDRESS = 0xFF40;
-        public const int STAT_ADDRESS = 0xFF41;
-        public const int SCY_ADDRESS = 0xFF42;
-        public const int SCX_ADDRESS = 0xFF43;
-        public const int LY_ADDRESS = 0xFF44;
-        public const int LCY_ADDRESS = 0xFF45;
-        public const int BGP_ADDRESS = 0xFF47;
-        public const int WY_ADDRESS = 0xFF4A;
-        public const int WX_ADDRESS = 0xFF4B;
+        public const int LCDC_REGISTER = 0xFF40;
+        public const int STAT_REGISTER = 0xFF41;
+        public const int SCY_REGISTER = 0xFF42;
+        public const int SCX_REGISTER = 0xFF43;
+        public const int LY_REGISTER = 0xFF44;
+        public const int LCY_REGISTER = 0xFF45;
+        public const int DMA_REGISTER = 0xFF46;
+        public const int BGP_REGISTER = 0xFF47;
+        public const int WY_REGISTER = 0xFF4A;
+        public const int WX_REGISTER = 0xFF4B;
 
         public byte[] Memory { get; }
 
@@ -72,7 +74,7 @@ namespace ChichoGB.Core
             Memory[0xFF49] = 0xFF; //OBP1
             Memory[0xFF4A] = 0x00; //WY
             Memory[0xFF4B] = 0x00; //WX
-            Memory[IE_ADDRESS] = 0x00; //IE
+            Memory[IE_REGISTER] = 0x00; //IE
         }
 
         private void LoadNintendoLogo()
@@ -101,6 +103,9 @@ namespace ChichoGB.Core
         }
         public void StoreUnsigned8(int addr, byte value)
         {
+            if (addr == DMA_REGISTER)
+                Console.WriteLine("Dma Transfer");
+                
             Memory[addr] = value;
         }
         public void StoreUnsigned16(int addr, ushort value)
@@ -126,27 +131,27 @@ namespace ChichoGB.Core
 
         public byte LoadInterruptEnable()
         {
-            return Memory[IE_ADDRESS];
+            return Memory[IE_REGISTER];
         }
 
         public byte LoadInterruptFlag()
         {
-            return Memory[IF_ADDRESS];
+            return Memory[IF_REGISTER];
         }
 
         public byte LoadLy()
         {
-            return Memory[LY_ADDRESS];
+            return Memory[LY_REGISTER];
         }
 
         public byte LoadStat()
         {
-            return Memory[STAT_ADDRESS];
+            return Memory[STAT_REGISTER];
         }
 
         public byte LoadLcdc()
         {
-            return Memory[LCDC_ADDRESS];
+            return Memory[LCDC_REGISTER];
         }
     }
 }

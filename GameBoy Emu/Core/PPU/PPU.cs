@@ -78,7 +78,7 @@ namespace ChichoGB.Core
                     stat = BitUtils.SetBit(stat, 0);
                     break;
             }
-            _ram.StoreUnsigned8(Mmu.STAT_ADDRESS, stat);
+            _ram.StoreUnsigned8(Mmu.STAT_REGISTER, stat);
         }
         private void OamSearch()
         {
@@ -151,7 +151,7 @@ namespace ChichoGB.Core
                
                 IncrementLy();
                 clocks -= VBLANK_CYCLES;
-                byte bgp =_ram.LoadUnsigned8(Mmu.BGP_ADDRESS);
+                byte bgp =_ram.LoadUnsigned8(Mmu.BGP_REGISTER);
                 if (LcdScreen.Y > 153)
                 {
                     LcdScreen.Draw = true;
@@ -173,14 +173,14 @@ namespace ChichoGB.Core
 
         private void IncrementLy()
         {
-            _ram.StoreUnsigned8(Mmu.LY_ADDRESS, (byte)LcdScreen.Y++);
+            _ram.StoreUnsigned8(Mmu.LY_REGISTER, (byte)LcdScreen.Y++);
         }
 
         private void SetInterrupt(byte flag)
         {
-            byte interruptFlag = _ram.Memory[Mmu.IF_ADDRESS];
+            byte interruptFlag = _ram.Memory[Mmu.IF_REGISTER];
             interruptFlag = BitUtils.SetBitsWithMask(interruptFlag, InterruptController.VBLANK_FLAG);
-            _ram.StoreUnsigned8(Mmu.IF_ADDRESS, interruptFlag);
+            _ram.StoreUnsigned8(Mmu.IF_REGISTER, interruptFlag);
         }
     }
 }

@@ -31,8 +31,8 @@ namespace ChichoGB.Core
         {
             if (State == FetcherState.READ_TILE_NUM)
             {
-                var scx = _ram.LoadUnsigned8(Mmu.SCX_ADDRESS) % lcdScreen.Width;
-                var scy = _ram.LoadUnsigned8(Mmu.SCY_ADDRESS) % lcdScreen.Height;
+                var scx = _ram.LoadUnsigned8(Mmu.SCX_REGISTER) % lcdScreen.Width;
+                var scy = _ram.LoadUnsigned8(Mmu.SCY_REGISTER) % lcdScreen.Height;
 
                 _currentBgTileAddress = _bgTileMap.GetBgTileAddr() + (((((lcdScreen.Y) / 8) + scy) * 32) + ((_currentBgTile / 8) + scx));
                 _currentBgTile += 8;

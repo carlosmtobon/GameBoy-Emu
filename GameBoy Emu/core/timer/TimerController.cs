@@ -27,7 +27,7 @@ namespace ChichoGB.Core.Timer
         {
             IncrementDiv(cpuCycles, halt);
 
-            byte tac = _ram.LoadUnsigned8(Mmu.TAC_ADDRESS);
+            byte tac = _ram.LoadUnsigned8(Mmu.TAC_REGISTER);
 
             if (IsTimerOn(tac))
             {
@@ -59,8 +59,8 @@ namespace ChichoGB.Core.Timer
                 {
                     totalTimerUpdates++;
                     _timerAccumalator -= Frequency;
-                    byte tma = _ram.LoadUnsigned8(Mmu.TMA_ADDRESS);
-                    byte tima = _ram.LoadUnsigned8(Mmu.TIMA_ADDRESS);
+                    byte tma = _ram.LoadUnsigned8(Mmu.TMA_REGISTER);
+                    byte tima = _ram.LoadUnsigned8(Mmu.TIMA_REGISTER);
                     if (tima + 1 > 0xff)
                     {
                         // enable interrupt;
@@ -72,16 +72,16 @@ namespace ChichoGB.Core.Timer
                         tima++;
                     }
 
-                    _ram.StoreUnsigned8(Mmu.TIMA_ADDRESS, tima);
+                    _ram.StoreUnsigned8(Mmu.TIMA_REGISTER, tima);
                 }
             }
 
             if (InterruptRequest)
             {
-                byte interruptFlag = _ram.Memory[Mmu.IF_ADDRESS];
+                byte interruptFlag = _ram.Memory[Mmu.IF_REGISTER];
                 // set timer overflow
                 interruptFlag = BitUtils.SetBitsWithMask(interruptFlag, InterruptController.TIMER_FLAG);
-                _ram.StoreUnsigned8(Mmu.IF_ADDRESS, interruptFlag);
+                _ram.StoreUnsigned8(Mmu.IF_REGISTER, interruptFlag);
                 InterruptRequest = false;
             }
         }
@@ -95,9 +95,9 @@ namespace ChichoGB.Core.Timer
             {
                 totalDivUpdates++;
                 _divAccumalator -= DIV_FREQUENCY;
-                byte div = _ram.LoadUnsigned8(Mmu.DIV_ADDRESS);
+                byte div = _ram.LoadUnsigned8(Mmu.DIV_REGISTER);
                 div++;
-                _ram.StoreUnsigned8(Mmu.DIV_ADDRESS, div);
+                _ram.StoreUnsigned8(Mmu.DIV_REGISTER, div);
             }
         }
 

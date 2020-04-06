@@ -229,7 +229,7 @@ namespace ChichoGB.Core.CPU
                 {
                     _halt = false;
                     InterruptController.IME = false;
-                    _ram.StoreUnsigned8(Mmu.IF_ADDRESS, BitUtils.ClearBitsWithMask(interruptFlag, interrupt.Flag));
+                    _ram.StoreUnsigned8(Mmu.IF_REGISTER, BitUtils.ClearBitsWithMask(interruptFlag, interrupt.Flag));
                     Push(PC);
                     PC = interrupt.Address;
                 }
