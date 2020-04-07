@@ -209,16 +209,25 @@ namespace ChichoGB.Core.CPU
         public void Tick()
         {
             ProcessOpcode();
-            ProcessInterrupt();
-            ProcessTimer();
+            CheckDmaTransfer();
+            CheckInterrupt();
+            CheckTimer();
         }
 
-        private void ProcessTimer()
+        public void CheckDmaTransfer()
+        {
+            if (_ram.IsDmaTransfer)
+            {
+                _ram.DmaTransfer(CpuTickCycles);
+            }
+        }
+        
+        private void CheckTimer()
         {
             Timer.Tick(CpuTickCycles, _halt);
         }
 
-        private void ProcessInterrupt()
+        private void CheckInterrupt()
         {
             byte interruptFlag = _ram.LoadInterruptFlag();
             byte interruptEnable = _ram.LoadInterruptEnable();
