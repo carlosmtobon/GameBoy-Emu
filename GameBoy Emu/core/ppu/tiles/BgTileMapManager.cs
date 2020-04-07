@@ -97,6 +97,11 @@ namespace GameBoy_Emu.core.ppu
             _oamEntryManager.FindVisibleSprites(y, spriteHeight);
         }
 
+        public List<OamEntry> GetVisibleSprites()
+        {
+            return _oamEntryManager.VisibleSprites;
+        }
+
         private void DisplayTile(int addr, byte[] tileData)
         {
             Console.WriteLine(String.Format("Address: {0:X}", addr));

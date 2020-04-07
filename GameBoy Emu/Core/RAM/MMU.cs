@@ -5,6 +5,11 @@ namespace ChichoGB.Core
 {
     public class Mmu
     {
+        // DMA Transfer 
+        private int _dmaAccumulator;
+        public bool IsDmaTransfer;
+        public const int DMA_FREQUENCY = 160;
+
         private readonly byte[] logoBytes = { 0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03,
             0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D, 0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00,
             0x0E, 0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E,
@@ -103,10 +108,9 @@ namespace ChichoGB.Core
         }
         public void StoreUnsigned8(int addr, byte value)
         {
-            if (addr == DMA_REGISTER)
-                Console.WriteLine("Dma Transfer");
-                
             Memory[addr] = value;
+            if (addr == DMA_REGISTER)
+                IsDmaTransfer = true;
         }
         public void StoreUnsigned16(int addr, ushort value)
         {
@@ -152,6 +156,23 @@ namespace ChichoGB.Core
         public byte LoadLcdc()
         {
             return Memory[LCDC_REGISTER];
+        }
+        
+        public void DmaTransfer(int cpuCycles)
+        {
+            _dmaAccumulator += cpuCycles;
+            if (_dmaAccumulator >= DMA_FREQUENCY)
+            {
+                _dmaAccumulator = 0;
+                // do work
+                ushort dmaSrc = (ushort)(Memory[DMA_REGISTER] * 0x100);
+
+                for (int i = 0; i < 40 * 4; i++)
+                {
+                    Memory[0xFE00 + i] = Memory[dmaSrc + i];
+                }
+                IsDmaTransfer = false;
+            }
         }
     }
 }

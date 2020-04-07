@@ -7,7 +7,7 @@ namespace ChichoGB.Core
     {
         public PixelFifoState State { get; set; }
         private readonly Queue<PixelData> _pixels;
-        public int _fifoAccumalator;
+        private int _fifoAccumalator;
         public const int FIFO_FREQUENCY = 1;
 
         public enum PixelFifoState { PUSHING, IDLE }
