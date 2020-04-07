@@ -1,7 +1,8 @@
-﻿using GameBoy_Emu.core.ppu;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using GameBoy_Emu.core.ppu.tiles;
+using GameBoy_Emu.core.ram;
 
-namespace ChichoGB.Core
+namespace GameBoy_Emu.core.ppu.pixelpipe
 {
     public class Fetcher
     {

@@ -1,7 +1,7 @@
-﻿using GameBoy_Emu.core.ppu;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using GameBoy_Emu.core.ppu.tiles;
 
-namespace ChichoGB.Core
+namespace GameBoy_Emu.core.ppu.pixelpipe
 {
     public class PixelFifo
     {

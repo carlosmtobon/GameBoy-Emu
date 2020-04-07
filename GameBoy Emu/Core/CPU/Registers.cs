@@ -1,4 +1,6 @@
-﻿namespace ChichoGB.Core
+﻿using ChichoGB.Core;
+
+namespace GameBoy_Emu.core.cpu
 {
     internal class Registers
     {

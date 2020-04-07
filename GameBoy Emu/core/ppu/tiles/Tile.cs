@@ -1,7 +1,7 @@
-﻿using ChichoGB.Core;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using ChichoGB.Core;
 
-namespace GameBoy_Emu.core.ppu
+namespace GameBoy_Emu.core.ppu.tiles
 {
     public class Tile
     {

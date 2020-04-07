@@ -1,7 +1,9 @@
-﻿using ChichoGB.Core.CPU.Interrupts;
-using ChichoGB.Core.Timer;
+﻿using ChichoGB.Core;
+using GameBoy_Emu.core.cpu.interrupt;
+using GameBoy_Emu.core.ram;
+using GameBoy_Emu.core.timer;
 
-namespace ChichoGB.Core.CPU
+namespace GameBoy_Emu.core.cpu
 {
     public class Cpu
     {

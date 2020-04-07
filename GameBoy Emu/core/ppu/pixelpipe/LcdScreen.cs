@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GameBoy_Emu.core.ppu
+namespace GameBoy_Emu.core.ppu.pixelpipe
 {
     public class LcdScreen
     {

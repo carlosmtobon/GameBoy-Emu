@@ -1,11 +1,11 @@
-﻿using ChichoGB.Core;
-using ChichoGB.Core.CPU;
+﻿using System;
+using GameBoy_Emu.core.cpu;
 using GameBoy_Emu.core.ppu;
+using GameBoy_Emu.core.ppu.pixelpipe;
+using GameBoy_Emu.core.ram;
 using SDL2;
-using System;
-using System.IO;
 
-namespace ChichoGB
+namespace GameBoy_Emu
 {
     static class Program
     {
@@ -75,22 +75,22 @@ namespace ChichoGB
             if (display.Draw)
             {
                 display.Draw = false;
-                for (int row = 0; row < ppu.LcdScreen.Height; row++)
+                for (int row = 0; row < ppu.Display.Height; row++)
                 {
-                    for (int col = 0; col < ppu.LcdScreen.Width; col++)
+                    for (int col = 0; col < ppu.Display.Width; col++)
                     {
                         rect.x = col * display.Scale;
                         rect.y = row * display.Scale;
 
-                        if (ppu.LcdScreen.Pixels[row][col] == 1)
+                        if (ppu.Display.Pixels[row][col] == 1)
                         {
                             SDL.SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
                         }
-                        else if (ppu.LcdScreen.Pixels[row][col] == 2)
+                        else if (ppu.Display.Pixels[row][col] == 2)
                         {
                             SDL.SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                         }
-                        else if (ppu.LcdScreen.Pixels[row][col] == 3)
+                        else if (ppu.Display.Pixels[row][col] == 3)
                         {
                             SDL.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                         }

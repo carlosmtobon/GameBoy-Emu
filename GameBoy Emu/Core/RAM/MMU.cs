@@ -1,7 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
-namespace ChichoGB.Core
+namespace GameBoy_Emu.core.ram
 {
     public class Mmu
     {

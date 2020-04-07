@@ -1,9 +1,10 @@
-﻿using ChichoGB.Core;
-using GameBoy_Emu.core.ppu.oam;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using ChichoGB.Core;
+using GameBoy_Emu.core.ppu.oam;
+using GameBoy_Emu.core.ram;
 
-namespace GameBoy_Emu.core.ppu
+namespace GameBoy_Emu.core.ppu.tiles
 {
     public class BgTileMapManager
     {

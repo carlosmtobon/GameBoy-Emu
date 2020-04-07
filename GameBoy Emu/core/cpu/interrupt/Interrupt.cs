@@ -1,4 +1,4 @@
-﻿namespace ChichoGB.Core.CPU.Interrupts
+﻿namespace GameBoy_Emu.core.cpu.interrupt
 {
     public class Interrupt
     {

@@ -81,12 +81,12 @@
     <Compile Include="core\ppu\pixelpipe\LcdScreen.cs" />
     <Compile Include="core\ppu\oam\OamEntry.cs" />
     <Compile Include="core\ppu\oam\OamEntryManager.cs" />
+    <Compile Include="core\ppu\Ppu.cs" />
     <Compile Include="core\ppu\tiles\BgTileMapManager.cs" />
     <Compile Include="core\ppu\pixelpipe\Fetcher.cs" />
     <Compile Include="core\cpu\interrupt\InterruptController.cs" />
     <Compile Include="core\ppu\tiles\PixelData.cs" />
     <Compile Include="core\ppu\pixelpipe\PixelFifo.cs" />
-    <Compile Include="core\ppu\Ppu.cs" />
     <Compile Include="core\ppu\tiles\Tile.cs" />
     <Compile Include="core\ram\Mmu.cs" />
     <Compile Include="core\cpu\Registers.cs" />
