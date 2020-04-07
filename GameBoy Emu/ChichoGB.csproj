@@ -75,22 +75,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="core\BitUtils.cs" />
     <Compile Include="core\cpu\Cpu.cs" />
-    <Compile Include="core\cpu\interrupt\Interrupt.cs" />
-    <Compile Include="core\ppu\pixelpipe\LcdScreen.cs" />
-    <Compile Include="core\ppu\oam\OamEntry.cs" />
-    <Compile Include="core\ppu\oam\OamEntryManager.cs" />
+    <Compile Include="core\cpu\Interrupt.cs" />
+    <Compile Include="core\cpu\InterruptController.cs" />
+    <Compile Include="core\ppu\BgTileMapManager.cs" />
+    <Compile Include="core\ppu\Fetcher.cs" />
+    <Compile Include="core\ppu\LcdScreen.cs" />
+    <Compile Include="core\ppu\OamEntry.cs" />
+    <Compile Include="core\ppu\OamEntryManager.cs" />
+    <Compile Include="core\ppu\PixelData.cs" />
+    <Compile Include="core\ppu\PixelFifo.cs" />
     <Compile Include="core\ppu\Ppu.cs" />
-    <Compile Include="core\ppu\tiles\BgTileMapManager.cs" />
-    <Compile Include="core\ppu\pixelpipe\Fetcher.cs" />
-    <Compile Include="core\cpu\interrupt\InterruptController.cs" />
-    <Compile Include="core\ppu\tiles\PixelData.cs" />
-    <Compile Include="core\ppu\pixelpipe\PixelFifo.cs" />
-    <Compile Include="core\ppu\tiles\Tile.cs" />
+    <Compile Include="core\ppu\Tile.cs" />
     <Compile Include="core\ram\Mmu.cs" />
     <Compile Include="core\cpu\Registers.cs" />
     <Compile Include="core\timer\TimerController.cs" />
+    <Compile Include="core\utils\BitUtils.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -114,6 +114,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="core\cpu\interrupt" />
+    <Folder Include="core\ppu\oam" />
+    <Folder Include="core\ppu\pixelpipe" />
+    <Folder Include="core\ppu\tiles" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

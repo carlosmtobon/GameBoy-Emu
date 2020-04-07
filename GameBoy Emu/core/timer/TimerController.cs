@@ -1,6 +1,6 @@
 ﻿using GameBoy_Emu.core.cpu;
-using GameBoy_Emu.core.cpu.interrupt;
 using GameBoy_Emu.core.ram;
+using GameBoy_Emu.core.utils;
 
 namespace GameBoy_Emu.core.timer
 {

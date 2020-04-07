@@ -1,7 +1,6 @@
 ﻿using System;
 using GameBoy_Emu.core.cpu;
 using GameBoy_Emu.core.ppu;
-using GameBoy_Emu.core.ppu.pixelpipe;
 using GameBoy_Emu.core.ram;
 using SDL2;
 
