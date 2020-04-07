@@ -81,7 +81,7 @@
     <Compile Include="core\cpu\TimerController.cs" />
     <Compile Include="core\ppu\BgTileMapManager.cs" />
     <Compile Include="core\ppu\Fetcher.cs" />
-    <Compile Include="core\ppu\LcdScreen.cs" />
+    <Compile Include="core\ppu\Display.cs" />
     <Compile Include="core\ppu\OamEntry.cs" />
     <Compile Include="core\ppu\OamEntryManager.cs" />
     <Compile Include="core\ppu\PixelData.cs" />

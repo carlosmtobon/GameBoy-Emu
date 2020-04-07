@@ -2,7 +2,7 @@
 
 namespace GameBoy_Emu.core.ppu
 {
-    public class LcdScreen
+    public class Display
     {
         public int Width { get; set; }
         public int Height { get; set; }
@@ -13,7 +13,7 @@ namespace GameBoy_Emu.core.ppu
 
         public bool Draw;
 
-        public LcdScreen(int width, int height, int scale)
+        public Display(int width, int height, int scale)
         {
             Width = width;
             Height = height;

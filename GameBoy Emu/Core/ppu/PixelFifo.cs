@@ -16,7 +16,7 @@ namespace GameBoy_Emu.core.ppu
             State = PixelFifoState.IDLE;
         }
 
-        public int Process(LcdScreen lcdScreen)
+        public int Process(Display display)
         {
             if (State != PixelFifoState.IDLE)
             {
@@ -28,7 +28,7 @@ namespace GameBoy_Emu.core.ppu
                 }
                 else
                 {
-                    Push(lcdScreen);
+                    Push(display);
                     return 1;
                 }
             }
@@ -47,10 +47,10 @@ namespace GameBoy_Emu.core.ppu
             }
         }
 
-        private void Push(LcdScreen lcdScreen)
+        private void Push(Display display)
         {
             var pix = _pixels.Dequeue();
-            lcdScreen.Add(pix.ColorData);
+            display.Add(pix.ColorData);
         }
 
         public void LoadFifo(Fetcher fetcher)

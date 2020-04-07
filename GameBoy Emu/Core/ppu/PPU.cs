@@ -10,7 +10,7 @@ namespace GameBoy_Emu.core.ppu
         private readonly BgTileMapManager _bgTileMapManager;
         private readonly PixelFifo _pixelFifo;
         private readonly Fetcher _fetcher;
-        public LcdScreen Display { get; set; }
+        public Display Display { get; set; }
         public PpuStatus Status { get; set; }
 
         public int OAM_SEARCH_CYCLES = 80;
@@ -20,7 +20,7 @@ namespace GameBoy_Emu.core.ppu
 
         public enum PpuStatus { HBLANK, VBLANK, OAM_SEARCH, PIXEL_TRANSFER };
 
-        public Ppu(Mmu ram, LcdScreen screen)
+        public Ppu(Mmu ram, Display screen)
         {
             _ram = ram;
             _bgTileMapManager = new BgTileMapManager(ram);

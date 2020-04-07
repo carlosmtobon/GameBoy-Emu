@@ -17,7 +17,7 @@ namespace GameBoy_Emu
                 return;
             }
             Mmu ram = LoadRom();
-            var display = new LcdScreen(160, 144, 4);
+            var display = new Display(160, 144, 4);
             var cpu = new Cpu(ram);
             var ppu = new Ppu(ram, display);
 
@@ -48,7 +48,7 @@ namespace GameBoy_Emu
             }
         }
 
-        private static void InitSDL(LcdScreen display, out IntPtr renderer, out SDL.SDL_Rect rect)
+        private static void InitSDL(Display display, out IntPtr renderer, out SDL.SDL_Rect rect)
         {
             IntPtr window = SDL.SDL_CreateWindow("Chicho's Gameboy Emulator", 200, 200, display.Width * 4, display.Height * 4, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
 
@@ -58,7 +58,7 @@ namespace GameBoy_Emu
             rect.w = 10 * display.Scale;
         }
 
-        private static SDL.SDL_Event UpdateDisplay(Mmu ram, LcdScreen display, Ppu ppu, IntPtr renderer, ref SDL.SDL_Rect rect, ref bool running)
+        private static SDL.SDL_Event UpdateDisplay(Mmu ram, Display display, Ppu ppu, IntPtr renderer, ref SDL.SDL_Rect rect, ref bool running)
         {
             SDL.SDL_Event sdlEvent;
             while (SDL.SDL_PollEvent(out sdlEvent) != 0)
