@@ -1,4 +1,4 @@
-﻿namespace ChichoGB.Core
+﻿namespace GameBoy_Emu.core
 {
     public static class BitUtils
     {

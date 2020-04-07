@@ -1,6 +1,4 @@
-﻿using ChichoGB.Core;
-
-namespace GameBoy_Emu.core.cpu.interrupt
+﻿namespace GameBoy_Emu.core.cpu.interrupt
 {
     public class InterruptController
     {

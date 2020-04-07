@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ChichoGB.Properties
+namespace GameBoy_Emu.Properties
 {
 
 

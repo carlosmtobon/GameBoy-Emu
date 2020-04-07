@@ -1,5 +1,4 @@
-﻿using ChichoGB.Core;
-using GameBoy_Emu.core.cpu;
+﻿using GameBoy_Emu.core.cpu;
 using GameBoy_Emu.core.cpu.interrupt;
 using GameBoy_Emu.core.ram;
 
