@@ -1,4 +1,6 @@
-﻿namespace GameBoy_Emu.core.cpu
+﻿using GameBoy_Emu.core.utils;
+
+namespace GameBoy_Emu.core.cpu
 {
     internal class Registers
     {

@@ -1,4 +1,4 @@
-﻿namespace GameBoy_Emu.core
+﻿namespace GameBoy_Emu.core.utils
 {
     public static class BitUtils
     {

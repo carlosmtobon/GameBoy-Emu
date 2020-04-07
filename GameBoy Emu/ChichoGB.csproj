@@ -78,6 +78,7 @@
     <Compile Include="core\cpu\Cpu.cs" />
     <Compile Include="core\cpu\Interrupt.cs" />
     <Compile Include="core\cpu\InterruptController.cs" />
+    <Compile Include="core\cpu\TimerController.cs" />
     <Compile Include="core\ppu\BgTileMapManager.cs" />
     <Compile Include="core\ppu\Fetcher.cs" />
     <Compile Include="core\ppu\LcdScreen.cs" />
@@ -89,7 +90,6 @@
     <Compile Include="core\ppu\Tile.cs" />
     <Compile Include="core\ram\Mmu.cs" />
     <Compile Include="core\cpu\Registers.cs" />
-    <Compile Include="core\timer\TimerController.cs" />
     <Compile Include="core\utils\BitUtils.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -114,12 +114,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="core\cpu\interrupt" />
-    <Folder Include="core\ppu\oam" />
-    <Folder Include="core\ppu\pixelpipe" />
-    <Folder Include="core\ppu\tiles" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
