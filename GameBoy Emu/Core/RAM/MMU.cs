@@ -37,6 +37,9 @@ namespace GameBoy_Emu.core.ram
         public const int BGP_REGISTER = 0xFF47;
         public const int WY_REGISTER = 0xFF4A;
         public const int WX_REGISTER = 0xFF4B;
+        
+        // joypad
+        public const int JOYP_REGISTER = 0xFF00;
 
         public byte[] Memory { get; }
 
@@ -105,16 +108,34 @@ namespace GameBoy_Emu.core.ram
                 fs.Read(Memory, ROM_OFFSET, Memory.Length - ROM_OFFSET);
             }
         }
+
+        private void WriteMemory(int addr, byte value)
+        {
+            // not writes in rom region
+            if (addr < 0x8000) 
+                return;
+            
+            // write to echo region
+            if (addr >= 0xE000 && addr <= 0xFDFF)
+            {
+                Memory[addr] = value;
+                Memory[addr - 0x2000] = value;
+            }
+            else
+            {
+                Memory[addr] = value;
+            }
+        }
         public void StoreUnsigned8(int addr, byte value)
         {
-            Memory[addr] = value;
+            WriteMemory(addr, value);
             if (addr == DMA_REGISTER)
                 IsDmaTransfer = true;
         }
         public void StoreUnsigned16(int addr, ushort value)
         {
-            Memory[addr] = (byte)(value >> 8);
-            Memory[addr + 1] = (byte)(value & 0x00FF);
+            WriteMemory(addr, (byte)(value >> 8));
+            WriteMemory(addr + 1,(byte)(value & 0xFF ));
         }
 
         public byte LoadUnsigned8(int addr)

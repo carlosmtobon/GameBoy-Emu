@@ -1,4 +1,5 @@
-﻿using GameBoy_Emu.core.ram;
+﻿using System;
+using GameBoy_Emu.core.ram;
 using GameBoy_Emu.core.timer;
 using GameBoy_Emu.core.utils;
 
@@ -376,8 +377,7 @@ namespace GameBoy_Emu.core.cpu
                     break;
                 case 0x20:
                     // JR NZ,i8
-                    JRNZ();
-
+                  JRCondition(Registers.GetZFlag() == 0);
                     break;
                 case 0x21:
                     Registers.SetHL(_ram.LoadUnsigned16(PC + 1));
@@ -407,7 +407,7 @@ namespace GameBoy_Emu.core.cpu
                     break;
                 case 0x28:
                     //JR Z,i8 
-                    JRZ();
+                    JRCondition(Registers.GetZFlag() == 1);
                     break;
                 case 0X29:
                     AddToHL(Registers.GetHL());
@@ -436,7 +436,7 @@ namespace GameBoy_Emu.core.cpu
                     UpdatePCAndCycles(1, 4);
                     break;
                 case 0x30:
-                    JRNC();
+                    JRCondition(Registers.GetCYFlag() == 0);
                     break;
                 case 0x31:
                     SP = _ram.LoadUnsigned16(PC + 1);
@@ -469,7 +469,7 @@ namespace GameBoy_Emu.core.cpu
                     UpdatePCAndCycles(1, 4);
                     break;
                 case 0x38:
-                    JRC();
+                    JRCondition(Registers.GetCYFlag() == 1);
                     break;
                 case 0x39:
                     AddToHL(SP);
@@ -896,44 +896,21 @@ namespace GameBoy_Emu.core.cpu
                     CP(Registers.A, 1, 4);
                     break;
                 case 0xC0:
-                    if (Registers.GetZFlag() == 0)
-                    {
-                        PC = Pop();
-                        UpdatePCAndCycles(0, 20);
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(1, 8);
-                    }
+                    RetCondition(Registers.GetZFlag() == 0);
                     break;
                 case 0xC1:
                     Registers.SetBC(Pop());
                     UpdatePCAndCycles(1, 12);
                     break;
                 case 0xC2:
-                    if (Registers.GetZFlag() == 0)
-                    {
-                        JP((ushort)(PC + 1));
-                        UpdatePCAndCycles(0, 16);
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(3, 12);
-                    }
+                    JpCondition(Registers.GetZFlag() == 0);
                     break;
                 case 0xC3:
                     JP((ushort)(PC + 1));
                     UpdatePCAndCycles(0, 16);
                     break;
                 case 0xC4:
-                    if (Registers.GetZFlag() == 0)
-                    {
-                        CALL();
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(3, 12);
-                    }
+                    CallCondition(Registers.GetZFlag() == 0);
                     break;
                 case 0xC5:
                     Push(Registers.GetBC());
@@ -946,44 +923,21 @@ namespace GameBoy_Emu.core.cpu
                     RST(0x0);
                     break;
                 case 0xC8:
-                    if (Registers.GetZFlag() == 1)
-                    {
-                        PC = Pop();
-                        UpdatePCAndCycles(0, 20);
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(1, 8);
-                    }
+                    RetCondition(Registers.GetZFlag() == 1);
                     break;
                 case 0xC9:
                     PC = Pop();
                     UpdatePCAndCycles(0, 16);
                     break;
                 case 0xCA:
-                    if (Registers.GetZFlag() == 1)
-                    {
-                        JP((ushort)(PC + 1));
-                        UpdatePCAndCycles(0, 16);
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(3, 12);
-                    }
+                    JpCondition(Registers.GetZFlag() == 1);
                     break;
                 case 0xCB:
                     // Prefix CB
                     CBPrefix(_ram.Memory[PC + 1]);
                     break;
                 case 0xCC:
-                    if (Registers.GetZFlag() == 1)
-                    {
-                        CALL();
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(3, 12);
-                    }
+                    CallCondition(Registers.GetZFlag() == 1);
                     break;
                 case 0xCD:
                     CALL();
@@ -995,40 +949,17 @@ namespace GameBoy_Emu.core.cpu
                     RST(0x8);
                     break;
                 case 0xD0:
-                    if (Registers.GetCYFlag() == 0)
-                    {
-                        PC = Pop();
-                        UpdatePCAndCycles(0, 20);
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(1, 8);
-                    }
+                    RetCondition(Registers.GetCYFlag() == 0);
                     break;
                 case 0xD1:
                     Registers.SetDE(Pop());
                     UpdatePCAndCycles(1, 12);
                     break;
                 case 0xD2:
-                    if (Registers.GetCYFlag() == 0)
-                    {
-                        JP((ushort)(PC + 1));
-                        UpdatePCAndCycles(0, 16);
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(3, 12);
-                    }
+                    JpCondition(Registers.GetCYFlag() == 0);
                     break;
                 case 0xD4:
-                    if (Registers.GetCYFlag() == 0)
-                    {
-                        CALL();
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(3, 12);
-                    }
+                    CallCondition(Registers.GetCYFlag() == 0);
                     break;
                 case 0xD5:
                     Push(Registers.GetDE());
@@ -1041,15 +972,7 @@ namespace GameBoy_Emu.core.cpu
                     RST(0x10);
                     break;
                 case 0xD8:
-                    if (Registers.GetCYFlag() == 1)
-                    {
-                        PC = Pop();
-                        UpdatePCAndCycles(0, 20);
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(1, 8);
-                    }
+                    RetCondition(Registers.GetCYFlag() == 1);
                     break;
                 case 0xD9:
                     // RETI
@@ -1058,25 +981,10 @@ namespace GameBoy_Emu.core.cpu
                     UpdatePCAndCycles(0, 16);
                     break;
                 case 0xDA:
-                    if (Registers.GetCYFlag() == 1)
-                    {
-                        JP((ushort)(PC + 1));
-                        UpdatePCAndCycles(0, 16);
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(3, 12);
-                    }
+                    JpCondition(Registers.GetCYFlag() == 1);
                     break;
                 case 0xDC:
-                    if (Registers.GetCYFlag() == 1)
-                    {
-                        CALL();
-                    }
-                    else
-                    {
-                        UpdatePCAndCycles(3, 12);
-                    }
+                    CallCondition(Registers.GetCYFlag() == 1);
                     break;
                 case 0xDE:
                     SBC(_ram.LoadUnsigned8(PC + 1), 2, 8);
@@ -1174,51 +1082,54 @@ namespace GameBoy_Emu.core.cpu
             }
         }
 
+        private void CallCondition(bool condition)
+        {
+            if (condition)
+            {
+                CALL();
+            }
+            else
+            {
+                UpdatePCAndCycles(3, 12);
+            }
+        }
+
+        private void JpCondition(bool condition)
+        {
+            if (condition)
+            {
+                JP((ushort) (PC + 1));
+                UpdatePCAndCycles(0, 16);
+            }
+            else
+            {
+                UpdatePCAndCycles(3, 12);
+            }
+        }
+
+        private void RetCondition(bool condition)
+        {
+            if (condition)
+            {
+                PC = Pop();
+                UpdatePCAndCycles(0, 20);
+            }
+            else
+            {
+                UpdatePCAndCycles(1, 8);
+            }
+        }
+
         private void JR()
         {
-            PC += (ushort)(_ram.LoadSigned8(PC + 1));
+            sbyte diff = _ram.LoadSigned8(PC + 1);
+            PC += (ushort)(diff);
             UpdatePCAndCycles(2, 12);
         }
 
-        private void JRC()
+        private void JRCondition(bool condition)
         {
-            if (Registers.GetCYFlag() == 1)
-            {
-                JR();
-            }
-            else
-            {
-                UpdatePCAndCycles(2, 8);
-            }
-        }
-
-        private void JRNC()
-        {
-            if (Registers.GetCYFlag() == 0)
-            {
-                JR();
-            }
-            else
-            {
-                UpdatePCAndCycles(2, 8);
-            }
-        }
-
-        private void JRZ()
-        {
-            if (Registers.GetZFlag() == 1)
-            {
-                JR();
-            }
-            else
-            {
-                UpdatePCAndCycles(2, 8);
-            }
-        }
-
-        private void JRNZ()
-        {
-            if (Registers.GetZFlag() == 0)
+            if (condition)
             {
                 JR();
             }

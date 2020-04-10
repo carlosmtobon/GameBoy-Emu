@@ -9,6 +9,7 @@ namespace GameBoy_Emu.core.ppu
         private readonly Mmu _ram;
         private readonly BgTileMapManager _bgTileMapManager;
         private readonly PixelFifo _pixelFifo;
+        private readonly PixelFifo _spriteFifo;
         private readonly Fetcher _fetcher;
         public Display Display { get; set; }
         public PpuStatus Status { get; set; }
@@ -25,6 +26,7 @@ namespace GameBoy_Emu.core.ppu
             _ram = ram;
             _bgTileMapManager = new BgTileMapManager(ram);
             _pixelFifo = new PixelFifo();
+            _spriteFifo = new PixelFifo();
             _fetcher = new Fetcher(_bgTileMapManager, ram);
             Display = screen;
             Status = PpuStatus.OAM_SEARCH;
@@ -98,10 +100,17 @@ namespace GameBoy_Emu.core.ppu
 
         private void PixelTransfer(int cpuCycles)
         {
+            var sprite = _bgTileMapManager.GetVisibleSprites().Find(oamEntry => oamEntry.XPos == Display.X);
+            if (sprite != null)
+            {
+                _fetcher.GetSprite(sprite, Display);
+                _spriteFifo.LoadFifo(_fetcher);
+            }
             while (cpuCycles > 0)
             {
                 int work = _pixelFifo.Process(Display);
                 _fetcher.Process(Display);
+                _spriteFifo.Process(Display);
                 cpuCycles -= work;
 
                 if (_fetcher.State == Fetcher.FetcherState.TRANSFER_READY && _pixelFifo.State == PixelFifo.PixelFifoState.IDLE)
@@ -178,7 +187,7 @@ namespace GameBoy_Emu.core.ppu
         private void SetInterrupt(byte flag)
         {
             byte interruptFlag = _ram.Memory[Mmu.IF_REGISTER];
-            interruptFlag = BitUtils.SetBitsWithMask(interruptFlag, InterruptController.VBLANK_FLAG);
+            interruptFlag = BitUtils.SetBitsWithMask(interruptFlag, flag);
             _ram.StoreUnsigned8(Mmu.IF_REGISTER, interruptFlag);
         }
     }

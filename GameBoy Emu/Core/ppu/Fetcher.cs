@@ -17,7 +17,14 @@ namespace GameBoy_Emu.core.ppu
         public FetcherState State { get; set; }
         public const int FETCHER_FREQUENCY = 2;
 
-        public enum FetcherState { READ_TILE_NUM, READ_DATA_0, READ_DATA_1, TRANSFER_READY };
+        public enum FetcherState
+        {
+            READ_TILE_NUM,
+            READ_DATA_0,
+            READ_DATA_1,
+            TRANSFER_READY
+        };
+
         public Fetcher(BgTileMapManager bgTileMap, Mmu ram)
         {
             _currentBgTileAddress = BgTileMapManager.BG_MAP_ADDRESS_1;
@@ -34,7 +41,8 @@ namespace GameBoy_Emu.core.ppu
                 var scx = _ram.LoadUnsigned8(Mmu.SCX_REGISTER) % display.Width;
                 var scy = _ram.LoadUnsigned8(Mmu.SCY_REGISTER) % display.Height;
 
-                _currentBgTileAddress = _bgTileMap.GetBgTileAddr() + (((((display.Y) / 8) + scy) * 32) + ((_currentBgTile / 8) + scx));
+                _currentBgTileAddress = _bgTileMap.GetBgTileAddr() +
+                                        (((((display.Y) / 8) + scy) * 32) + ((_currentBgTile / 8) + scx));
                 _currentBgTile += 8;
                 _currentTileNumber = _bgTileMap.GetTileNumber(_currentBgTileAddress);
 
@@ -71,6 +79,13 @@ namespace GameBoy_Emu.core.ppu
         {
             State = FetcherState.READ_TILE_NUM;
             _currentBgTile = 0;
+        }
+
+        public void GetSprite(OamEntry sprite, Display display)
+        {
+            Pixels.Clear();
+            _tile = _bgTileMap.GetSpriteTile(sprite.TileNumber);
+            Pixels = _tile.GetRowPixelData(display.Y % 8);
         }
     }
 }

@@ -65,17 +65,17 @@ namespace GameBoy_Emu.core.cpu
             {
                 return _vblank;
             }
-
+            
             if (isLCDCSet(interruptFlag) && isLCDCSet(interruptEnable))
             {
                 return _lcdc;
             }
-
+            
             if (isTimerOverflowSet(interruptFlag) && isTimerOverflowSet(interruptEnable))
             {
                 return _timer;
             }
-
+            
             if (isSerialCompleteSet(interruptFlag) && isSerialCompleteSet(interruptEnable))
             {
                 return _serial;

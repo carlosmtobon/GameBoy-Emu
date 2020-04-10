@@ -79,6 +79,8 @@
     <Compile Include="core\cpu\Interrupt.cs" />
     <Compile Include="core\cpu\InterruptController.cs" />
     <Compile Include="core\cpu\TimerController.cs" />
+    <Compile Include="core\input\Joypad.cs" />
+    <Compile Include="core\mbc\MBC1.cs" />
     <Compile Include="core\ppu\BgTileMapManager.cs" />
     <Compile Include="core\ppu\Fetcher.cs" />
     <Compile Include="core\ppu\Display.cs" />
