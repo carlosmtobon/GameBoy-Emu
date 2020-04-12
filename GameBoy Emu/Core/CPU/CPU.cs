@@ -1173,38 +1173,29 @@ namespace GameBoy_Emu.core.cpu
         public void ADDSPI8()
         {
             sbyte nextI8 = _ram.LoadSigned8(PC + 1);
-
+            
             Registers.SetZFLag(false);
             Registers.SetNFLag(false);
-            ushort lSP = (ushort)(SP + nextI8);
+            ushort lsp = (ushort)(SP + nextI8);
+            
+            Registers.SetCYFLag(Registers.IsCarry16(SP, nextI8));
+            Registers.SetHCYFLag(Registers.IsHalfCarry16(SP, nextI8));
 
-            //Registers.SetCYFLag((((SP & 0xFF) + (nextI8 & 0xFF)) > 0xFF));
-            //Registers.SetHCYFLag((((SP & 0xF) + (nextI8 & 0xF)) > 0xF));
-
-            if (nextI8 >= 0)
-            {
-                Registers.SetHCYFLag((SP & 0xF) + (nextI8 & 0xF) > 0xF);
-                Registers.SetCYFLag(((SP & 0xFF) + nextI8) > 0xFF);
-            }
-            else
-            {
-                Registers.SetHCYFLag((lSP & 0xF) <= (SP & 0xF));
-                Registers.SetCYFLag(((lSP & 0xFF) <= (SP & 0xFF)));
-            }
-            SP += (ushort)nextI8;
+            SP = lsp;
             UpdatePCAndCycles(2, 16);
         }
 
         public void LDHLSPI8()
         {
             sbyte nextI8 = _ram.LoadSigned8(PC + 1);
-
+            
             Registers.SetZFLag(false);
             Registers.SetNFLag(false);
-            Registers.SetHCYFLag((SP & 0xFFF) + (nextI8 & 0xFFF) > 0xFFF);
-            Registers.SetCYFLag((SP + nextI8) > 0xFFFF);
-            SP += (ushort)nextI8;
-            Registers.SetHL(SP);
+           
+            Registers.SetCYFLag(Registers.IsCarry16(SP, nextI8));
+            Registers.SetHCYFLag(Registers.IsHalfCarry16(SP, nextI8));
+            
+            Registers.SetHL((ushort)(SP + nextI8));
             UpdatePCAndCycles(2, 12);
         }
 

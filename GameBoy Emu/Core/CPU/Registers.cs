@@ -1,4 +1,5 @@
-﻿using GameBoy_Emu.core.utils;
+﻿using System;
+using GameBoy_Emu.core.utils;
 
 namespace GameBoy_Emu.core.cpu
 {
@@ -133,6 +134,18 @@ namespace GameBoy_Emu.core.cpu
             return (byte)((F & FULL_CARRY_FLAG) >> 4);
         }
 
-
+        public static bool IsHalfCarry16(ushort val1, int val2)
+        {
+            if(val2 < 0){
+                return (((val1 & 0xFFF) - (Math.Abs(val2) & 0xFFF)) < 0);
+            }
+            
+            return(((val1 & 0xFFF) + (val2 & 0xFFF))) > 0xFFF;
+        }
+        
+        public static bool IsCarry16(int val1, int val2)
+        {
+            return (val1 + val2) > 0xFFFF || (val1 + val2) < 0;
+        }
     }
 }
