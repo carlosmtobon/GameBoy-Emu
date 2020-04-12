@@ -80,7 +80,7 @@
     <Compile Include="core\cpu\InterruptController.cs" />
     <Compile Include="core\cpu\TimerController.cs" />
     <Compile Include="core\input\Joypad.cs" />
-    <Compile Include="core\mbc\MBC1.cs" />
+    <Compile Include="core\mbc\Mbc1.cs" />
     <Compile Include="core\ppu\BgTileMapManager.cs" />
     <Compile Include="core\ppu\Fetcher.cs" />
     <Compile Include="core\ppu\Display.cs" />
@@ -93,6 +93,7 @@
     <Compile Include="core\ram\Mmu.cs" />
     <Compile Include="core\cpu\Registers.cs" />
     <Compile Include="core\utils\BitUtils.cs" />
+    <Compile Include="core\utils\RomHeader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
