@@ -148,7 +148,7 @@ namespace GameBoy_Emu.core.ram
             else if (addr >= 0xA000 && addr <= 0xBFFF)
             {
                 // write to external memory
-                Debug.WriteLine("Write to SRAM");
+               // Debug.WriteLine("Write to SRAM");
             }
             else if (addr >= 0xE000 && addr <= 0xFDFF)
             {
@@ -190,8 +190,8 @@ namespace GameBoy_Emu.core.ram
         
         public void StoreUnsigned16(int addr, ushort value)
         {
-            WriteMemory(addr, (byte)(value >> 8));
-            WriteMemory(addr + 1,(byte)(value & 0xFF ));
+            WriteMemory(addr,(byte)(value & 0xFF ));
+            WriteMemory(addr + 1, (byte)(value >> 8));
         }
         
         public byte LoadUnsigned8(int addr)

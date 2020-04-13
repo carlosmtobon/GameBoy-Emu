@@ -29,12 +29,23 @@ namespace GameBoy_Emu
             InitSDL(display, out renderer, out rect);
 
             bool running = true;
+            bool log = false;
             while (running)
             {
+                
+                // if (cpu.PC == 0xdef8)
+                // {
+                //     log = true; 
+                // }
+                // if (log)
+                //     Debug.WriteLine(String.Format("af:{2:X4} bc:{3:X4} de:{4:X4} hl:{5:X4} pc:{0:X4} sp:{1:X4} ", cpu.PC, cpu.SP, cpu.Registers.GetAF(), cpu.Registers.GetBC(), cpu.Registers.GetDE(), cpu.Registers.GetHL()));
+
                 cpu.Tick();
                 ppu.Tick(cpu.CpuTickCycles);
-                HandleInput(joypad);
+                // HandleInput(joypad);
                 UpdateDisplay(ram, display, ppu, renderer, ref rect, ref running);
+               
+               
                 var sc = ram.LoadUnsigned8(0xff02);
                 if (sc == 0x81)
                 {
@@ -91,7 +102,7 @@ namespace GameBoy_Emu
                 }
 
                 SDL.SDL_RenderPresent(renderer);
-                SDL.SDL_Delay(16);
+                SDL.SDL_Delay(5);
             }
         }
 
@@ -167,26 +178,29 @@ namespace GameBoy_Emu
         private static Mmu LoadRom()
         {
             var ram = new Mmu();
-            //ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\testGame.gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\07-jr,jp,call,ret,rst.gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\08-misc instrs.gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\03-op sp,hl.gb");
+             ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\testGame.gb");
+            
+           
 
             //passed
-            ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\Bubble Ghost (USA, Europe).gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\DMG_ROM.bin");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\cpu_instrs.gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\01-special.gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\02-interrupts.gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\04-op r,imm.gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\05-op rp.gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\06-ld r,r.gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\09-op r,r.gb");
-            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\10-bit ops.gb");
-           // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\11-op a,(hl).gb");
+           
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Bubble Ghost (USA, Europe).gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\07-jr,jp,call,ret,rst.gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\03-op sp,hl.gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\08-misc instrs.gb");
+            ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\DMG_ROM.bin");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\cpu_instrs.gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\01-special.gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\02-interrupts.gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\04-op r,imm.gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\05-op rp.gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\06-ld r,r.gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\09-op r,r.gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\10-bit ops.gb");
+           // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\11-op a,(hl).gb");
             return ram;
         }
     }

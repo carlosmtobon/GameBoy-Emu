@@ -1143,7 +1143,7 @@ namespace GameBoy_Emu.core.cpu
         {
             Push((ushort)(PC + 1));
             PC = addr;
-            UpdatePCAndCycles(1, 16);
+            UpdatePCAndCycles(0, 16);
         }
 
         public void LDAHLINC()
@@ -1173,31 +1173,46 @@ namespace GameBoy_Emu.core.cpu
         public void ADDSPI8()
         {
             sbyte nextI8 = _ram.LoadSigned8(PC + 1);
-            
+
             Registers.SetZFLag(false);
             Registers.SetNFLag(false);
-            ushort lsp = (ushort)(SP + nextI8);
+            ushort lSP = (ushort)(SP + nextI8);
             
-            Registers.SetCYFLag(Registers.IsCarry16(SP, nextI8));
-            Registers.SetHCYFLag(Registers.IsHalfCarry16(SP, nextI8));
-
-            SP = lsp;
+            if (nextI8 >= 0)
+            {
+                Registers.SetHCYFLag((SP & 0xF) + (nextI8 & 0xF) > 0xF);
+                Registers.SetCYFLag(((SP & 0xFF) + nextI8) > 0xFF);
+            }
+            else
+            {
+                Registers.SetHCYFLag((lSP & 0xF) <= (SP & 0xF));
+                Registers.SetCYFLag(((lSP & 0xFF) <= (SP & 0xFF)));
+            }
+            SP += (ushort)nextI8;
             UpdatePCAndCycles(2, 16);
         }
 
         public void LDHLSPI8()
         {
             sbyte nextI8 = _ram.LoadSigned8(PC + 1);
-            
+            ushort lSP = (ushort)(SP + nextI8);
+
             Registers.SetZFLag(false);
             Registers.SetNFLag(false);
-           
-            Registers.SetCYFLag(Registers.IsCarry16(SP, nextI8));
-            Registers.SetHCYFLag(Registers.IsHalfCarry16(SP, nextI8));
-            
-            Registers.SetHL((ushort)(SP + nextI8));
+            if (nextI8 >= 0)
+            {
+                Registers.SetHCYFLag((SP & 0xF) + (nextI8 & 0xF) > 0xF);
+                Registers.SetCYFLag(((SP & 0xFF) + nextI8) > 0xFF);
+            }
+            else
+            {
+                Registers.SetHCYFLag((lSP & 0xF) <= (SP & 0xF));
+                Registers.SetCYFLag(((lSP & 0xFF) <= (SP & 0xFF)));
+            }
+            Registers.SetHL(lSP);
             UpdatePCAndCycles(2, 12);
         }
+
 
         public void CCF()
         {
