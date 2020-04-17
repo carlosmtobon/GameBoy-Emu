@@ -27,10 +27,10 @@ namespace GameBoy_Emu.core.ppu
 
         public int GetBgTileAddr()
         {
-            int tileMapAddr = BgTileMapManager.BG_MAP_ADDRESS_1;
+            int tileMapAddr = BG_MAP_ADDRESS_1;
             if (BitUtils.isBitSet(_ram.LoadLcdc(), 3))
             {
-                tileMapAddr = BgTileMapManager.BG_MAP_ADDRESS_2;
+                tileMapAddr = BG_MAP_ADDRESS_2;
             }
             return tileMapAddr;
         }
@@ -42,12 +42,16 @@ namespace GameBoy_Emu.core.ppu
 
         public Tile GetTile(int tileNumber)
         {
-            int tileDataStart = TILE_DATA_START_1;
+            int startAddr;
+            
             if (!BitUtils.isBitSet(_ram.LoadLcdc(), 4))
             {
-                tileDataStart = TILE_DATA_START_2;
+                startAddr = tileNumber > 127 ?  TILE_DATA_START_1 + (tileNumber * 16) : TILE_DATA_START_2 + (tileNumber * 16);
             }
-            int startAddr = tileDataStart + ((tileNumber > 127 ? (sbyte)tileNumber : tileNumber) * 16);
+            else
+            {
+                startAddr = TILE_DATA_START_1 + (tileNumber * 16);
+            }
             byte[] tileData = new byte[16];
             for (int i = 0; i < 16; i++)
             {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using GameBoy_Emu.core.input;
 using GameBoy_Emu.core.mbc;
 using GameBoy_Emu.core.utils;
 
@@ -16,10 +17,13 @@ namespace GameBoy_Emu.core.ram
         private RomHeader _romHeader;
         private Mbc1 _mbc1;
 
-        private readonly byte[] logoBytes = { 0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03,
+        private readonly byte[] logoBytes =
+        {
+            0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03,
             0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D, 0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00,
             0x0E, 0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E,
-            0x0E, 0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E };
+            0x0E, 0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E
+        };
 
         private const int RAM_SIZE = 0x10000;
 
@@ -42,7 +46,7 @@ namespace GameBoy_Emu.core.ram
         public const int BGP_REGISTER = 0xFF47;
         public const int WY_REGISTER = 0xFF4A;
         public const int WX_REGISTER = 0xFF4B;
-        
+
         // joypad
         public const int JOYP_REGISTER = 0xFF00;
 
@@ -101,24 +105,24 @@ namespace GameBoy_Emu.core.ram
         public void LoadRom(string fileName)
         {
             using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
-            { 
+            {
                 CartRom = new byte[fs.Length];
                 fs.Read(CartRom, 0, CartRom.Length);
             }
-            
+
             Array.Copy(CartRom, Memory, 0x8000);
             ReadRomHeader();
-                
+
             // support Mbc1 for now and work on abstracting later
             if (_romHeader.RomType == 0x01)
             {
                 _mbc1 = new Mbc1();
-            } 
+            }
         }
 
         private void ReadRomHeader()
         {
-            _romHeader = new RomHeader( Memory[0x147], Memory[0x148], Memory[0x149]);
+            _romHeader = new RomHeader(Memory[0x147], Memory[0x148], Memory[0x149]);
         }
 
         private void WriteMemory(int addr, byte value)
@@ -127,7 +131,7 @@ namespace GameBoy_Emu.core.ram
             if (addr < 0x8000)
             {
                 if (_mbc1 == null) return;
-                
+
                 if (addr >= 0x0 && addr <= 0x1FFF)
                 {
                     _mbc1.WriteRamg(value);
@@ -135,20 +139,25 @@ namespace GameBoy_Emu.core.ram
                 else if (addr >= 0x2000 && addr <= 0x3FFF)
                 {
                     _mbc1.WriteBank1(value);
-                } 
+                }
                 else if (addr >= 0x4000 && addr <= 0x5FFF)
                 {
                     _mbc1.WriteBank2(value);
                 }
                 else
                 {
-                    _mbc1.WriteMode(value);   
+                    _mbc1.WriteMode(value);
                 }
             }
             else if (addr >= 0xA000 && addr <= 0xBFFF)
             {
-                // write to external memory
-               // Debug.WriteLine("Write to SRAM");
+                if (_mbc1 != null)
+                {
+                    // write to external memory
+                    Debug.WriteLine("Write to SRAM");
+                    Memory[addr] = value;
+                }
+               
             }
             else if (addr >= 0xE000 && addr <= 0xFDFF)
             {
@@ -156,12 +165,18 @@ namespace GameBoy_Emu.core.ram
                 Memory[addr] = value;
                 Memory[addr - 0x2000] = value;
             }
+            else if (addr >= 0xFEA0 && addr <= 0xFEFF)
+            {
+                Debug.WriteLine("Unusable RAM Range");
+            }
             else
             {
+                if (addr == DMA_REGISTER)
+                    IsDmaTransfer = true;
                 Memory[addr] = value;
             }
         }
-        
+
         private byte ReadMemory(int addr)
         {
             if (addr >= 0x4000 & addr <= 0x7FFF)
@@ -177,23 +192,35 @@ namespace GameBoy_Emu.core.ram
             if (addr >= 0xA000 && addr <= 0xBFFF)
             {
                 // read external memory
+                return Memory[addr];
             }
-            
+
+            if (addr >= 0xFEA0 && addr <= 0xFEFF)
+            {
+                Debug.WriteLine("Unusable RAM Range");
+                return 0;
+            }
+
+            if (addr == JOYP_REGISTER)
+            {
+                // tetris test
+                Memory[JOYP_REGISTER] = 0xf;
+            }
+
             return Memory[addr];
         }
+
         public void StoreUnsigned8(int addr, byte value)
         {
             WriteMemory(addr, value);
-            if (addr == DMA_REGISTER)
-                IsDmaTransfer = true;
         }
-        
+
         public void StoreUnsigned16(int addr, ushort value)
         {
-            WriteMemory(addr,(byte)(value & 0xFF ));
-            WriteMemory(addr + 1, (byte)(value >> 8));
+            WriteMemory(addr, (byte) (value & 0xFF));
+            WriteMemory(addr + 1, (byte) (value >> 8));
         }
-        
+
         public byte LoadUnsigned8(int addr)
         {
             return ReadMemory(addr);
@@ -201,12 +228,12 @@ namespace GameBoy_Emu.core.ram
 
         public sbyte LoadSigned8(int addr)
         {
-            return unchecked((sbyte)ReadMemory(addr));
+            return unchecked((sbyte) ReadMemory(addr));
         }
 
         public ushort LoadUnsigned16(int addr)
         {
-            return (ushort)(ReadMemory(addr) | ReadMemory(addr + 1) << 8);
+            return (ushort) (ReadMemory(addr) | ReadMemory(addr + 1) << 8);
         }
 
         public byte LoadInterruptEnable()
@@ -233,7 +260,7 @@ namespace GameBoy_Emu.core.ram
         {
             return Memory[LCDC_REGISTER];
         }
-        
+
         public void DmaTransfer(int cpuCycles)
         {
             _dmaAccumulator += cpuCycles;
@@ -241,12 +268,13 @@ namespace GameBoy_Emu.core.ram
             {
                 _dmaAccumulator = 0;
                 // do work
-                ushort dmaSrc = (ushort)(Memory[DMA_REGISTER] * 0x100);
+                ushort dmaSrc = (ushort) (Memory[DMA_REGISTER] * 0x100);
 
                 for (int i = 0; i < 40 * 4; i++)
                 {
                     Memory[0xFE00 + i] = Memory[dmaSrc + i];
                 }
+
                 IsDmaTransfer = false;
             }
         }

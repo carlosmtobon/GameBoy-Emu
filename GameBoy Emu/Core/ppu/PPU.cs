@@ -173,7 +173,7 @@ namespace GameBoy_Emu.core.ppu
         {
             // set lcdc vblank?
             byte stat = _ram.LoadStat();
-            if (BitUtils.isBitSet(stat, bitToCheck))
+            if (!BitUtils.isBitSet(stat, bitToCheck))
             {
                 SetInterrupt(InterruptController.LCDC_FLAG);
             }

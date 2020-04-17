@@ -9,6 +9,7 @@ namespace GameBoy_Emu.core.input
     public class Joypad
     {
         private Mmu _ram;
+        public static bool IsButtonInput { get; set; }
 
         public Joypad(Mmu ram)
         {
@@ -36,18 +37,15 @@ namespace GameBoy_Emu.core.input
         public void SetKeyPressed(Input input)
         {
             byte joyp = _ram.LoadUnsigned8(Mmu.JOYP_REGISTER);
-            InputType type = GetInputType(joyp);
-            joyp >>= 4;
+            InputType type = IsButtonInput ? InputType.BUTTON : InputType.DIRECTION;
             joyp |= 0xf;
-            if ((type == InputType.BUTTON && IsButton(input)) || (type == InputType.DIRECTION && IsDirection(input)))
-                SetInput(input, joyp, true);
+            SetInput(input, joyp, true);
         }
 
         public void SetKeyReleased(Input input)
         {
             byte joyp = _ram.LoadUnsigned8(Mmu.JOYP_REGISTER);
             InputType type = GetInputType(joyp);
-            joyp >>= 4;
             joyp |= 0xf;
             if ((type == InputType.BUTTON && IsButton(input)) || (type == InputType.DIRECTION && IsDirection(input)))
                 SetInput(input, joyp, false);
@@ -99,11 +97,11 @@ namespace GameBoy_Emu.core.input
                     joyp = BitUtils.SetBit(joyp, 3);
             }
 
-            byte interruptFlag = _ram.LoadUnsigned8(Mmu.IF_REGISTER);
-            interruptFlag = BitUtils.SetBit(interruptFlag, 4);
-            _ram.StoreUnsigned8(Mmu.IF_REGISTER, interruptFlag);
-            _ram.StoreUnsigned8(Mmu.JOYP_REGISTER, joyp);
-            Debug.WriteLine("Key pressed/released");
+            // byte interruptFlag = _ram.LoadUnsigned8(Mmu.IF_REGISTER);
+            // interruptFlag = BitUtils.SetBit(interruptFlag, 4);
+            // _ram.StoreUnsigned8(Mmu.IF_REGISTER, interruptFlag);
+            // _ram.StoreUnsigned8(Mmu.JOYP_REGISTER, joyp);
+           // Debug.WriteLine("Key pressed/released");
         }
     }
 }

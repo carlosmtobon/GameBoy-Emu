@@ -22,14 +22,8 @@
         
         public void WriteBank1(byte val)
         {
-            if (val == 0)
-            {
-                _bank1 = 1;
-            }
-            else
-            {
-                _bank1 = (byte)(val & 0x1F);
-            }
+            val &= 0x1F;
+            _bank1 = val == 0 ? (byte) 1 : val;
         }
 
         public void WriteBank2(byte val)

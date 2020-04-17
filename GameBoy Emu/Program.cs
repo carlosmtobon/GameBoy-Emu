@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
 using GameBoy_Emu.core.cpu;
 using GameBoy_Emu.core.input;
 using GameBoy_Emu.core.ppu;
@@ -10,7 +11,6 @@ namespace GameBoy_Emu
 {
     static class Program
     {
-
         static void Main()
         {
             if (SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING) < 0)
@@ -18,9 +18,10 @@ namespace GameBoy_Emu
                 Console.WriteLine("Failed to Init SDL");
                 return;
             }
+
             Mmu ram = LoadRom();
             var joypad = new Joypad(ram);
-            var display = new Display(160, 144, 4);
+            var display = new Display(160, 144, 2);
             var cpu = new Cpu(ram);
             var ppu = new Ppu(ram, display);
 
@@ -29,49 +30,43 @@ namespace GameBoy_Emu
             InitSDL(display, out renderer, out rect);
 
             bool running = true;
-            bool log = false;
+            int ticks = 0;
             while (running)
             {
-                
-                // if (cpu.PC == 0xdef8)
-                // {
-                //     log = true; 
-                // }
-                // if (log)
-                //     Debug.WriteLine(String.Format("af:{2:X4} bc:{3:X4} de:{4:X4} hl:{5:X4} pc:{0:X4} sp:{1:X4} ", cpu.PC, cpu.SP, cpu.Registers.GetAF(), cpu.Registers.GetBC(), cpu.Registers.GetDE(), cpu.Registers.GetHL()));
-
                 cpu.Tick();
+                ticks += cpu.CpuTickCycles;
                 ppu.Tick(cpu.CpuTickCycles);
-                // HandleInput(joypad);
+                HandleInput(joypad);
                 UpdateDisplay(ram, display, ppu, renderer, ref rect, ref running);
-               
-               
+
+
                 var sc = ram.LoadUnsigned8(0xff02);
                 if (sc == 0x81)
                 {
                     Debug.Write((char) ram.LoadUnsigned8(0xff01));
                     ram.StoreUnsigned8(0xff02, 0);
                 }
-                
             }
         }
 
         private static void InitSDL(Display display, out IntPtr renderer, out SDL.SDL_Rect rect)
         {
-            IntPtr window = SDL.SDL_CreateWindow("Chicho's Gameboy Emulator", 200, 200, display.Width * 4, display.Height * 4, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
+            IntPtr window = SDL.SDL_CreateWindow("Chicho's Gameboy Emulator", 100, 100, display.Width * 2,
+                display.Height * 2, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
 
             renderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+            
             rect = new SDL.SDL_Rect();
             rect.h = 10 * display.Scale;
             rect.w = 10 * display.Scale;
         }
 
-        private static void UpdateDisplay(Mmu ram, Display display, Ppu ppu, IntPtr renderer, ref SDL.SDL_Rect rect, ref bool running)
+        private static void UpdateDisplay(Mmu ram, Display display, Ppu ppu, IntPtr renderer, ref SDL.SDL_Rect rect,
+            ref bool running)
         {
-            SDL.SDL_RenderClear(renderer);
-
             if (display.Draw)
             {
+                SDL.SDL_RenderClear(renderer);
                 display.Draw = false;
                 for (int row = 0; row < ppu.Display.Height; row++)
                 {
@@ -102,7 +97,7 @@ namespace GameBoy_Emu
                 }
 
                 SDL.SDL_RenderPresent(renderer);
-                SDL.SDL_Delay(5);
+                SDL.SDL_Delay(16);
             }
         }
 
@@ -178,29 +173,13 @@ namespace GameBoy_Emu
         private static Mmu LoadRom()
         {
             var ram = new Mmu();
-             ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\testGame.gb");
-            
-           
-
             //passed
-           
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Castlevania - The Adventure (USA).gb");
             // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Bubble Ghost (USA, Europe).gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\07-jr,jp,call,ret,rst.gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\03-op sp,hl.gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\08-misc instrs.gb");
-            ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
+            ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
             // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\DMG_ROM.bin");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\cpu_instrs.gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\01-special.gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\02-interrupts.gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\04-op r,imm.gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\05-op rp.gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\06-ld r,r.gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\09-op r,r.gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\10-bit ops.gb");
-           // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\11-op a,(hl).gb");
+            //ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\cpu_instrs.gb");
             return ram;
         }
     }
