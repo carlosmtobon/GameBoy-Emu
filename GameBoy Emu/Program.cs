@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Drawing;
 using GameBoy_Emu.core.cpu;
 using GameBoy_Emu.core.input;
 using GameBoy_Emu.core.ppu;
@@ -25,65 +23,60 @@ namespace GameBoy_Emu
             var cpu = new Cpu(ram);
             var ppu = new Ppu(ram, display);
 
+            IntPtr window;
             IntPtr renderer;
             SDL.SDL_Rect rect;
-            InitSDL(display, out renderer, out rect);
+            InitSDL(display, out window, out renderer, out rect);
 
             bool running = true;
-            int ticks = 0;
             while (running)
             {
                 cpu.Tick();
-                ticks += cpu.CpuTickCycles;
                 ppu.Tick(cpu.CpuTickCycles);
-                HandleInput(joypad);
-                UpdateDisplay(ram, display, ppu, renderer, ref rect, ref running);
-
-
-                var sc = ram.LoadUnsigned8(0xff02);
-                if (sc == 0x81)
-                {
-                    Debug.Write((char) ram.LoadUnsigned8(0xff01));
-                    ram.StoreUnsigned8(0xff02, 0);
-                }
+                running = HandleInput(joypad);
+                UpdateDisplay(display, renderer, ref rect);
             }
+
+            // clean up
+            SDL.SDL_DestroyRenderer(renderer);
+            SDL.SDL_DestroyWindow(window);
+            SDL.SDL_Quit();
         }
 
-        private static void InitSDL(Display display, out IntPtr renderer, out SDL.SDL_Rect rect)
+        private static void InitSDL(Display display, out IntPtr window, out IntPtr renderer, out SDL.SDL_Rect rect)
         {
-            IntPtr window = SDL.SDL_CreateWindow("Chicho's Gameboy Emulator", 100, 100, display.Width * 2,
+            window = SDL.SDL_CreateWindow("Chicho's Gameboy Emulator", 100, 100, display.Width * 2,
                 display.Height * 2, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
 
             renderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
-            
+
             rect = new SDL.SDL_Rect();
             rect.h = 10 * display.Scale;
             rect.w = 10 * display.Scale;
         }
 
-        private static void UpdateDisplay(Mmu ram, Display display, Ppu ppu, IntPtr renderer, ref SDL.SDL_Rect rect,
-            ref bool running)
+        private static void UpdateDisplay(Display display, IntPtr renderer, ref SDL.SDL_Rect rect)
         {
             if (display.Draw)
             {
                 SDL.SDL_RenderClear(renderer);
                 display.Draw = false;
-                for (int row = 0; row < ppu.Display.Height; row++)
+                for (int row = 0; row < display.Height; row++)
                 {
-                    for (int col = 0; col < ppu.Display.Width; col++)
+                    for (int col = 0; col < display.Width; col++)
                     {
                         rect.x = col * display.Scale;
                         rect.y = row * display.Scale;
 
-                        if (ppu.Display.Pixels[row][col] == 1)
+                        if (display.Pixels[row][col] == 1)
                         {
                             SDL.SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
                         }
-                        else if (ppu.Display.Pixels[row][col] == 2)
+                        else if (display.Pixels[row][col] == 2)
                         {
                             SDL.SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                         }
-                        else if (ppu.Display.Pixels[row][col] == 3)
+                        else if (display.Pixels[row][col] == 3)
                         {
                             SDL.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                         }
@@ -101,11 +94,13 @@ namespace GameBoy_Emu
             }
         }
 
-        private static void HandleInput(Joypad joypad)
+        private static bool HandleInput(Joypad joypad)
         {
             SDL.SDL_Event sdlEvent;
             while (SDL.SDL_PollEvent(out sdlEvent) != 0)
             {
+                if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
+                    return false;
                 if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYDOWN)
                 {
                     switch (sdlEvent.key.keysym.sym)
@@ -168,6 +163,8 @@ namespace GameBoy_Emu
                     }
                 }
             }
+
+            return true;
         }
 
         private static Mmu LoadRom()
