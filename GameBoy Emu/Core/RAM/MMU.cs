@@ -119,6 +119,14 @@ namespace GameBoy_Emu.core.ram
                 _mbc1 = new Mbc1();
             }
         }
+        
+        public void LoadBios(string fileName)
+        {
+            using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+            {
+                fs.Read(Memory, 0, Memory.Length);
+            }
+        }
 
         private void ReadRomHeader()
         {
