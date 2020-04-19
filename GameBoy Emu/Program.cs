@@ -33,7 +33,7 @@ namespace GameBoy_Emu
             {
                 cpu.Tick();
                 ppu.Tick(cpu.CpuTickCycles);
-                //running = HandleInput(joypad);
+                // running = HandleInput(joypad);
                 UpdateDisplay(display, renderer, ref rect);
             }
 
@@ -61,22 +61,23 @@ namespace GameBoy_Emu
             {
                 SDL.SDL_RenderClear(renderer);
                 display.Draw = false;
-                for (int row = 0; row < display.Height; row++)
+                for (int y = 0; y < display.Height; y++)
                 {
-                    for (int col = 0; col < display.Width; col++)
+                    for (int x = 0; x < display.Width; x++)
                     {
-                        rect.x = col * display.Scale;
-                        rect.y = row * display.Scale;
+                        rect.x = x * display.Scale;
+                        rect.y = y * display.Scale;
 
-                        if (display.Pixels[row][col] == 1)
+                        int color = display.Pixels[y * display.Width + x]; 
+                        if (color == 1)
                         {
                             SDL.SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
                         }
-                        else if (display.Pixels[row][col] == 2)
+                        else if (color == 2)
                         {
                             SDL.SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                         }
-                        else if (display.Pixels[row][col] == 3)
+                        else if (color == 3)
                         {
                             SDL.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                         }
@@ -172,9 +173,9 @@ namespace GameBoy_Emu
             //passed
             // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Castlevania - The Adventure (USA).gb");
             // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Bubble Ghost (USA, Europe).gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
-            ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
+             // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
+            ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
             //ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\cpu_instrs.gb");
            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\DMG_ROM.bin");
             return ram;

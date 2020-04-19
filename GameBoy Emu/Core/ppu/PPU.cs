@@ -7,9 +7,6 @@ namespace GameBoy_Emu.core.ppu
     public class Ppu
     {
         private readonly Mmu _ram;
-        private readonly BgTileMapManager _bgTileMapManager;
-        private readonly PixelFifo _pixelFifo;
-        private readonly PixelFifo _spriteFifo;
         private readonly Fetcher _fetcher;
         public Display Display { get; set; }
         public PpuStatus Status { get; set; }
@@ -21,22 +18,18 @@ namespace GameBoy_Emu.core.ppu
 
         public enum PpuStatus { HBLANK, VBLANK, OAM_SEARCH, PIXEL_TRANSFER };
 
-        public Ppu(Mmu ram, Display screen)
+        public Ppu(Mmu ram, Display display)
         {
             _ram = ram;
-            _bgTileMapManager = new BgTileMapManager(ram);
-            _pixelFifo = new PixelFifo();
-            _spriteFifo = new PixelFifo();
-            _fetcher = new Fetcher(_bgTileMapManager, ram);
-            Display = screen;
+            _fetcher = new Fetcher(display, ram);
+            Display = display;
             Status = PpuStatus.OAM_SEARCH;
         }
 
         int clocks;
-        int totalClockPerFrame;
+        
         public void Tick(int cpuCycles)
         {
-            totalClockPerFrame += cpuCycles;
             clocks += cpuCycles;
             SetMode();
             if (Status == PpuStatus.OAM_SEARCH)
@@ -45,6 +38,7 @@ namespace GameBoy_Emu.core.ppu
             }
             else if (Status == PpuStatus.PIXEL_TRANSFER)
             {
+                LcyCompare();
                 PixelTransfer(cpuCycles);
             }
             else if (Status == PpuStatus.HBLANK)
@@ -55,6 +49,20 @@ namespace GameBoy_Emu.core.ppu
             {
                 Vblank();
             }
+        }
+
+        private void LcyCompare()
+        {
+            //lyc lcy compare
+            byte lcy = _ram.LoadUnsigned8(Mmu.LCY_REGISTER);
+            byte ly = _ram.LoadLy();
+            if (ly == lcy)
+            {
+                byte stat = _ram.LoadStat();
+                _ram.StoreUnsigned8(Mmu.STAT_REGISTER, BitUtils.SetBit(stat, 2));
+            }
+            
+            SetLcdcInterruptIfNeeded(6);
         }
 
         public void SetMode()
@@ -88,40 +96,17 @@ namespace GameBoy_Emu.core.ppu
                 clocks -= OAM_SEARCH_CYCLES;
                 Status = PpuStatus.PIXEL_TRANSFER;
                 SetLcdcInterruptIfNeeded(5);
-                byte lcdc = _ram.LoadLcdc();
-                int spriteHeight = 8;
-                if (BitUtils.GetBit(lcdc, 2) == 1)
-                {
-                    spriteHeight = 16;
-                }
-                _bgTileMapManager.FindVisibleSprites(Display.Y, spriteHeight);
+                
+                _fetcher.FindVisibleSprites();
             }
         }
 
         private void PixelTransfer(int cpuCycles)
         {
-            var sprite = _bgTileMapManager.GetVisibleSprites().Find(oamEntry => oamEntry.XPos == Display.X);
-            if (sprite != null)
-            {
-                _fetcher.GetSprite(sprite, Display);
-                _spriteFifo.LoadFifo(_fetcher);
-            }
-            while (cpuCycles > 0)
-            {
-                int work = _pixelFifo.Process(Display);
-                _fetcher.Process(Display);
-                _spriteFifo.Process(Display);
-                cpuCycles -= work;
-
-                if (_fetcher.State == Fetcher.FetcherState.TRANSFER_READY && _pixelFifo.State == PixelFifo.PixelFifoState.IDLE)
-                {
-                    _pixelFifo.LoadFifo(_fetcher);
-                }
-            }
-
+            _fetcher.Tick(cpuCycles);
+            
             if (clocks >= PIXEL_PROCESS_CYCLES)
             {
-                _pixelFifo.Reset();
                 _fetcher.Reset();
                 clocks -= PIXEL_PROCESS_CYCLES;
                 Status = PpuStatus.HBLANK;
@@ -159,7 +144,7 @@ namespace GameBoy_Emu.core.ppu
                
                 IncrementLy();
                 clocks -= VBLANK_CYCLES;
-                byte bgp =_ram.LoadUnsigned8(Mmu.BGP_REGISTER);
+              
                 if (Display.Y > 153)
                 {
                     Display.Draw = true;
@@ -173,7 +158,7 @@ namespace GameBoy_Emu.core.ppu
         {
             // set lcdc vblank?
             byte stat = _ram.LoadStat();
-            if (!BitUtils.isBitSet(stat, bitToCheck))
+            if (BitUtils.isBitSet(stat, bitToCheck))
             {
                 SetInterrupt(InterruptController.LCDC_FLAG);
             }

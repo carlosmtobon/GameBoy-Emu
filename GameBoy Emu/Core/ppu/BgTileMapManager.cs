@@ -108,9 +108,14 @@ namespace GameBoy_Emu.core.ppu
             }
         }
 
-        public void FindVisibleSprites(int y, int spriteHeight)
+        public void FindVisibleSprites(int y)
         {
-            _oamEntryManager.FindVisibleSprites(y, spriteHeight);
+            _oamEntryManager.FindVisibleSprites(y, GetSpriteHeight());
+        }
+
+        public int GetSpriteHeight()
+        {
+            return BitUtils.GetBit(_ram.LoadLcdc(), 2) == 1 ? 16 : 8;
         }
 
         public List<OamEntry> GetVisibleSprites()

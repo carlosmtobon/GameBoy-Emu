@@ -26,17 +26,13 @@ namespace GameBoy_Emu.core.ppu
                     State = PixelFifoState.IDLE;
                     return 0;
                 }
-                else
-                {
-                    Push(display);
-                    return 1;
-                }
+
+                Push(display);
+                return 1;
             }
-            else
-            {
-                Idle();
-                return 0;
-            }
+
+            Idle();
+            return 0;
         }
 
         private void Idle()
@@ -61,7 +57,6 @@ namespace GameBoy_Emu.core.ppu
             }
             fetcher.Pixels.Clear();
             fetcher.State = Fetcher.FetcherState.READ_TILE_NUM;
-            State = PixelFifo.PixelFifoState.PUSHING;
         }
 
         public void Reset()
