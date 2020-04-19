@@ -46,7 +46,7 @@ namespace GameBoy_Emu.core.ppu
             
             if (!BitUtils.isBitSet(_ram.LoadLcdc(), 4))
             {
-                startAddr = tileNumber > 127 ?  TILE_DATA_START_1 + (tileNumber * 16) : TILE_DATA_START_2 + (tileNumber * 16);
+                startAddr = tileNumber < 127 ?  TILE_DATA_START_2 + (tileNumber * 16) : TILE_DATA_START_1 + (tileNumber * 16);
             }
             else
             {
@@ -63,13 +63,13 @@ namespace GameBoy_Emu.core.ppu
         public Tile GetSpriteTile(int tileNumber)
         {
             int tileDataStart = TILE_DATA_START_1;
-            int startAddr = tileDataStart + (tileNumber * 16);
+            int addr = tileDataStart + (tileNumber * 16);
             byte[] tileData = new byte[16];
             for (int i = 0; i < 16; i++)
             {
-                tileData[i] = _ram.LoadUnsigned8(startAddr + i);
+                tileData[i] = _ram.LoadUnsigned8(addr + i);
             }
-            return new Tile(startAddr, tileData);
+            return new Tile(addr, tileData);
         }
 
         public void DisplayBgMap1()

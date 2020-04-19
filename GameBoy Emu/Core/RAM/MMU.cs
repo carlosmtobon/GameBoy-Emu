@@ -126,6 +126,7 @@ namespace GameBoy_Emu.core.ram
             {
                 fs.Read(Memory, 0, Memory.Length);
             }
+            LoadNintendoLogo();
         }
 
         private void ReadRomHeader()

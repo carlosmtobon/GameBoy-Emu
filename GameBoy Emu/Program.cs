@@ -19,7 +19,7 @@ namespace GameBoy_Emu
 
             Mmu ram = LoadRom();
             var joypad = new Joypad(ram);
-            var display = new Display(160, 144, 2);
+            var display = new Display(160, 144, 4);
             var cpu = new Cpu(ram);
             var ppu = new Ppu(ram, display);
 
@@ -33,7 +33,7 @@ namespace GameBoy_Emu
             {
                 cpu.Tick();
                 ppu.Tick(cpu.CpuTickCycles);
-                running = HandleInput(joypad);
+                //running = HandleInput(joypad);
                 UpdateDisplay(display, renderer, ref rect);
             }
 
@@ -45,8 +45,8 @@ namespace GameBoy_Emu
 
         private static void InitSDL(Display display, out IntPtr window, out IntPtr renderer, out SDL.SDL_Rect rect)
         {
-            window = SDL.SDL_CreateWindow("Chicho's Gameboy Emulator", 100, 100, display.Width * 2,
-                display.Height * 2, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
+            window = SDL.SDL_CreateWindow("Chicho's Gameboy Emulator", 100, 100, display.Width * display.Scale,
+                display.Height * display.Scale, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
 
             renderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
 
@@ -90,7 +90,6 @@ namespace GameBoy_Emu
                 }
 
                 SDL.SDL_RenderPresent(renderer);
-                SDL.SDL_Delay(16);
             }
         }
 
@@ -177,6 +176,7 @@ namespace GameBoy_Emu
             ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
             // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
             //ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\cpu_instrs.gb");
+           // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\DMG_ROM.bin");
             return ram;
         }
     }
