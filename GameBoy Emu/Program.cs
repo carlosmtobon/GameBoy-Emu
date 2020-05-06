@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using GameBoy_Emu.core.cpu;
 using GameBoy_Emu.core.input;
 using GameBoy_Emu.core.ppu;
@@ -11,20 +12,31 @@ namespace GameBoy_Emu
     {
         static void Main()
         {
-            if (SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING) < 0)
+            if (SDL.SDL_Init(SDL.SDL_INIT_VIDEO) < 0)
             {
                 Console.WriteLine("Failed to Init SDL");
                 return;
             }
-
-            Mmu ram = LoadRom();
-            var joypad = new Joypad(ram);
+            
+            Joypad joypad = new Joypad();
+            Mmu ram = new Mmu(joypad);
+            //passed
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Castlevania - The Adventure (USA).gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Bubble Ghost (USA, Europe).gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
+               ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
+            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\cpu_instrs.gb");
+            // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\DMG_ROM.bin");
+            
+           
             var display = new Display(160, 144, 4);
             var cpu = new Cpu(ram);
             var ppu = new Ppu(ram, display);
 
             IntPtr window;
             IntPtr renderer;
+            SDL.SDL_Event sdlEvent;
             SDL.SDL_Rect rect;
             InitSDL(display, out window, out renderer, out rect);
 
@@ -32,8 +44,8 @@ namespace GameBoy_Emu
             while (running)
             {
                 cpu.Tick();
-                ppu.Tick(cpu.CpuTickCycles);
-                // running = HandleInput(joypad);
+                ppu.Tick(cpu.CpuTickCycles); 
+                running = HandleInput(joypad);
                 UpdateDisplay(display, renderer, ref rect);
             }
 
@@ -46,13 +58,19 @@ namespace GameBoy_Emu
         private static void InitSDL(Display display, out IntPtr window, out IntPtr renderer, out SDL.SDL_Rect rect)
         {
             window = SDL.SDL_CreateWindow("Chicho's Gameboy Emulator", 100, 100, display.Width * display.Scale,
-                display.Height * display.Scale, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
+                display.Height * display.Scale, SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL);
 
             renderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
 
             rect = new SDL.SDL_Rect();
             rect.h = 10 * display.Scale;
             rect.w = 10 * display.Scale;
+
+            SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEMOTION, SDL.SDL_IGNORE);
+            SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEWHEEL, SDL.SDL_IGNORE);
+            SDL.SDL_EventState(SDL.SDL_EventType.SDL_TEXTINPUT, SDL.SDL_IGNORE);
+           // SDL.SDL_EventState(SDL.SDL_EventType.SDL_KEYDOWN, SDL.SDL_IGNORE);
+
         }
 
         private static void UpdateDisplay(Display display, IntPtr renderer, ref SDL.SDL_Rect rect)
@@ -105,29 +123,29 @@ namespace GameBoy_Emu
                 {
                     switch (sdlEvent.key.keysym.sym)
                     {
-                        case SDL.SDL_Keycode.SDLK_UP:
-                            joypad.SetKeyPressed(Joypad.Input.UP);
-                            break;
-                        case SDL.SDL_Keycode.SDLK_DOWN:
-                            joypad.SetKeyPressed(Joypad.Input.DOWN);
+                        case SDL.SDL_Keycode.SDLK_RIGHT:
+                            joypad.PressDirection(0);
                             break;
                         case SDL.SDL_Keycode.SDLK_LEFT:
-                            joypad.SetKeyPressed(Joypad.Input.LEFT);
+                            joypad.PressDirection(1);
                             break;
-                        case SDL.SDL_Keycode.SDLK_RIGHT:
-                            joypad.SetKeyPressed(Joypad.Input.RIGHT);
+                        case SDL.SDL_Keycode.SDLK_UP:
+                            joypad.PressDirection(2);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_DOWN:
+                            joypad.PressDirection(3);
                             break;
                         case SDL.SDL_Keycode.SDLK_z:
-                            joypad.SetKeyPressed(Joypad.Input.A);
+                            joypad.PressButton(0);
                             break;
                         case SDL.SDL_Keycode.SDLK_x:
-                            joypad.SetKeyPressed(Joypad.Input.B);
+                            joypad.PressButton(1);
                             break;
                         case SDL.SDL_Keycode.SDLK_SPACE:
-                            joypad.SetKeyPressed(Joypad.Input.SELECT);
+                            joypad.PressButton(2);
                             break;
                         case SDL.SDL_Keycode.SDLK_RETURN:
-                            joypad.SetKeyPressed(Joypad.Input.START);
+                            joypad.PressButton(3);
                             break;
                     }
                 }
@@ -136,29 +154,29 @@ namespace GameBoy_Emu
                 {
                     switch (sdlEvent.key.keysym.sym)
                     {
-                        case SDL.SDL_Keycode.SDLK_UP:
-                            joypad.SetKeyReleased(Joypad.Input.UP);
-                            break;
-                        case SDL.SDL_Keycode.SDLK_DOWN:
-                            joypad.SetKeyReleased(Joypad.Input.DOWN);
+                        case SDL.SDL_Keycode.SDLK_RIGHT:
+                            joypad.ReleaseDirection(0);
                             break;
                         case SDL.SDL_Keycode.SDLK_LEFT:
-                            joypad.SetKeyReleased(Joypad.Input.LEFT);
+                            joypad.ReleaseDirection(1);
                             break;
-                        case SDL.SDL_Keycode.SDLK_RIGHT:
-                            joypad.SetKeyReleased(Joypad.Input.RIGHT);
+                        case SDL.SDL_Keycode.SDLK_UP:
+                            joypad.ReleaseDirection(2);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_DOWN:
+                            joypad.ReleaseDirection(3);
                             break;
                         case SDL.SDL_Keycode.SDLK_z:
-                            joypad.SetKeyReleased(Joypad.Input.A);
+                            joypad.ReleaseButton(0);
                             break;
                         case SDL.SDL_Keycode.SDLK_x:
-                            joypad.SetKeyReleased(Joypad.Input.B);
+                            joypad.ReleaseButton(1);
                             break;
                         case SDL.SDL_Keycode.SDLK_SPACE:
-                            joypad.SetKeyReleased(Joypad.Input.SELECT);
+                            joypad.ReleaseButton(2);
                             break;
                         case SDL.SDL_Keycode.SDLK_RETURN:
-                            joypad.SetKeyReleased(Joypad.Input.START);
+                            joypad.ReleaseButton(3);
                             break;
                     }
                 }
@@ -166,19 +184,17 @@ namespace GameBoy_Emu
 
             return true;
         }
-
-        private static Mmu LoadRom()
+        
+        private static int FilterEvent(ref SDL.SDL_Event sdlEvent)
         {
-            var ram = new Mmu();
-            //passed
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Castlevania - The Adventure (USA).gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Bubble Ghost (USA, Europe).gb");
-             // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
-            ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
-            //ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\cpu_instrs.gb");
-           // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\DMG_ROM.bin");
-            return ram;
+            /* This quit event signals the closing of the window */
+            if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT) {
+                return(0);
+            }
+            if ( sdlEvent.type == SDL.SDL_EventType.SDL_MOUSEMOTION ) {
+                return(0);    
+            }
+            return(1);
         }
     }
 }

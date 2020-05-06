@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using GameBoy_Emu.core.cpu;
 using GameBoy_Emu.core.input;
 using GameBoy_Emu.core.mbc;
 using GameBoy_Emu.core.utils;
@@ -13,9 +14,14 @@ namespace GameBoy_Emu.core.ram
         private int _dmaAccumulator;
         public bool IsDmaTransfer;
         public const int DMA_FREQUENCY = 160;
-
+            
         private RomHeader _romHeader;
         private Mbc1 _mbc1;
+        private Joypad _joypad;
+        private const int RAM_SIZE = 0x10000;
+        
+        public byte[] Memory { get; }
+        public byte[] CartRom { get; set; }
 
         private readonly byte[] logoBytes =
         {
@@ -24,9 +30,7 @@ namespace GameBoy_Emu.core.ram
             0x0E, 0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E,
             0x0E, 0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E
         };
-
-        private const int RAM_SIZE = 0x10000;
-
+      
         // special register address
         public const int IE_REGISTER = 0xFFFF;
         public const int IF_REGISTER = 0xFF0F;
@@ -46,19 +50,14 @@ namespace GameBoy_Emu.core.ram
         public const int BGP_REGISTER = 0xFF47;
         public const int WY_REGISTER = 0xFF4A;
         public const int WX_REGISTER = 0xFF4B;
-
-        // joypad
         public const int JOYP_REGISTER = 0xFF00;
 
-        public byte[] Memory { get; }
-        public byte[] CartRom { get; set; }
-
-        public Mmu()
+        public Mmu(Joypad joypad)
         {
             Memory = new byte[RAM_SIZE];
+            _joypad = joypad;
             BootupValues();
         }
-
         private void BootupValues()
         {
             Memory[0xFF05] = 0x00; // TIMA
@@ -160,10 +159,9 @@ namespace GameBoy_Emu.core.ram
             }
             else if (addr >= 0xA000 && addr <= 0xBFFF)
             {
-                if (_mbc1 != null)
+                if (_mbc1 != null && _mbc1.IsRamEnabled())
                 {
                     // write to external memory
-                    Debug.WriteLine("Write to SRAM");
                     Memory[addr] = value;
                 }
                
@@ -171,8 +169,8 @@ namespace GameBoy_Emu.core.ram
             else if (addr >= 0xE000 && addr <= 0xFDFF)
             {
                 // handle echo
-                Memory[addr] = value;
-                Memory[addr - 0x2000] = value;
+               Memory[addr] = value;
+               Memory[addr - 0x2000] = value;
             }
             else if (addr >= 0xFEA0 && addr <= 0xFEFF)
             {
@@ -188,6 +186,16 @@ namespace GameBoy_Emu.core.ram
 
         private byte ReadMemory(int addr)
         {
+            if (addr >= 0 & addr <= 0x3fff)
+            {
+                if (_mbc1 != null)
+                {
+                    if (_mbc1.GetMode() == 1)
+                         return CartRom[(addr - 0x4000) + ((_mbc1.GetBank2() << 5) * 0x4000)];
+                }
+                return Memory[addr];
+               
+            }
             if (addr >= 0x4000 & addr <= 0x7FFF)
             {
                 if (_mbc1 != null)
@@ -201,7 +209,11 @@ namespace GameBoy_Emu.core.ram
             if (addr >= 0xA000 && addr <= 0xBFFF)
             {
                 // read external memory
-                return Memory[addr];
+                if (_mbc1 != null && _mbc1.IsRamEnabled())
+                {
+                    return Memory[addr];
+                }
+                return 0xff;
             }
 
             if (addr >= 0xFEA0 && addr <= 0xFEFF)
@@ -212,10 +224,8 @@ namespace GameBoy_Emu.core.ram
 
             if (addr == JOYP_REGISTER)
             {
-                // tetris test
-                Memory[JOYP_REGISTER] = 0xf;
+                Memory[JOYP_REGISTER] = _joypad.Process(Memory[JOYP_REGISTER]);
             }
-
             return Memory[addr];
         }
 

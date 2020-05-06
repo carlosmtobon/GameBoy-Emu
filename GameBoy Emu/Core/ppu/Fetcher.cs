@@ -93,23 +93,24 @@ namespace GameBoy_Emu.core.ppu
         {
             Pixels.Clear();
             _tile = _bgTileMap.GetSpriteTile(sprite.TileNumber);
-            Pixels = _tile.GetRowPixelData(yPos % _bgTileMap.GetSpriteHeight());
+            Pixels = _tile.GetRowPixelData((yPos) % _bgTileMap.GetSpriteHeight());
         }
 
         public void Tick(int cpuCycles)
         {
-            var sprite = _bgTileMap.GetVisibleSprites().Find(oamEntry => oamEntry.XPos == _display.X);
-            if (sprite != null)
-            {
-                GetSprite(sprite, _display.Y);
-                _spriteFifo.LoadFifo(this);
-            }
-
+            
             while (cpuCycles > 0)
             {
+                var sprite = _bgTileMap.GetVisibleSprites().Find(oamEntry => oamEntry.XPos == _display.X + 8);
+                
+                if (_bgTileMap.GetVisibleSprites().Remove(sprite))
+                {
+                    GetSprite(sprite, _display.Y);
+                    _tileFifo.Mix(Pixels);
+                }
+
                 Process();
-                _spriteFifo.Process(_display);
-                cpuCycles -=  _tileFifo.Process(_display);
+                cpuCycles -= _tileFifo.Process(_display);
 
                 if (State == FetcherState.TRANSFER_READY && _tileFifo.State == PixelFifo.PixelFifoState.IDLE)
                 {

@@ -5,7 +5,7 @@ namespace GameBoy_Emu.core.ppu
     public class PixelFifo
     {
         public PixelFifoState State { get; set; }
-        private readonly Queue<PixelData> _pixels;
+        private Queue<PixelData> _pixels;
         private int _fifoAccumalator;
         public const int FIFO_FREQUENCY = 1;
 
@@ -35,6 +35,36 @@ namespace GameBoy_Emu.core.ppu
             return 0;
         }
 
+        public void Mix(Queue<PixelData> spriteData)
+        {
+            var temp = _pixels;
+            var newData = new Queue<PixelData>();
+            foreach (var pixel in spriteData)
+            {
+                newData.Enqueue(pixel);
+                temp.Dequeue();
+            }
+            foreach (var pixel in temp)
+            {
+                newData.Enqueue(pixel);
+            }
+
+            _pixels = newData;
+        }
+        
+        public int ProcessSprite(Display display)
+        {
+            if (_pixels.Count > 0)
+            {
+                Push(display);
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        
         private void Idle()
         {
             if (_pixels.Count > 8)

@@ -46,7 +46,7 @@ namespace GameBoy_Emu.core.ppu
             
             if (!BitUtils.isBitSet(_ram.LoadLcdc(), 4))
             {
-                startAddr = tileNumber < 127 ?  TILE_DATA_START_2 + (tileNumber * 16) : TILE_DATA_START_1 + (tileNumber * 16);
+                startAddr = tileNumber < 127 ?  TILE_DATA_START_2 + (tileNumber * 16) : TILE_DATA_START_2 + ((sbyte)tileNumber * 16);
             }
             else
             {

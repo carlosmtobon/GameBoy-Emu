@@ -41,9 +41,24 @@
             return _bank2 | _bank1;
         }
 
+        public int GetBank1()
+        {
+            return _bank1;
+        }
+
+        public int GetBank2()
+        {
+            return _bank2;
+        }
+
         public int GetMode()
         {
             return _mode;
+        }
+
+        public bool IsRamEnabled()
+        {
+            return _ramg == 0xA;
         }
     }
 }
