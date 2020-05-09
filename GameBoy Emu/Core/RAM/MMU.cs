@@ -22,6 +22,7 @@ namespace GameBoy_Emu.core.ram
         
         public byte[] Memory { get; }
         public byte[] CartRom { get; set; }
+        public byte[] CartRam { get; set; }
 
         private readonly byte[] logoBytes =
         {
@@ -109,13 +110,14 @@ namespace GameBoy_Emu.core.ram
                 fs.Read(CartRom, 0, CartRom.Length);
             }
 
-            Array.Copy(CartRom, Memory, 0x8000);
+            Array.Copy(CartRom, Memory, CartRom.Length);
             ReadRomHeader();
 
             // support Mbc1 for now and work on abstracting later
             if (_romHeader.RomType == 0x01)
             {
                 _mbc1 = new Mbc1();
+                CartRam = new byte[0x2000];
             }
         }
         
@@ -162,7 +164,7 @@ namespace GameBoy_Emu.core.ram
                 if (_mbc1 != null && _mbc1.IsRamEnabled())
                 {
                     // write to external memory
-                    Memory[addr] = value;
+                    CartRam[addr] = value;
                 }
                
             }
@@ -211,7 +213,7 @@ namespace GameBoy_Emu.core.ram
                 // read external memory
                 if (_mbc1 != null && _mbc1.IsRamEnabled())
                 {
-                    return Memory[addr];
+                    return CartRam[addr];
                 }
                 return 0xff;
             }
