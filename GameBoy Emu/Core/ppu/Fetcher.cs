@@ -92,13 +92,13 @@ namespace GameBoy_Emu.core.ppu
         public void GetSprite(OamEntry sprite, int yPos)
         {
             Pixels.Clear();
-            _tile = _bgTileMap.GetSpriteTile(sprite.TileNumber);
-            Pixels = _tile.GetRowPixelData((yPos) % _bgTileMap.GetSpriteHeight());
+            var height = _bgTileMap.GetSpriteHeight();
+            _tile = _bgTileMap.GetSpriteTile(sprite.TileNumber, height);
+            Pixels = _tile.GetRowPixelData(yPos % height);
         }
 
         public void Tick(int cpuCycles)
         {
-            
             while (cpuCycles > 0)
             {
                 var sprite = _bgTileMap.GetVisibleSprites().Find(oamEntry => oamEntry.XPos == _display.X + 8);

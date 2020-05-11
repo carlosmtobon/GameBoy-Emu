@@ -157,11 +157,11 @@ namespace GameBoy_Emu.core.ppu
         private void SetLcdcInterruptIfNeeded(int bitToCheck)
         {
             // set lcdc vblank?
-            byte stat = _ram.LoadStat();
-            if (BitUtils.isBitSet(stat, bitToCheck))
-            {
-                SetInterrupt(InterruptController.LCDC_FLAG);
-            }
+            // byte stat = _ram.LoadStat();
+            // if (BitUtils.isBitSet(stat, bitToCheck))
+            // {
+            //     SetInterrupt(InterruptController.LCDC_FLAG);
+            // }
         }
 
         private void IncrementLy()
@@ -171,7 +171,7 @@ namespace GameBoy_Emu.core.ppu
 
         private void SetInterrupt(byte flag)
         {
-            byte interruptFlag = _ram.Memory[Mmu.IF_REGISTER];
+            byte interruptFlag = _ram.LoadUnsigned8(Mmu.IF_REGISTER);
             interruptFlag = BitUtils.SetBitsWithMask(interruptFlag, flag);
             _ram.StoreUnsigned8(Mmu.IF_REGISTER, interruptFlag);
         }

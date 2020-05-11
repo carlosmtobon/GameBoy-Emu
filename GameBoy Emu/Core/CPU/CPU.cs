@@ -42,14 +42,14 @@ namespace GameBoy_Emu.core.cpu
 
         public void Push(ushort val)
         {
-            _ram.Memory[SP - 1] = (byte)(val >> 8);
-            _ram.Memory[SP - 2] = (byte)(val & 0x00FF);
+            _ram.StoreUnsigned8(SP - 1, (byte)(val >> 8));
+            _ram.StoreUnsigned8(SP - 2, (byte)(val & 0x00FF));
             SP -= 2;
         }
 
         public ushort Pop()
         {
-            var val = (ushort)(_ram.Memory[SP] | _ram.Memory[SP + 1] << 8);
+            var val = (ushort)(_ram.LoadUnsigned8(SP) | _ram.LoadUnsigned8(SP + 1) << 8);
             SP += 2;
             return val;
         }
@@ -258,7 +258,7 @@ namespace GameBoy_Emu.core.cpu
                 return;
             }
 
-            Opcode = _ram.Memory[PC];
+            Opcode = _ram.LoadUnsigned8(PC);
 
             switch (Opcode)
             {
@@ -934,7 +934,7 @@ namespace GameBoy_Emu.core.cpu
                     break;
                 case 0xCB:
                     // Prefix CB
-                    CBPrefix(_ram.Memory[PC + 1]);
+                    CBPrefix(_ram.LoadUnsigned8(PC + 1));
                     break;
                 case 0xCC:
                     CallCondition(Registers.GetZFlag() == 1);

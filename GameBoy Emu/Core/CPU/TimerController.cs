@@ -79,7 +79,7 @@ namespace GameBoy_Emu.core.timer
 
             if (InterruptRequest)
             {
-                byte interruptFlag = _ram.Memory[Mmu.IF_REGISTER];
+                byte interruptFlag = _ram.LoadUnsigned8(Mmu.IF_REGISTER);
                 // set timer overflow
                 interruptFlag = BitUtils.SetBitsWithMask(interruptFlag, InterruptController.TIMER_FLAG);
                 _ram.StoreUnsigned8(Mmu.IF_REGISTER, interruptFlag);

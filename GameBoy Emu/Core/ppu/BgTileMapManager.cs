@@ -60,12 +60,13 @@ namespace GameBoy_Emu.core.ppu
             return new Tile(startAddr, tileData);
         }
         
-        public Tile GetSpriteTile(int tileNumber)
+        public Tile GetSpriteTile(int tileNumber, int height)
         {
+            int byteTotal = height * 2;
             int tileDataStart = TILE_DATA_START_1;
-            int addr = tileDataStart + (tileNumber * 16);
-            byte[] tileData = new byte[16];
-            for (int i = 0; i < 16; i++)
+            int addr = tileDataStart + (tileNumber * byteTotal);
+            byte[] tileData = new byte[byteTotal];
+            for (int i = 0; i < byteTotal; i++)
             {
                 tileData[i] = _ram.LoadUnsigned8(addr + i);
             }
