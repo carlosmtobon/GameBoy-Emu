@@ -45,9 +45,9 @@ namespace GameBoy_Emu.core.ppu
         {
             if (State == FetcherState.READ_TILE_NUM)
             {
-                var scx = _ram.LoadUnsigned8(Mmu.SCX_REGISTER) % _display.Width;
-                var scy = _ram.LoadUnsigned8(Mmu.SCY_REGISTER) % _display.Height;
-
+                var scx = (_ram.LoadUnsigned8(Mmu.SCX_REGISTER) / 8) % _display.Width;
+                var scy = (_ram.LoadUnsigned8(Mmu.SCY_REGISTER) / 8) % _display.Height;
+               
                 _currentBgTileAddress = _bgTileMap.GetBgTileAddr() +
                                         (((((_display.Y) / 8) + scy) * 32) + ((_currentBgTile / 8) + scx));
                 _currentBgTile += 8;
@@ -110,7 +110,7 @@ namespace GameBoy_Emu.core.ppu
                 }
 
                 Process();
-                cpuCycles -= _tileFifo.Process(_display);
+                cpuCycles -= _tileFifo.Process(_display, _ram.LoadUnsigned8(Mmu.SCX_REGISTER));
 
                 if (State == FetcherState.TRANSFER_READY && _tileFifo.State == PixelFifo.PixelFifoState.IDLE)
                 {

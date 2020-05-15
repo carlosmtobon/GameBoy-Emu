@@ -5,50 +5,40 @@
         
         
         // special registers 
-        private byte _ramg;
-        private byte _bank1;
-        private byte _bank2;
+        public bool IsRamEnabled { get; set; }
+        public byte RomBank { get; set; }
+        public byte RamBank { get; set; }
         private byte _mode;
         
         public Mbc1()
         {
-            _bank1 = 1;
+            RomBank = 1;
+            RamBank = 0;
         }
 
         public void WriteRamg(byte val)
         {
-            _ramg = (byte) (val & 0xA);
+            IsRamEnabled = ((val & 0xF) == 0xA);
         }
         
         public void WriteBank1(byte val)
         {
             val &= 0x1F;
-            _bank1 = val == 0 ? (byte) 1 : val;
+            RomBank = val == 0 ? (byte) 1 : val;
         }
 
         public void WriteBank2(byte val)
         {
-            _bank2 = (byte)(val & 0x3);
+            RamBank = (byte)(val & 0x3);
         }
 
         public void WriteMode(byte val)
         {
             _mode = (byte) (val & 1);
-        }
-
-        public int GetRomBank()
-        {
-            return _bank2 | _bank1;
-        }
-
-        public int GetBank1()
-        {
-            return _bank1;
-        }
-
-        public int GetBank2()
-        {
-            return _bank2;
+            if (_mode == 0)
+            {
+                RamBank = 0;
+            }
         }
 
         public int GetMode()
@@ -56,9 +46,22 @@
             return _mode;
         }
 
-        public bool IsRamEnabled()
+        public void DoLoRom(byte value)
         {
-            return _ramg == 0xA;
+            byte low5 = (byte)(value & 0x1F);
+            RomBank &= 0xE0;
+            RomBank |= low5;
+            if (RomBank == 0) RomBank++;
+        }
+
+        public void DoHiRom(byte value)
+        {
+            RomBank &= 0x1F;
+
+            // turn off the lower 5 bits of the data
+            value &= 0xE0 ;
+            RomBank |= value ;
+            if (RomBank == 0) RomBank++;
         }
     }
 }

@@ -117,7 +117,7 @@ namespace GameBoy_Emu.core.ram
             if (_romHeader.RomType == 0x01)
             {
                 _mbc1 = new Mbc1();
-                CartRam = new byte[0x2000];
+                CartRam = new byte[0x2000 * 4];
             }
         }
         
@@ -140,33 +140,15 @@ namespace GameBoy_Emu.core.ram
             // not writes in rom region unless mbc switching
             if (addr < 0x8000)
             {
-                if (_mbc1 == null) return;
-
-                if (addr >= 0x0 && addr <= 0x1FFF)
-                {
-                    _mbc1.WriteRamg(value);
-                }
-                else if (addr >= 0x2000 && addr <= 0x3FFF)
-                {
-                    _mbc1.WriteBank1(value);
-                }
-                else if (addr >= 0x4000 && addr <= 0x5FFF)
-                {
-                    _mbc1.WriteBank2(value);
-                }
-                else
-                {
-                    _mbc1.WriteMode(value);
-                }
+                HandleBanking(addr, value);
             }
             else if (addr >= 0xA000 && addr <= 0xBFFF)
             {
-                if (_mbc1 != null && _mbc1.IsRamEnabled())
+                if (_mbc1 != null && _mbc1.IsRamEnabled)
                 {
                     // write to external memory
-                    CartRam[addr] = value;
+                    CartRam[(addr - 0xA000) + (_mbc1.RamBank * 0x2000)] = value;
                 }
-               
             }
             else if (addr >= 0xE000 && addr <= 0xFDFF)
             {
@@ -186,23 +168,42 @@ namespace GameBoy_Emu.core.ram
             }
         }
 
+        private void HandleBanking(int addr, byte value)
+        {
+            if (_mbc1 == null) return;
+
+            if (addr >= 0x0 && addr <= 0x1FFF)
+            {
+                _mbc1.WriteRamg(value);
+            }
+            else if (addr >= 0x2000 && addr <= 0x3FFF)
+            {
+                _mbc1.DoLoRom(value);
+            }
+            else if (addr >= 0x4000 && addr <= 0x5FFF)
+            {
+                if (_mbc1.GetMode() == 0)
+                {
+                    _mbc1.DoHiRom(value);
+                }
+                else
+                {
+                    _mbc1.WriteBank2(value);    
+                }
+            }
+            else
+            {
+                _mbc1.WriteMode(value);
+            }
+        }
+
         private byte ReadMemory(int addr)
         {
-            if (addr >= 0 & addr <= 0x3fff)
-            {
-                if (_mbc1 != null)
-                {
-                    if (_mbc1.GetMode() == 1)
-                         return CartRom[(addr - 0x4000) + ((_mbc1.GetBank2() << 5) * 0x4000)];
-                }
-                return Memory[addr];
-               
-            }
             if (addr >= 0x4000 & addr <= 0x7FFF)
             {
                 if (_mbc1 != null)
                 {
-                    return CartRom[(addr - 0x4000) + (_mbc1.GetRomBank() * 0x4000)];
+                    return CartRom[(addr - 0x4000) + (_mbc1.RomBank * 0x4000)];
                 }
 
                 return Memory[addr];
@@ -211,9 +212,9 @@ namespace GameBoy_Emu.core.ram
             if (addr >= 0xA000 && addr <= 0xBFFF)
             {
                 // read external memory
-                if (_mbc1 != null && _mbc1.IsRamEnabled())
+                if (_mbc1 != null && _mbc1.IsRamEnabled)
                 {
-                    return CartRam[addr];
+                    return CartRam[(addr - 0xA000) + (_mbc1.RamBank * 0x2000)];
                 }
                 return 0xff;
             }

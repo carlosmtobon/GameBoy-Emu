@@ -22,9 +22,9 @@ namespace GameBoy_Emu
             Mmu ram = new Mmu(joypad);
             //passed
             // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Castlevania - The Adventure (USA).gb");
+            ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
             // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Bubble Ghost (USA, Europe).gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
-               ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
+            // // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
             // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
             // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\cpu_instrs.gb");
             // ram.LoadBios(@"C:\Users\Carlos\Desktop\gbtest\DMG_ROM.bin");
@@ -65,10 +65,15 @@ namespace GameBoy_Emu
             rect = new SDL.SDL_Rect();
             rect.h = 10 * display.Scale;
             rect.w = 10 * display.Scale;
-
+            
+            // disable VSYNC
+            SDL.SDL_GL_SetSwapInterval(1);
             SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEMOTION, SDL.SDL_IGNORE);
             SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEWHEEL, SDL.SDL_IGNORE);
             SDL.SDL_EventState(SDL.SDL_EventType.SDL_TEXTINPUT, SDL.SDL_IGNORE);
+            SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERMOTION, SDL.SDL_IGNORE);
+            SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERUP, SDL.SDL_IGNORE);
+            SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERDOWN, SDL.SDL_IGNORE);
            // SDL.SDL_EventState(SDL.SDL_EventType.SDL_KEYDOWN, SDL.SDL_IGNORE);
 
         }

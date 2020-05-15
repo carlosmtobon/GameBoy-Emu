@@ -58,11 +58,8 @@ namespace GameBoy_Emu.core.ppu
             byte ly = _ram.LoadLy();
             if (ly == lcy)
             {
-                byte stat = _ram.LoadStat();
-                _ram.StoreUnsigned8(Mmu.STAT_REGISTER, BitUtils.SetBit(stat, 2));
+                SetLcdcInterruptIfNeeded(6);
             }
-            
-            SetLcdcInterruptIfNeeded(6);
         }
 
         public void SetMode()
@@ -136,7 +133,7 @@ namespace GameBoy_Emu.core.ppu
         {
             if (clocks >= VBLANK_CYCLES)
             {
-                if (Display.Y == 143)
+                if (Display.Y == 144)
                 {
                     SetInterrupt(InterruptController.VBLANK_FLAG);
                 }
@@ -145,7 +142,7 @@ namespace GameBoy_Emu.core.ppu
                 IncrementLy();
                 clocks -= VBLANK_CYCLES;
               
-                if (Display.Y > 153)
+                if (Display.Y == 154)
                 {
                     Display.Draw = true;
                     Display.Y = 0;
@@ -157,11 +154,11 @@ namespace GameBoy_Emu.core.ppu
         private void SetLcdcInterruptIfNeeded(int bitToCheck)
         {
             // set lcdc vblank?
-            // byte stat = _ram.LoadStat();
-            // if (BitUtils.isBitSet(stat, bitToCheck))
-            // {
-            //     SetInterrupt(InterruptController.LCDC_FLAG);
-            // }
+            byte stat = _ram.LoadStat();
+            if (BitUtils.isBitSet(stat, bitToCheck))
+            {
+                SetInterrupt(InterruptController.LCDC_FLAG);
+            }
         }
 
         private void IncrementLy()

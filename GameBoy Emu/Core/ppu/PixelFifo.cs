@@ -16,7 +16,7 @@ namespace GameBoy_Emu.core.ppu
             State = PixelFifoState.IDLE;
         }
 
-        public int Process(Display display)
+        public int Process(Display display, int scx)
         {
             if (State != PixelFifoState.IDLE)
             {
@@ -26,7 +26,11 @@ namespace GameBoy_Emu.core.ppu
                     State = PixelFifoState.IDLE;
                     return 0;
                 }
-
+                for (int i = 0; i < scx; i++)
+                {
+                    if (scx <_pixels.Count && _pixels.Count == 16 )
+                        _pixels.Dequeue();
+                }
                 Push(display);
                 return 1;
             }
@@ -42,7 +46,8 @@ namespace GameBoy_Emu.core.ppu
             foreach (var pixel in spriteData)
             {
                 newData.Enqueue(pixel);
-                temp.Dequeue();
+                if (temp.Count > 0)
+                    temp.Dequeue();
             }
             foreach (var pixel in temp)
             {
