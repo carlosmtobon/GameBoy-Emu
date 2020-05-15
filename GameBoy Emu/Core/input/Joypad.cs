@@ -1,4 +1,5 @@
 ﻿using GameBoy_Emu.core.utils;
+using SDL2;
 
 namespace GameBoy_Emu.core.input
 {
@@ -7,22 +8,22 @@ namespace GameBoy_Emu.core.input
         private byte _directions = 0xf;
         private byte _buttons = 0xf;
 
-        public void PressDirection(int bit)
+        private void PressDirection(int bit)
         {
             _directions = BitUtils.ClearBit(_directions, bit);
         }
-        
-        public void PressButton(int bit)
+
+        private void PressButton(int bit)
         {
             _buttons = BitUtils.ClearBit(_buttons, bit);
         }
-        
-        public void ReleaseDirection(int bit)
+
+        private void ReleaseDirection(int bit)
         {
             _directions = BitUtils.SetBit(_directions, bit);
         }
-        
-        public void ReleaseButton(int bit)
+
+        private void ReleaseButton(int bit)
         {
             _buttons = BitUtils.SetBit(_buttons, bit);
         }
@@ -51,6 +52,78 @@ namespace GameBoy_Emu.core.input
             }
 
             return b;
+        }
+
+        public bool HandleInput()
+        {
+            while (SDL.SDL_PollEvent(out var sdlEvent) != 0)
+            {
+                if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
+                    return false;
+                if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYDOWN)
+                {
+                    switch (sdlEvent.key.keysym.sym)
+                    {
+                        case SDL.SDL_Keycode.SDLK_RIGHT:
+                            PressDirection(0);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_LEFT:
+                            PressDirection(1);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_UP:
+                            PressDirection(2);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_DOWN:
+                            PressDirection(3);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_z:
+                            PressButton(0);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_x:
+                            PressButton(1);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_SPACE:
+                            PressButton(2);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_RETURN:
+                            PressButton(3);
+                            break;
+                    }
+                }
+
+                if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYUP)
+                {
+                    switch (sdlEvent.key.keysym.sym)
+                    {
+                        case SDL.SDL_Keycode.SDLK_RIGHT:
+                            ReleaseDirection(0);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_LEFT:
+                            ReleaseDirection(1);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_UP:
+                            ReleaseDirection(2);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_DOWN:
+                            ReleaseDirection(3);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_z:
+                            ReleaseButton(0);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_x:
+                            ReleaseButton(1);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_SPACE:
+                            ReleaseButton(2);
+                            break;
+                        case SDL.SDL_Keycode.SDLK_RETURN:
+                            ReleaseButton(3);
+                            break;
+                    }
+                }
+            }
+
+            return true;
         }
     }
 }
