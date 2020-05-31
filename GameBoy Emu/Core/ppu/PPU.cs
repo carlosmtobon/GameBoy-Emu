@@ -27,6 +27,7 @@ namespace GameBoy_Emu.core.ppu
         }
 
         int clocks;
+        private int total;
         
         public void Tick(int cpuCycles)
         {
@@ -48,17 +49,6 @@ namespace GameBoy_Emu.core.ppu
             else if (Status == PpuStatus.VBLANK)
             {
                 Vblank();
-            }
-        }
-
-        private void LcyCompare()
-        {
-            //lyc lcy compare
-            byte lcy = _ram.LoadUnsigned8(Mmu.LCY_REGISTER);
-            byte ly = _ram.LoadLy();
-            if (ly == lcy)
-            {
-                SetLcdcInterruptIfNeeded(6);
             }
         }
 
@@ -90,10 +80,9 @@ namespace GameBoy_Emu.core.ppu
         {
             if (clocks >= OAM_SEARCH_CYCLES)
             {
-                clocks -= OAM_SEARCH_CYCLES;
+                clocks = 0;
                 Status = PpuStatus.PIXEL_TRANSFER;
                 SetLcdcInterruptIfNeeded(5);
-                
                 _fetcher.FindVisibleSprites();
             }
         }
@@ -105,7 +94,7 @@ namespace GameBoy_Emu.core.ppu
             if (clocks >= PIXEL_PROCESS_CYCLES)
             {
                 _fetcher.Reset();
-                clocks -= PIXEL_PROCESS_CYCLES;
+                clocks = 0;
                 Status = PpuStatus.HBLANK;
             }
         }
@@ -115,10 +104,10 @@ namespace GameBoy_Emu.core.ppu
             if (clocks >= HBLANK_CYCLES)
             {
                 SetLcdcInterruptIfNeeded(3);
-                clocks -= HBLANK_CYCLES;
+                clocks = 0;
                 IncrementLy();
                 Display.X = 0;
-                if (Display.Y == (Display.Height - 1))
+                if (Display.Y >= (Display.Height - 1))
                 {
                     Status = PpuStatus.VBLANK;
                 }
@@ -133,21 +122,31 @@ namespace GameBoy_Emu.core.ppu
         {
             if (clocks >= VBLANK_CYCLES)
             {
+                clocks = 0;
                 if (Display.Y == 144)
                 {
                     SetInterrupt(InterruptController.VBLANK_FLAG);
                 }
-                SetLcdcInterruptIfNeeded(4);               
-               
-                IncrementLy();
-                clocks -= VBLANK_CYCLES;
-              
+                
                 if (Display.Y == 154)
                 {
                     Display.Draw = true;
                     Display.Y = 0;
                     Status = PpuStatus.OAM_SEARCH;
                 }
+                else
+                    Status = PpuStatus.HBLANK;
+            }
+        }
+        
+        private void LcyCompare()
+        {
+            //lyc lcy compare
+            byte lcy = _ram.LoadUnsigned8(Mmu.LCY_REGISTER);
+            byte ly = _ram.LoadLy();
+            if (ly == lcy)
+            {
+                SetLcdcInterruptIfNeeded(6);
             }
         }
 

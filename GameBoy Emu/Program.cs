@@ -12,15 +12,20 @@ namespace GameBoy_Emu
     {
         static void Main()
         {
-
+            if (SDL.SDL_Init(SDL.SDL_INIT_VIDEO) < 0)
+            {
+                Console.WriteLine("Failed to Init SDL");
+                return;
+            }
+            
             Joypad joypad = new Joypad();
             Mmu ram = new Mmu(joypad);
 
             // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Castlevania - The Adventure (USA).gb");
             ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Bubble Ghost (USA, Europe).gb");
-            // // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
-            // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
+           // ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Bubble Ghost (USA, Europe).gb");
+            //ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
+            //ram.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
 
             var display = new Display(160, 144, 4);
             var cpu = new Cpu(ram);

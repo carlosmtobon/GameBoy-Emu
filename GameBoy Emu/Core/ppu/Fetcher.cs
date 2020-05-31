@@ -94,7 +94,7 @@ namespace GameBoy_Emu.core.ppu
             Pixels.Clear();
             var height = _bgTileMap.GetSpriteHeight();
             _tile = _bgTileMap.GetSpriteTile(sprite.TileNumber, height);
-            Pixels = _tile.GetRowPixelData(yPos % height);
+            Pixels = _tile.GetRowPixelData((_tile.TileData.Length - (sprite.YPos - yPos) ) % (_tile.TileData.Length/2));
         }
 
         public void Tick(int cpuCycles)
@@ -102,11 +102,12 @@ namespace GameBoy_Emu.core.ppu
             while (cpuCycles > 0)
             {
                 var sprite = _bgTileMap.GetVisibleSprites().Find(oamEntry => oamEntry.XPos == _display.X + 8);
-                
+
                 if (_bgTileMap.GetVisibleSprites().Remove(sprite))
                 {
                     GetSprite(sprite, _display.Y);
                     _tileFifo.Mix(Pixels);
+                    State = FetcherState.READ_DATA_0;
                 }
 
                 Process();

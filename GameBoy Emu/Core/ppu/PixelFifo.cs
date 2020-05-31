@@ -20,17 +20,22 @@ namespace GameBoy_Emu.core.ppu
         {
             if (State != PixelFifoState.IDLE)
             {
+                var pixelsToDiscard = scx % 8;
+                if (pixelsToDiscard != 0 && display.X == 0)
+                {
+                    for (int i = 0; i < pixelsToDiscard; i++)
+                    {
+                        if (_pixels.Count > 0)
+                            _pixels.Dequeue();
+                    }
+                }
                 if (_pixels.Count <= 8)
                 {
                     //Console.WriteLine("FIFO: IDLE");
                     State = PixelFifoState.IDLE;
                     return 0;
                 }
-                for (int i = 0; i < scx; i++)
-                {
-                    if (scx <_pixels.Count && _pixels.Count == 16 )
-                        _pixels.Dequeue();
-                }
+                
                 Push(display);
                 return 1;
             }
