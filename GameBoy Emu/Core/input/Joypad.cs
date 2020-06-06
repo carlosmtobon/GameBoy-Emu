@@ -7,6 +7,7 @@ namespace GameBoy_Emu.core.input
     {
         private byte _directions = 0xf;
         private byte _buttons = 0xf;
+        public bool InterruptRequest { get; set; }
 
         private void PressDirection(int bit)
         {
@@ -30,25 +31,20 @@ namespace GameBoy_Emu.core.input
 
         public byte Process(byte b)
         {
-            bool interruptRequest = false;
+            
             if ((b & 0x30) == 0x10)
             {
                 b |= _buttons;
-                interruptRequest = true;
+                InterruptRequest = true;
             }
             else if ((b & 0x30) == 0x20)
             {
                 b |= _directions;
-                interruptRequest = true;
+                InterruptRequest = true;
             }
             else
             {
                 b |= 0xf;
-            }
-
-            if (interruptRequest)
-            {
-                // joyp irq
             }
 
             return b;

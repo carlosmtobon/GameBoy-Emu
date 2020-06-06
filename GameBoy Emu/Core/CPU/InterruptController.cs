@@ -4,11 +4,11 @@ namespace GameBoy_Emu.core.cpu
 {
     public class InterruptController
     {
-        public const byte VBLANK_FLAG = 0x1;
-        public const byte LCDC_FLAG = 0x2;
-        public const byte TIMER_FLAG = 0x4;
-        public const byte SERIAL_FLAG = 0x8;
-        public const byte JOYPAD_FLAG = 0x10;
+        public const byte VBLANK_MASK = 0x1;
+        public const byte LCDC_MASK = 0x2;
+        public const byte TIMER_MASK = 0x4;
+        public const byte SERIAL_MASK = 0x8;
+        public const byte JOYPAD_MASK = 0x10;
 
         public bool IME { get; set; }
 
@@ -22,11 +22,11 @@ namespace GameBoy_Emu.core.cpu
         public InterruptController()
         {
             IME = false;
-            _vblank = new Interrupt(0x40, VBLANK_FLAG, Interrupt.InterruptType.VBLANK);
-            _lcdc = new Interrupt(0x48, LCDC_FLAG, Interrupt.InterruptType.LCDC);
-            _timer = new Interrupt(0x50, TIMER_FLAG, Interrupt.InterruptType.TIMER);
-            _serial = new Interrupt(0x58, SERIAL_FLAG, Interrupt.InterruptType.SERIAL);
-            _joypad = new Interrupt(0x60, JOYPAD_FLAG, Interrupt.InterruptType.JOYPAD);
+            _vblank = new Interrupt(0x40, VBLANK_MASK, Interrupt.InterruptType.VBLANK);
+            _lcdc = new Interrupt(0x48, LCDC_MASK, Interrupt.InterruptType.LCDC);
+            _timer = new Interrupt(0x50, TIMER_MASK, Interrupt.InterruptType.TIMER);
+            _serial = new Interrupt(0x58, SERIAL_MASK, Interrupt.InterruptType.SERIAL);
+            _joypad = new Interrupt(0x60, JOYPAD_MASK, Interrupt.InterruptType.JOYPAD);
         }
 
         public bool isVBlankSet(byte interruptFlag)

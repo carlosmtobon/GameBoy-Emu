@@ -46,7 +46,7 @@ namespace GameBoy_Emu.core.ram
         public const int SCY_REGISTER = 0xFF42;
         public const int SCX_REGISTER = 0xFF43;
         public const int LY_REGISTER = 0xFF44;
-        public const int LCY_REGISTER = 0xFF45;
+        public const int LYC_REGISTER = 0xFF45;
         public const int DMA_REGISTER = 0xFF46;
         public const int BGP_REGISTER = 0xFF47;
         public const int WY_REGISTER = 0xFF4A;
@@ -110,7 +110,7 @@ namespace GameBoy_Emu.core.ram
                 fs.Read(CartRom, 0, CartRom.Length);
             }
 
-            Array.Copy(CartRom, Memory, CartRom.Length);
+            Array.Copy(CartRom, Memory, 0x8000);
             ReadRomHeader();
 
             // support Mbc1 for now and work on abstracting later
@@ -158,7 +158,7 @@ namespace GameBoy_Emu.core.ram
             }
             else if (addr >= 0xFEA0 && addr <= 0xFEFF)
             {
-                Debug.WriteLine("Unusable RAM Range");
+               // Debug.WriteLine("Unusable RAM Range");
             }
             else
             {
@@ -221,13 +221,20 @@ namespace GameBoy_Emu.core.ram
 
             if (addr >= 0xFEA0 && addr <= 0xFEFF)
             {
-                Debug.WriteLine("Unusable RAM Range");
+               // Debug.WriteLine("Unusable RAM Range");
                 return 0;
             }
 
             if (addr == JOYP_REGISTER)
             {
                 Memory[JOYP_REGISTER] = _joypad.Process(Memory[JOYP_REGISTER]);
+                if (_joypad.InterruptRequest)
+                {
+                    byte interruptFlag = Memory[IF_REGISTER];
+                    interruptFlag = BitUtils.SetBitsWithMask(interruptFlag, InterruptController.JOYPAD_MASK);
+                    Memory[Mmu.IF_REGISTER] = interruptFlag;
+                    _joypad.InterruptRequest = false;
+                }
             }
             return Memory[addr];
         }

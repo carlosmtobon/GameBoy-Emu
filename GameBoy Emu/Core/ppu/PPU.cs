@@ -31,6 +31,9 @@ namespace GameBoy_Emu.core.ppu
         
         public void Tick(int cpuCycles)
         {
+            if (!BitUtils.isBitSet(_ram.LoadLcdc(), 7))
+                return;
+
             clocks += cpuCycles;
             SetMode();
             if (Status == PpuStatus.OAM_SEARCH)
@@ -39,7 +42,6 @@ namespace GameBoy_Emu.core.ppu
             }
             else if (Status == PpuStatus.PIXEL_TRANSFER)
             {
-                LcyCompare();
                 PixelTransfer(cpuCycles);
             }
             else if (Status == PpuStatus.HBLANK)
@@ -89,6 +91,7 @@ namespace GameBoy_Emu.core.ppu
 
         private void PixelTransfer(int cpuCycles)
         {
+            LycCompare();
             _fetcher.Tick(cpuCycles);
             
             if (clocks >= PIXEL_PROCESS_CYCLES)
@@ -103,9 +106,9 @@ namespace GameBoy_Emu.core.ppu
         {
             if (clocks >= HBLANK_CYCLES)
             {
+                IncrementLy();
                 SetLcdcInterruptIfNeeded(3);
                 clocks = 0;
-                IncrementLy();
                 Display.X = 0;
                 if (Display.Y >= (Display.Height - 1))
                 {
@@ -122,12 +125,13 @@ namespace GameBoy_Emu.core.ppu
         {
             if (clocks >= VBLANK_CYCLES)
             {
+                //Console.WriteLine($"SCX: {_ram.LoadUnsigned8(Mmu.SCX_REGISTER)}");
                 clocks = 0;
                 if (Display.Y == 144)
                 {
-                    SetInterrupt(InterruptController.VBLANK_FLAG);
+                    SetInterrupt(InterruptController.VBLANK_MASK);
+                   
                 }
-                
                 if (Display.Y == 154)
                 {
                     Display.Draw = true;
@@ -139,15 +143,20 @@ namespace GameBoy_Emu.core.ppu
             }
         }
         
-        private void LcyCompare()
+        private void LycCompare()
         {
             //lyc lcy compare
-            byte lcy = _ram.LoadUnsigned8(Mmu.LCY_REGISTER);
+            byte lyc = _ram.LoadUnsigned8(Mmu.LYC_REGISTER);
             byte ly = _ram.LoadLy();
-            if (ly == lcy)
+            byte lcdc = _ram.LoadLcdc();
+
+            if (ly == lyc)
             {
+                _ram.StoreUnsigned8(Mmu.LCDC_REGISTER, BitUtils.SetBit(lcdc, 2));
                 SetLcdcInterruptIfNeeded(6);
             }
+            else
+                _ram.StoreUnsigned8(Mmu.LCDC_REGISTER, BitUtils.ClearBit(lcdc, 2));
         }
 
         private void SetLcdcInterruptIfNeeded(int bitToCheck)
@@ -156,7 +165,7 @@ namespace GameBoy_Emu.core.ppu
             byte stat = _ram.LoadStat();
             if (BitUtils.isBitSet(stat, bitToCheck))
             {
-                SetInterrupt(InterruptController.LCDC_FLAG);
+                SetInterrupt(InterruptController.LCDC_MASK);
             }
         }
 

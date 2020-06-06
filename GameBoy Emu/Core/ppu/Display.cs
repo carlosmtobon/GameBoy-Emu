@@ -34,6 +34,12 @@ namespace GameBoy_Emu.core.ppu
 
         private void InitSDL()
         {
+            if (SDL.SDL_Init(SDL.SDL_INIT_VIDEO) < 0)
+            {
+                Console.WriteLine("Failed to Init SDL");
+                return;
+            }
+
             _window = SDL.SDL_CreateWindow("Chicho's Gameboy Emulator", 100, 100, Width * Scale,
                 Height * Scale, SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL);
 
@@ -44,13 +50,13 @@ namespace GameBoy_Emu.core.ppu
             _rect.w = 10 * Scale;
 
             // disable VSYNC
-            SDL.SDL_GL_SetSwapInterval(1);
-            SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEMOTION, SDL.SDL_IGNORE);
-            SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEWHEEL, SDL.SDL_IGNORE);
-            SDL.SDL_EventState(SDL.SDL_EventType.SDL_TEXTINPUT, SDL.SDL_IGNORE);
-            SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERMOTION, SDL.SDL_IGNORE);
-            SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERUP, SDL.SDL_IGNORE);
-            SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERDOWN, SDL.SDL_IGNORE);
+            //SDL.SDL_GL_SetSwapInterval(1);
+            //SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEMOTION, SDL.SDL_IGNORE);
+            //SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEWHEEL, SDL.SDL_IGNORE);
+            //SDL.SDL_EventState(SDL.SDL_EventType.SDL_TEXTINPUT, SDL.SDL_IGNORE);
+            //SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERMOTION, SDL.SDL_IGNORE);
+            //SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERUP, SDL.SDL_IGNORE);
+            //SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERDOWN, SDL.SDL_IGNORE);
             // SDL.SDL_EventState(SDL.SDL_EventType.SDL_KEYDOWN, SDL.SDL_IGNORE);
         }
 
