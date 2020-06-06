@@ -32,7 +32,12 @@ namespace GameBoy_Emu.core.ppu
         public void Tick(int cpuCycles)
         {
             if (!BitUtils.isBitSet(_ram.LoadLcdc(), 7))
+            {
+                clocks = 0;
+                Status = PpuStatus.OAM_SEARCH;
                 return;
+            }
+              
 
             clocks += cpuCycles;
             SetMode();
@@ -152,11 +157,8 @@ namespace GameBoy_Emu.core.ppu
 
             if (ly == lyc)
             {
-                _ram.StoreUnsigned8(Mmu.LCDC_REGISTER, BitUtils.SetBit(lcdc, 2));
                 SetLcdcInterruptIfNeeded(6);
             }
-            else
-                _ram.StoreUnsigned8(Mmu.LCDC_REGISTER, BitUtils.ClearBit(lcdc, 2));
         }
 
         private void SetLcdcInterruptIfNeeded(int bitToCheck)

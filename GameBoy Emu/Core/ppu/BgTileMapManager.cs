@@ -64,7 +64,7 @@ namespace GameBoy_Emu.core.ppu
         {
             int byteTotal = height * 2;
             int tileDataStart = TILE_DATA_START_1;
-            int addr = tileDataStart + (tileNumber * byteTotal);
+            int addr = tileDataStart + (tileNumber * 16);
             byte[] tileData = new byte[byteTotal];
             for (int i = 0; i < byteTotal; i++)
             {
