@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using GameBoy_Emu.core.mmu;
+using System.Collections.Generic;
 
 namespace GameBoy_Emu.core.ppu
 {
@@ -6,14 +7,14 @@ namespace GameBoy_Emu.core.ppu
     {
         public PixelFifoState State { get; set; }
         private Queue<PixelData> _pixels;
-        private int _fifoAccumalator;
-        public const int FIFO_FREQUENCY = 1;
+        private Mmu _mmu;
 
         public enum PixelFifoState { PUSHING, IDLE }
-        public PixelFifo()
+        public PixelFifo(Mmu mmu)
         {
             _pixels = new Queue<PixelData>();
             State = PixelFifoState.IDLE;
+            _mmu = mmu;
         }
 
         public int Process(Display display, int scx)
@@ -50,9 +51,16 @@ namespace GameBoy_Emu.core.ppu
             var newData = new Queue<PixelData>();
             foreach (var pixel in spriteData)
             {
-                newData.Enqueue(pixel);
+                if (pixel.ColorData != 0)
+                    newData.Enqueue(pixel);
+
                 if (temp.Count > 0)
-                    temp.Dequeue();
+                {
+                    if (pixel.ColorData != 0)
+                        temp.Dequeue();
+                    else
+                        newData.Enqueue(temp.Dequeue());
+                }
             }
             foreach (var pixel in temp)
             {

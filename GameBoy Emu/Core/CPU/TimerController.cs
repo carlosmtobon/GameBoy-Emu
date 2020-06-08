@@ -1,5 +1,5 @@
 ﻿using GameBoy_Emu.core.cpu;
-using GameBoy_Emu.core.ram;
+using GameBoy_Emu.core.mmu;
 using GameBoy_Emu.core.utils;
 
 namespace GameBoy_Emu.core.timer
@@ -15,11 +15,11 @@ namespace GameBoy_Emu.core.timer
 
         public const int DIV_FREQUENCY = 256;
 
-        private readonly Mmu _ram;
+        private readonly Mmu _mmu;
 
-        public TimerController(Mmu ram)
+        public TimerController(Mmu mmu)
         {
-            _ram = ram;
+            _mmu = mmu;
         }
 
         public int totalTimerUpdates;
@@ -28,7 +28,7 @@ namespace GameBoy_Emu.core.timer
         {
             IncrementDiv(cpuCycles, halt);
 
-            byte tac = _ram.LoadUnsigned8(Mmu.TAC_REGISTER);
+            byte tac = _mmu.LoadUnsigned8(Mmu.TAC_REGISTER);
 
             if (IsTimerOn(tac))
             {
@@ -60,8 +60,8 @@ namespace GameBoy_Emu.core.timer
                 {
                     totalTimerUpdates++;
                     _timerAccumalator -= Frequency;
-                    byte tma = _ram.LoadUnsigned8(Mmu.TMA_REGISTER);
-                    byte tima = _ram.LoadUnsigned8(Mmu.TIMA_REGISTER);
+                    byte tma = _mmu.LoadUnsigned8(Mmu.TMA_REGISTER);
+                    byte tima = _mmu.LoadUnsigned8(Mmu.TIMA_REGISTER);
                     if (tima + 1 > 0xff)
                     {
                         // enable interrupt;
@@ -73,16 +73,16 @@ namespace GameBoy_Emu.core.timer
                         tima++;
                     }
 
-                    _ram.StoreUnsigned8(Mmu.TIMA_REGISTER, tima);
+                    _mmu.StoreUnsigned8(Mmu.TIMA_REGISTER, tima);
                 }
             }
 
             if (InterruptRequest)
             {
-                byte interruptFlag = _ram.LoadUnsigned8(Mmu.IF_REGISTER);
+                byte interruptFlag = _mmu.LoadUnsigned8(Mmu.IF_REGISTER);
                 // set timer overflow
                 interruptFlag = BitUtils.SetBitsWithMask(interruptFlag, InterruptController.TIMER_MASK);
-                _ram.StoreUnsigned8(Mmu.IF_REGISTER, interruptFlag);
+                _mmu.StoreUnsigned8(Mmu.IF_REGISTER, interruptFlag);
                 InterruptRequest = false;
             }
         }
@@ -96,9 +96,9 @@ namespace GameBoy_Emu.core.timer
             {
                 totalDivUpdates++;
                 _divAccumalator -= DIV_FREQUENCY;
-                byte div = _ram.LoadUnsigned8(Mmu.DIV_REGISTER);
+                byte div = _mmu.LoadUnsigned8(Mmu.DIV_REGISTER);
                 div++;
-                _ram.StoreUnsigned8(Mmu.DIV_REGISTER, div);
+                _mmu.StoreUnsigned8(Mmu.DIV_REGISTER, div);
             }
         }
 

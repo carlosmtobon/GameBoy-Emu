@@ -1,12 +1,12 @@
 ﻿using GameBoy_Emu.core.cpu;
-using GameBoy_Emu.core.ram;
+using GameBoy_Emu.core.mmu;
 using GameBoy_Emu.core.utils;
 
 namespace GameBoy_Emu.core.ppu
 {
     public class Ppu
     {
-        private readonly Mmu _ram;
+        private readonly Mmu _mmu;
         private readonly Fetcher _fetcher;
         public Display Display { get; set; }
         public PpuStatus Status { get; set; }
@@ -18,10 +18,10 @@ namespace GameBoy_Emu.core.ppu
 
         public enum PpuStatus { HBLANK, VBLANK, OAM_SEARCH, PIXEL_TRANSFER };
 
-        public Ppu(Mmu ram, Display display)
+        public Ppu(Mmu mmu, Display display)
         {
-            _ram = ram;
-            _fetcher = new Fetcher(display, ram);
+            _mmu = mmu;
+            _fetcher = new Fetcher(display, mmu);
             Display = display;
             Status = PpuStatus.OAM_SEARCH;
         }
@@ -31,13 +31,13 @@ namespace GameBoy_Emu.core.ppu
         
         public void Tick(int cpuCycles)
         {
-            if (!BitUtils.isBitSet(_ram.LoadLcdc(), 7))
-            {
-                clocks = 0;
-                Status = PpuStatus.OAM_SEARCH;
-                return;
-            }
-              
+            // lcdc enable logic?
+            //if (!BitUtils.isBitSet(_mmu.LoadLcdc(), 7))
+            //{
+            //    clocks = 0;
+            //    Status = PpuStatus.OAM_SEARCH;
+            //    return;
+            //}
 
             clocks += cpuCycles;
             SetMode();
@@ -61,7 +61,7 @@ namespace GameBoy_Emu.core.ppu
 
         public void SetMode()
         {
-            byte stat = _ram.LoadStat();
+            byte stat = _mmu.LoadStat();
             switch (Status)
             {
                 case PpuStatus.OAM_SEARCH:
@@ -81,7 +81,7 @@ namespace GameBoy_Emu.core.ppu
                     stat = BitUtils.SetBit(stat, 0);
                     break;
             }
-            _ram.StoreUnsigned8(Mmu.STAT_REGISTER, stat);
+            _mmu.StoreUnsigned8(Mmu.STAT_REGISTER, stat);
         }
         private void OamSearch()
         {
@@ -130,7 +130,7 @@ namespace GameBoy_Emu.core.ppu
         {
             if (clocks >= VBLANK_CYCLES)
             {
-                //Console.WriteLine($"SCX: {_ram.LoadUnsigned8(Mmu.SCX_REGISTER)}");
+                //Console.WriteLine($"SCX: {_mmu.LoadUnsigned8(Mmu.SCX_REGISTER)}");
                 clocks = 0;
                 if (Display.Y == 144)
                 {
@@ -151,9 +151,9 @@ namespace GameBoy_Emu.core.ppu
         private void LycCompare()
         {
             //lyc lcy compare
-            byte lyc = _ram.LoadUnsigned8(Mmu.LYC_REGISTER);
-            byte ly = _ram.LoadLy();
-            byte lcdc = _ram.LoadLcdc();
+            byte lyc = _mmu.LoadUnsigned8(Mmu.LYC_REGISTER);
+            byte ly = _mmu.LoadLy();
+            byte lcdc = _mmu.LoadLcdc();
 
             if (ly == lyc)
             {
@@ -164,7 +164,7 @@ namespace GameBoy_Emu.core.ppu
         private void SetLcdcInterruptIfNeeded(int bitToCheck)
         {
             // set lcdc vblank?
-            byte stat = _ram.LoadStat();
+            byte stat = _mmu.LoadStat();
             if (BitUtils.isBitSet(stat, bitToCheck))
             {
                 SetInterrupt(InterruptController.LCDC_MASK);
@@ -173,14 +173,14 @@ namespace GameBoy_Emu.core.ppu
 
         private void IncrementLy()
         {
-            _ram.StoreUnsigned8(Mmu.LY_REGISTER, (byte)Display.Y++);
+            _mmu.StoreUnsigned8(Mmu.LY_REGISTER, (byte)Display.Y++);
         }
 
         private void SetInterrupt(byte flag)
         {
-            byte interruptFlag = _ram.LoadUnsigned8(Mmu.IF_REGISTER);
+            byte interruptFlag = _mmu.LoadUnsigned8(Mmu.IF_REGISTER);
             interruptFlag = BitUtils.SetBitsWithMask(interruptFlag, flag);
-            _ram.StoreUnsigned8(Mmu.IF_REGISTER, interruptFlag);
+            _mmu.StoreUnsigned8(Mmu.IF_REGISTER, interruptFlag);
         }
     }
 }

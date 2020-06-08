@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using GameBoy_Emu.core.ram;
+using GameBoy_Emu.core.mmu;
 
 namespace GameBoy_Emu.core.ppu
 {
@@ -11,9 +11,8 @@ namespace GameBoy_Emu.core.ppu
         private int _currentTileNumber;
         private Display _display;
         private readonly BgTileMapManager _bgTileMap;
-        private readonly Mmu _ram;
+        private readonly Mmu _mmu;
         private PixelFifo _tileFifo;
-        private PixelFifo _spriteFifo;
 
         public Queue<PixelData> Pixels { get; set; }
         private Tile _tile;
@@ -29,14 +28,13 @@ namespace GameBoy_Emu.core.ppu
             TRANSFER_READY
         };
 
-        public Fetcher(Display display, Mmu ram)
+        public Fetcher(Display display, Mmu mmu)
         {
             _currentBgTileAddress = BgTileMapManager.BG_MAP_ADDRESS_1;
-            _bgTileMap = new BgTileMapManager(ram);
-            _tileFifo = new PixelFifo();
-            _spriteFifo = new PixelFifo();
+            _bgTileMap = new BgTileMapManager(mmu);
+            _tileFifo = new PixelFifo(mmu);
             _display = display;
-            _ram = ram;
+            _mmu = mmu;
             Pixels = new Queue<PixelData>();
             State = FetcherState.READ_TILE_NUM;
         }
@@ -45,9 +43,9 @@ namespace GameBoy_Emu.core.ppu
         {
             if (State == FetcherState.READ_TILE_NUM)
             {
-                var scx = (_ram.LoadUnsigned8(Mmu.SCX_REGISTER) / 8) % _display.Width;
-                var scy = (_ram.LoadUnsigned8(Mmu.SCY_REGISTER) / 8) % _display.Height;
-               
+                var scx = (_mmu.LoadUnsigned8(Mmu.SCX_REGISTER) / 8) % _display.Width;
+                var scy = (_mmu.LoadUnsigned8(Mmu.SCY_REGISTER) / 8) % _display.Height;
+
                 _currentBgTileAddress = _bgTileMap.GetBgTileAddr() +
                                         (((((_display.Y) / 8) + scy) * 32) + ((_currentBgTile / 8) + scx));
                 _currentBgTile += 8;
@@ -94,7 +92,7 @@ namespace GameBoy_Emu.core.ppu
             Pixels.Clear();
             var height = _bgTileMap.GetSpriteHeight();
             _tile = _bgTileMap.GetSpriteTile(sprite.TileNumber, height);
-            Pixels = _tile.GetRowPixelData((_tile.TileData.Length - (sprite.YPos - yPos) ) % (_tile.TileData.Length/2));
+            Pixels = _tile.GetRowPixelData((_tile.TileData.Length - (sprite.YPos - yPos)) % (_tile.TileData.Length/2), sprite.IsXFlip());
         }
 
         public void Tick(int cpuCycles)
@@ -111,7 +109,7 @@ namespace GameBoy_Emu.core.ppu
                 }
 
                 Process();
-                cpuCycles -= _tileFifo.Process(_display, _ram.LoadUnsigned8(Mmu.SCX_REGISTER));
+                cpuCycles -= _tileFifo.Process(_display, _mmu.LoadUnsigned8(Mmu.SCX_REGISTER));
 
                 if (State == FetcherState.TRANSFER_READY && _tileFifo.State == PixelFifo.PixelFifoState.IDLE)
                 {

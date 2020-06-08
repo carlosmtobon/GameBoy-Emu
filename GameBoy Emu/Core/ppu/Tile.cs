@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace GameBoy_Emu.core.ppu
 {
@@ -13,7 +14,7 @@ namespace GameBoy_Emu.core.ppu
             TileData = tilePixels;
         }
 
-        public Queue<PixelData> GetRowPixelData(int row)
+        public Queue<PixelData> GetRowPixelData(int row, bool reverse = false)
         {
             Queue<PixelData> pixels = new Queue<PixelData>();
             byte lsb = TileData[(row * 2)];
@@ -26,7 +27,8 @@ namespace GameBoy_Emu.core.ppu
                 pixel.Type = PixelData.PixelType.BG;
                 pixels.Enqueue(pixel);
             }
-            return pixels;
+
+            return reverse ? new Queue<PixelData>(pixels.Reverse()) : pixels;
         }
     }
 }

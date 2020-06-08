@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using GameBoy_Emu.core.ram;
+using GameBoy_Emu.core.mmu;
 using GameBoy_Emu.core.utils;
 
 namespace GameBoy_Emu.core.ppu
@@ -16,19 +16,19 @@ namespace GameBoy_Emu.core.ppu
         private Dictionary<int, Tile> _tileMap;
         private OamEntryManager _oamEntryManager;
 
-        private readonly Mmu _ram;
+        private readonly Mmu _mmu;
 
-        public BgTileMapManager(Mmu ram)
+        public BgTileMapManager(Mmu mmu)
         {
-            _ram = ram;
+            _mmu = mmu;
             _tileMap = new Dictionary<int, Tile>();
-            _oamEntryManager = new OamEntryManager(ram);
+            _oamEntryManager = new OamEntryManager(mmu);
         }
 
         public int GetBgTileAddr()
         {
             int tileMapAddr = BG_MAP_ADDRESS_1;
-            if (BitUtils.isBitSet(_ram.LoadLcdc(), 3))
+            if (BitUtils.isBitSet(_mmu.LoadLcdc(), 3))
             {
                 tileMapAddr = BG_MAP_ADDRESS_2;
             }
@@ -37,14 +37,14 @@ namespace GameBoy_Emu.core.ppu
 
         public int GetTileNumber(int address)
         {
-            return _ram.LoadUnsigned8(address);
+            return _mmu.LoadUnsigned8(address);
         }
 
         public Tile GetTile(int tileNumber)
         {
             int startAddr;
             
-            if (!BitUtils.isBitSet(_ram.LoadLcdc(), 4))
+            if (!BitUtils.isBitSet(_mmu.LoadLcdc(), 4))
             {
                 startAddr = tileNumber < 127 ?  TILE_DATA_START_2 + (tileNumber * 16) : TILE_DATA_START_2 + ((sbyte)tileNumber * 16);
             }
@@ -55,7 +55,7 @@ namespace GameBoy_Emu.core.ppu
             byte[] tileData = new byte[16];
             for (int i = 0; i < 16; i++)
             {
-                tileData[i] = _ram.LoadUnsigned8(startAddr + i);
+                tileData[i] = _mmu.LoadUnsigned8(startAddr + i);
             }
             return new Tile(startAddr, tileData);
         }
@@ -68,7 +68,7 @@ namespace GameBoy_Emu.core.ppu
             byte[] tileData = new byte[byteTotal];
             for (int i = 0; i < byteTotal; i++)
             {
-                tileData[i] = _ram.LoadUnsigned8(addr + i);
+                tileData[i] = _mmu.LoadUnsigned8(addr + i);
             }
             return new Tile(addr, tileData);
         }
@@ -80,7 +80,7 @@ namespace GameBoy_Emu.core.ppu
             {
                 for (int j = 0; j < 32; j++)
                 {
-                    byte tileNumber = _ram.LoadUnsigned8(BG_MAP_ADDRESS_1 + (i * 32) + j);
+                    byte tileNumber = _mmu.LoadUnsigned8(BG_MAP_ADDRESS_1 + (i * 32) + j);
                     Tile tile = _tileMap[tileNumber];
                     DisplayTile(tile.Address, tile.TileData);
                 }
@@ -101,7 +101,7 @@ namespace GameBoy_Emu.core.ppu
                 byte[] tileData = new byte[16];
                 for (int i = 0; i < 16; i++)
                 {
-                    tileData[i] = _ram.LoadUnsigned8(startAddr + i);
+                    tileData[i] = _mmu.LoadUnsigned8(startAddr + i);
                 }
                 _tileMap.Remove(tileNumber);
                 _tileMap.Add(tileNumber, new Tile(startAddr, tileData));
@@ -116,7 +116,7 @@ namespace GameBoy_Emu.core.ppu
 
         public int GetSpriteHeight()
         {
-            return BitUtils.GetBit(_ram.LoadLcdc(), 2) == 1 ? 16 : 8;
+            return BitUtils.GetBit(_mmu.LoadLcdc(), 2) == 1 ? 16 : 8;
         }
 
         public List<OamEntry> GetVisibleSprites()

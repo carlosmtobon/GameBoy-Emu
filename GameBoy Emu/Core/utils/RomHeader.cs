@@ -11,7 +11,7 @@
         {
             RomType = romType;
             RomSize = SetRomSize(romSize);
-            RamSize = SetRamSize(ramSize);
+            RamSize = SetMmuSize(ramSize);
         }
 
         private int SetRomSize(byte val)
@@ -35,7 +35,7 @@
             return 0;
         }
         
-        private int SetRamSize(byte val)
+        private int SetMmuSize(byte val)
         {
             switch (val)
             {
