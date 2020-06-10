@@ -32,7 +32,7 @@
             throw new System.NotImplementedException();
         }
 
-        public override void Writemmug(byte val)
+        public override void WriteRamg(byte val)
         {
             throw new System.NotImplementedException();
         }

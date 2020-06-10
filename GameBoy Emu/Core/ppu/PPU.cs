@@ -35,7 +35,7 @@ namespace GameBoy_Emu.core.ppu
             //if (!BitUtils.isBitSet(_mmu.LoadLcdc(), 7))
             //{
             //    clocks = 0;
-            //    Status = PpuStatus.OAM_SEARCH;
+               
             //    return;
             //}
 
@@ -96,7 +96,6 @@ namespace GameBoy_Emu.core.ppu
 
         private void PixelTransfer(int cpuCycles)
         {
-            LycCompare();
             _fetcher.Tick(cpuCycles);
             
             if (clocks >= PIXEL_PROCESS_CYCLES)
@@ -112,6 +111,7 @@ namespace GameBoy_Emu.core.ppu
             if (clocks >= HBLANK_CYCLES)
             {
                 IncrementLy();
+                LycCompare();
                 SetLcdcInterruptIfNeeded(3);
                 clocks = 0;
                 Display.X = 0;

@@ -9,12 +9,12 @@ namespace GameBoy_Emu.core.mbc
     public abstract class Mbc
     {
         // special registers 
-        public  bool IsmmuEnabled { get; set; }
+        public  bool IsRamEnabled { get; set; }
         public  byte RomBank { get; set; }
-        public  byte mmuBank { get; set; }
+        public  byte RamBank { get; set; }
         public  byte Mode { get; set; }
 
-        public abstract void Writemmug(byte val);
+        public abstract void WriteRamg(byte val);
         public abstract void WriteBank1(byte val);
         public abstract void WriteBank2(byte val);
         public abstract void WriteMode(byte val);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using GameBoy_Emu.core.cpu;
 using GameBoy_Emu.core.input;
 using GameBoy_Emu.core.mbc;
@@ -22,7 +23,7 @@ namespace GameBoy_Emu.core.mmu
         
         public byte[] Memory { get; }
         public byte[] CartRom { get; set; }
-        public byte[] Cartmmu { get; set; }
+        public byte[] CartRam { get; set; }
 
         private readonly byte[] logoBytes =
         {
@@ -54,6 +55,12 @@ namespace GameBoy_Emu.core.mmu
         public const int WY_REGISTER = 0xFF4A;
         public const int WX_REGISTER = 0xFF4B;
         public const int JOYP_REGISTER = 0xFF00;
+
+        internal void SaveGameFile()
+        {
+            if (CartRam != null)
+                File.WriteAllBytes($"{_romHeader.GameTitle}.save", CartRam);
+        }
 
         public Mmu(Joypad joypad)
         {
@@ -118,8 +125,14 @@ namespace GameBoy_Emu.core.mmu
             _mbc = Mbc.GetInstance(_romHeader.RomType);
             if (_mbc != null)
             {
-                _mbc = new Mbc1();
-                Cartmmu = new byte[0x2000 * 4];
+                if (File.Exists($"{_romHeader.GameTitle}.save"))
+                {
+                    CartRam = File.ReadAllBytes($"{_romHeader.GameTitle}.save");
+                }
+                else
+                {
+                    CartRam = new byte[0x2000 * 4];
+                }
             }
         }
         
@@ -134,7 +147,9 @@ namespace GameBoy_Emu.core.mmu
 
         private void ReadRomHeader()
         {
-            _romHeader = new RomHeader(Memory[0x147], Memory[0x148], Memory[0x149]);
+            string title = Encoding.ASCII.GetString(Memory, 0x134, 16).Split('\0')[0];
+            
+            _romHeader = new RomHeader(title, Memory[0x147], Memory[0x148], Memory[0x149]);
         }
 
         private void WriteMemory(int addr, byte value)
@@ -146,10 +161,10 @@ namespace GameBoy_Emu.core.mmu
             }
             else if (addr >= 0xA000 && addr <= 0xBFFF)
             {
-                if (_mbc != null && _mbc.IsmmuEnabled)
+                if (_mbc != null && _mbc.IsRamEnabled)
                 {
                     // write to external memory
-                    Cartmmu[(addr - 0xA000) + (_mbc.mmuBank * 0x2000)] = value;
+                    CartRam[(addr - 0xA000) + (_mbc.RamBank * 0x2000)] = value;
                 }
             }
             else if (addr >= 0xE000 && addr <= 0xFDFF)
@@ -176,7 +191,7 @@ namespace GameBoy_Emu.core.mmu
 
             if (addr >= 0x0 && addr <= 0x1FFF)
             {
-                _mbc.Writemmug(value);
+                _mbc.WriteRamg(value);
             }
             else if (addr >= 0x2000 && addr <= 0x3FFF)
             {
@@ -214,16 +229,16 @@ namespace GameBoy_Emu.core.mmu
             if (addr >= 0xA000 && addr <= 0xBFFF)
             {
                 // read external memory
-                if (_mbc != null && _mbc.IsmmuEnabled)
+                if (_mbc != null && _mbc.IsRamEnabled)
                 {
-                    return Cartmmu[(addr - 0xA000) + (_mbc.mmuBank * 0x2000)];
+                    return CartRam[(addr - 0xA000) + (_mbc.RamBank * 0x2000)];
                 }
                 return 0xff;
             }
 
             if (addr >= 0xFEA0 && addr <= 0xFEFF)
             {
-               // Debug.WriteLine("Unusable mmu Range");
+               // Debug.WriteLine("Unusable Ram Range");
                 return 0;
             }
 

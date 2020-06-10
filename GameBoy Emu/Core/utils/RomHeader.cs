@@ -2,16 +2,17 @@
 {
     public class RomHeader
     {
+        public string GameTitle { get; set; }
         public int RomType { get; }
         public int RomSize { get; }
-        
         public int RamSize { get; }
 
-        public RomHeader(byte romType, byte romSize, byte ramSize)
+        public RomHeader(string gameTitle, byte romType, byte romSize, byte ramSize)
         {
+            GameTitle = gameTitle;
             RomType = romType;
             RomSize = SetRomSize(romSize);
-            RamSize = SetMmuSize(ramSize);
+            RamSize = SetRamSize(ramSize);
         }
 
         private int SetRomSize(byte val)
@@ -35,7 +36,7 @@
             return 0;
         }
         
-        private int SetMmuSize(byte val)
+        private int SetRamSize(byte val)
         {
             switch (val)
             {

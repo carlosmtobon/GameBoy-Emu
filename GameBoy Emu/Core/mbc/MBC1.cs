@@ -7,12 +7,12 @@ namespace GameBoy_Emu.core.mbc
         public Mbc1()
         {
             RomBank = 1;
-            mmuBank = 0;
+            RamBank = 0;
         }
 
-        public override void Writemmug(byte val)
+        public override void WriteRamg(byte val)
         {
-            IsmmuEnabled = ((val & 0xF) == 0xA);
+            IsRamEnabled = ((val & 0xF) == 0xA);
         }
 
         public override void WriteBank1(byte val)
@@ -23,7 +23,7 @@ namespace GameBoy_Emu.core.mbc
 
         public override void WriteBank2(byte val)
         {
-            mmuBank = (byte)(val & 0x3);
+            RamBank = (byte)(val & 0x3);
         }
 
         public override void WriteMode(byte val)
@@ -31,7 +31,7 @@ namespace GameBoy_Emu.core.mbc
             Mode = (byte)(val & 1);
             if (Mode == 0)
             {
-                mmuBank = 0;
+                RamBank = 0;
             }
         }
 
