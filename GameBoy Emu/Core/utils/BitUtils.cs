@@ -46,7 +46,7 @@
             return (byte)((value >> bitPosition) & 1);
         }
 
-        public static bool isBitSet(byte value, int bitPosition)
+        public static bool IsBitSet(byte value, int bitPosition)
         {
             return GetBit(value, bitPosition) == 1;
         }

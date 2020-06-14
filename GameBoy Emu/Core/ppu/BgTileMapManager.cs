@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using GameBoy_Emu.core.mmu;
+﻿using GameBoy_Emu.core.mmu;
 using GameBoy_Emu.core.utils;
+using System;
+using System.Collections.Generic;
 
 namespace GameBoy_Emu.core.ppu
 {
@@ -14,7 +14,7 @@ namespace GameBoy_Emu.core.ppu
         public const int TILE_DATA_START_2 = 0x9000;
 
         private Dictionary<int, Tile> _tileMap;
-        private OamEntryManager _oamEntryManager;
+        private readonly OamEntryManager _oamEntryManager;
 
         private readonly Mmu _mmu;
 
@@ -28,12 +28,22 @@ namespace GameBoy_Emu.core.ppu
         public int GetBgTileAddr()
         {
             int tileMapAddr = BG_MAP_ADDRESS_1;
-            if (BitUtils.isBitSet(_mmu.LoadLcdc(), 3))
+            if (BitUtils.IsBitSet(_mmu.LoadLcdc(), 3))
             {
                 tileMapAddr = BG_MAP_ADDRESS_2;
             }
             return tileMapAddr;
         }
+        public int GetWinTileAddr()
+        {
+            int tileMapAddr = BG_MAP_ADDRESS_1;
+            if (BitUtils.IsBitSet(_mmu.LoadLcdc(), 4))
+            {
+                tileMapAddr = BG_MAP_ADDRESS_2;
+            }
+            return tileMapAddr;
+        }
+
 
         public int GetTileNumber(int address)
         {
@@ -43,10 +53,10 @@ namespace GameBoy_Emu.core.ppu
         public Tile GetTile(int tileNumber)
         {
             int startAddr;
-            
-            if (!BitUtils.isBitSet(_mmu.LoadLcdc(), 4))
+
+            if (!BitUtils.IsBitSet(_mmu.LoadLcdc(), 4))
             {
-                startAddr = tileNumber < 127 ?  TILE_DATA_START_2 + (tileNumber * 16) : TILE_DATA_START_2 + ((sbyte)tileNumber * 16);
+                startAddr = tileNumber < 127 ? TILE_DATA_START_2 + (tileNumber * 16) : TILE_DATA_START_2 + ((sbyte)tileNumber * 16);
             }
             else
             {
@@ -59,7 +69,7 @@ namespace GameBoy_Emu.core.ppu
             }
             return new Tile(startAddr, tileData);
         }
-        
+
         public Tile GetSpriteTile(int tileNumber, int height)
         {
             int byteTotal = height * 2;
@@ -126,7 +136,7 @@ namespace GameBoy_Emu.core.ppu
 
         private void DisplayTile(int addr, byte[] tileData)
         {
-            Console.WriteLine(String.Format("Address: {0:X}", addr));
+            Console.WriteLine(string.Format("Address: {0:X}", addr));
             for (int i = 0; i < 16; i += 2)
             {
                 byte h = tileData[i];

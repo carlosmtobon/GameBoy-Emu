@@ -4,6 +4,6 @@
     {
         public PixelType Type { get; set; }
         public int ColorData { get; set; }
-        public enum PixelType { BG, WINDOW, SPRITE };
+        public enum PixelType { BG, WINDOW, SPRITE_0, SPRITE_1 };
     }
 }

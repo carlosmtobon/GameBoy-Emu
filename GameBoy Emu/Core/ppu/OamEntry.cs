@@ -16,12 +16,12 @@ namespace GameBoy_Emu.core.ppu
 
         public bool IsYFlip()
         {
-            return BitUtils.isBitSet(AttributeFlag, 6);
+            return BitUtils.IsBitSet(AttributeFlag, 6);
         }
 
         public bool IsXFlip()
         {
-            return BitUtils.isBitSet(AttributeFlag, 5);
+            return BitUtils.IsBitSet(AttributeFlag, 5);
         }
 
         public byte PaletteNumber()

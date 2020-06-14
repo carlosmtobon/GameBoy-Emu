@@ -1,11 +1,10 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
-using GameBoy_Emu.core.cpu;
+﻿using GameBoy_Emu.core.cpu;
 using GameBoy_Emu.core.input;
 using GameBoy_Emu.core.mbc;
 using GameBoy_Emu.core.utils;
+using System;
+using System.IO;
+using System.Text;
 
 namespace GameBoy_Emu.core.mmu
 {
@@ -15,12 +14,12 @@ namespace GameBoy_Emu.core.mmu
         private int _dmaAccumulator;
         public bool IsDmaTransfer;
         public const int DMA_FREQUENCY = 160;
-            
+
         private RomHeader _romHeader;
         private Mbc _mbc;
-        private Joypad _joypad;
+        private readonly Joypad _joypad;
         private const int mmu_SIZE = 0x10000;
-        
+
         public byte[] Memory { get; }
         public byte[] CartRom { get; set; }
         public byte[] CartRam { get; set; }
@@ -32,7 +31,7 @@ namespace GameBoy_Emu.core.mmu
             0x0E, 0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E,
             0x0E, 0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E
         };
-      
+
         // special register address
         public const int IE_REGISTER = 0xFFFF;
         public const int IF_REGISTER = 0xFF0F;
@@ -59,7 +58,9 @@ namespace GameBoy_Emu.core.mmu
         internal void SaveGameFile()
         {
             if (CartRam != null)
+            {
                 File.WriteAllBytes($"{_romHeader.GameTitle}.save", CartRam);
+            }
         }
 
         public Mmu(Joypad joypad)
@@ -135,7 +136,7 @@ namespace GameBoy_Emu.core.mmu
                 }
             }
         }
-        
+
         public void LoadBios(string fileName)
         {
             using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
@@ -148,7 +149,7 @@ namespace GameBoy_Emu.core.mmu
         private void ReadRomHeader()
         {
             string title = Encoding.ASCII.GetString(Memory, 0x134, 16).Split('\0')[0];
-            
+
             _romHeader = new RomHeader(title, Memory[0x147], Memory[0x148], Memory[0x149]);
         }
 
@@ -170,24 +171,30 @@ namespace GameBoy_Emu.core.mmu
             else if (addr >= 0xE000 && addr <= 0xFDFF)
             {
                 // handle echo
-               Memory[addr] = value;
-               Memory[addr - 0x2000] = value;
+                Memory[addr] = value;
+                Memory[addr - 0x2000] = value;
             }
             else if (addr >= 0xFEA0 && addr <= 0xFEFF)
             {
-               // Debug.WriteLine("Unusable mmu Range");
+                // Debug.WriteLine("Unusable mmu Range");
             }
             else
             {
                 if (addr == DMA_REGISTER)
+                {
                     IsDmaTransfer = true;
+                }
+
                 Memory[addr] = value;
             }
         }
 
         private void HandleBanking(int addr, byte value)
         {
-            if (_mbc == null) return;
+            if (_mbc == null)
+            {
+                return;
+            }
 
             if (addr >= 0x0 && addr <= 0x1FFF)
             {
@@ -205,7 +212,7 @@ namespace GameBoy_Emu.core.mmu
                 }
                 else
                 {
-                    _mbc.WriteBank2(value);    
+                    _mbc.WriteBank2(value);
                 }
             }
             else
@@ -238,7 +245,7 @@ namespace GameBoy_Emu.core.mmu
 
             if (addr >= 0xFEA0 && addr <= 0xFEFF)
             {
-               // Debug.WriteLine("Unusable Ram Range");
+                // Debug.WriteLine("Unusable Ram Range");
                 return 0;
             }
 
@@ -263,8 +270,8 @@ namespace GameBoy_Emu.core.mmu
 
         public void StoreUnsigned16(int addr, ushort value)
         {
-            WriteMemory(addr, (byte) (value & 0xFF));
-            WriteMemory(addr + 1, (byte) (value >> 8));
+            WriteMemory(addr, (byte)(value & 0xFF));
+            WriteMemory(addr + 1, (byte)(value >> 8));
         }
 
         public byte LoadUnsigned8(int addr)
@@ -274,12 +281,12 @@ namespace GameBoy_Emu.core.mmu
 
         public sbyte LoadSigned8(int addr)
         {
-            return unchecked((sbyte) ReadMemory(addr));
+            return unchecked((sbyte)ReadMemory(addr));
         }
 
         public ushort LoadUnsigned16(int addr)
         {
-            return (ushort) (ReadMemory(addr) | ReadMemory(addr + 1) << 8);
+            return (ushort)(ReadMemory(addr) | ReadMemory(addr + 1) << 8);
         }
 
         public byte LoadInterruptEnable()
@@ -314,7 +321,7 @@ namespace GameBoy_Emu.core.mmu
             {
                 _dmaAccumulator = 0;
                 // do work
-                ushort dmaSrc = (ushort) (Memory[DMA_REGISTER] * 0x100);
+                ushort dmaSrc = (ushort)(Memory[DMA_REGISTER] * 0x100);
 
                 for (int i = 0; i < 40 * 4; i++)
                 {

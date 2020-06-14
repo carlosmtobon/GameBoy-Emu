@@ -31,27 +31,27 @@ namespace GameBoy_Emu.core.cpu
 
         public bool isVBlankSet(byte interruptFlag)
         {
-            return BitUtils.isBitSet(interruptFlag, 0);
+            return BitUtils.IsBitSet(interruptFlag, 0);
         }
 
         public bool isLCDCSet(byte interruptFlag)
         {
-            return BitUtils.isBitSet(interruptFlag, 1);
+            return BitUtils.IsBitSet(interruptFlag, 1);
         }
 
         public bool isTimerOverflowSet(byte interruptFlag)
         {
-            return BitUtils.isBitSet(interruptFlag, 2);
+            return BitUtils.IsBitSet(interruptFlag, 2);
         }
 
         public bool isSerialCompleteSet(byte interruptFlag)
         {
-            return BitUtils.isBitSet(interruptFlag, 3);
+            return BitUtils.IsBitSet(interruptFlag, 3);
         }
 
         public bool isJoypadSet(byte interruptFlag)
         {
-            return BitUtils.isBitSet(interruptFlag, 4);
+            return BitUtils.IsBitSet(interruptFlag, 4);
         }
 
         public Interrupt Process(byte interruptFlag, byte interruptEnable)
@@ -65,17 +65,17 @@ namespace GameBoy_Emu.core.cpu
             {
                 return _vblank;
             }
-            
+
             if (isLCDCSet(interruptFlag) && isLCDCSet(interruptEnable))
             {
                 return _lcdc;
             }
-            
+
             if (isTimerOverflowSet(interruptFlag) && isTimerOverflowSet(interruptEnable))
             {
                 return _timer;
             }
-            
+
             if (isSerialCompleteSet(interruptFlag) && isSerialCompleteSet(interruptEnable))
             {
                 return _serial;

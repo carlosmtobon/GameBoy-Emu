@@ -31,7 +31,7 @@ namespace GameBoy_Emu.core.input
 
         public byte Process(byte b)
         {
-            
+
             if ((b & 0x30) == 0x10)
             {
                 b |= _buttons;
@@ -55,7 +55,10 @@ namespace GameBoy_Emu.core.input
             while (SDL.SDL_PollEvent(out var sdlEvent) != 0)
             {
                 if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
+                {
                     return false;
+                }
+
                 if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYDOWN)
                 {
                     switch (sdlEvent.key.keysym.sym)

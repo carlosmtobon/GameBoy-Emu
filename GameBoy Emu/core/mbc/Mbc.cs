@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GameBoy_Emu.core.mbc
+﻿namespace GameBoy_Emu.core.mbc
 {
     public abstract class Mbc
     {
         // special registers 
-        public  bool IsRamEnabled { get; set; }
-        public  byte RomBank { get; set; }
-        public  byte RamBank { get; set; }
-        public  byte Mode { get; set; }
+        public bool IsRamEnabled { get; set; }
+        public byte RomBank { get; set; }
+        public byte RamBank { get; set; }
+        public byte Mode { get; set; }
 
         public abstract void WriteRamg(byte val);
         public abstract void WriteBank1(byte val);

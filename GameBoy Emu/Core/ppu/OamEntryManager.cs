@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using GameBoy_Emu.core.mmu;
+﻿using GameBoy_Emu.core.mmu;
+using System.Collections.Generic;
 
 namespace GameBoy_Emu.core.ppu
 {
@@ -8,7 +8,7 @@ namespace GameBoy_Emu.core.ppu
         public List<OamEntry> Sprites { get; set; }
         public List<OamEntry> VisibleSprites { get; set; }
 
-        private Mmu _mmu;
+        private readonly Mmu _mmu;
 
         public const int OAM_START_ADDRESS = 0xFE00;
         public const int OAM_END_ADDRESS = 0xFE9F;
@@ -52,7 +52,10 @@ namespace GameBoy_Emu.core.ppu
                     VisibleSprites.Add(sprite);
                 }
 
-                if (VisibleSprites.Count == 10) break;
+                if (VisibleSprites.Count == 10)
+                {
+                    break;
+                }
             }
         }
     }

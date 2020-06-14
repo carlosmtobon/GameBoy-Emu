@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using GameBoy_Emu.core.mmu;
+﻿using GameBoy_Emu.core.mmu;
+using System.Collections.Generic;
 
 namespace GameBoy_Emu.core.ppu
 {
@@ -9,10 +9,10 @@ namespace GameBoy_Emu.core.ppu
         private int _currentBgTile;
         private int _fetchAccumalator;
         private int _currentTileNumber;
-        private Display _display;
+        private readonly Display _display;
         private readonly BgTileMapManager _bgTileMap;
         private readonly Mmu _mmu;
-        private PixelFifo _tileFifo;
+        private readonly PixelFifo _tileFifo;
 
         public Queue<PixelData> Pixels { get; set; }
         private Tile _tile;
@@ -43,8 +43,8 @@ namespace GameBoy_Emu.core.ppu
         {
             if (State == FetcherState.READ_TILE_NUM)
             {
-                var scx = (_mmu.LoadUnsigned8(Mmu.SCX_REGISTER) / 8) % _display.Width;
-                var scy = (_mmu.LoadUnsigned8(Mmu.SCY_REGISTER) / 8) % _display.Height;
+                var scx = (_mmu.LoadUnsigned8(Mmu.SCX_REGISTER) % 255) / 8;
+                var scy = (_mmu.LoadUnsigned8(Mmu.SCY_REGISTER) % 255) / 8;
 
                 _currentBgTileAddress = _bgTileMap.GetBgTileAddr() +
                                         (((((_display.Y) / 8) + scy) * 32) + ((_currentBgTile / 8) + scx));
@@ -61,7 +61,7 @@ namespace GameBoy_Emu.core.ppu
             }
             else if (State == FetcherState.READ_DATA_1)
             {
-                Pixels = _tile.GetRowPixelData(_display.Y % 8);
+                Pixels = _tile.GetRowPixelData(_display.Y % 8, PixelData.PixelType.BG);
 
                 State = FetcherState.TRANSFER_READY;
             }
@@ -92,19 +92,20 @@ namespace GameBoy_Emu.core.ppu
             Pixels.Clear();
             var height = _bgTileMap.GetSpriteHeight();
             _tile = _bgTileMap.GetSpriteTile(sprite.TileNumber, height);
-            Pixels = _tile.GetRowPixelData((_tile.TileData.Length - (sprite.YPos - yPos)) % (_tile.TileData.Length/2), sprite.IsXFlip());
+            PixelData.PixelType pixelType = sprite.PaletteNumber() == 0 ? PixelData.PixelType.SPRITE_0 : PixelData.PixelType.SPRITE_1;
+            Pixels = _tile.GetRowPixelData((_tile.TileData.Length - (sprite.YPos - yPos)) % (_tile.TileData.Length / 2), pixelType, sprite.IsXFlip());
         }
 
         public void Tick(int cpuCycles)
         {
             while (cpuCycles > 0)
             {
-                var sprite = _bgTileMap.GetVisibleSprites().Find(oamEntry => oamEntry.XPos == _display.X + 8);
+                var sprite = _bgTileMap.GetVisibleSprites().Find(oamEntry => oamEntry.XPos - 8 == _display.X);
 
                 if (_bgTileMap.GetVisibleSprites().Remove(sprite))
                 {
                     GetSprite(sprite, _display.Y);
-                    _tileFifo.Mix(Pixels);
+                    _tileFifo.Mix(Pixels, sprite.GetPriority());
                     State = FetcherState.READ_DATA_0;
                 }
 

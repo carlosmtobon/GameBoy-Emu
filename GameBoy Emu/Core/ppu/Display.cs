@@ -1,5 +1,5 @@
-﻿using System;
-using SDL2;
+﻿using SDL2;
+using System;
 
 namespace GameBoy_Emu.core.ppu
 {
@@ -41,29 +41,29 @@ namespace GameBoy_Emu.core.ppu
             }
 
             _window = SDL.SDL_CreateWindow("Chicho's Gameboy Emulator", 100, 100, Width * Scale,
-                Height * Scale, SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL);
+                Height * Scale, SDL.SDL_WindowFlags.SDL_WINDOW_VULKAN);
 
             _renderer = SDL.SDL_CreateRenderer(_window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
-
             _rect = new SDL.SDL_Rect();
-            _rect.h = 10 * Scale;
-            _rect.w = 10 * Scale;
+            _rect.h = Scale;
+            _rect.w = Scale;
 
             // disable VSYNC
             //SDL.SDL_GL_SetSwapInterval(1);
-            //SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEMOTION, SDL.SDL_IGNORE);
-            //SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEWHEEL, SDL.SDL_IGNORE);
-            //SDL.SDL_EventState(SDL.SDL_EventType.SDL_TEXTINPUT, SDL.SDL_IGNORE);
-            //SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERMOTION, SDL.SDL_IGNORE);
-            //SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERUP, SDL.SDL_IGNORE);
-            //SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERDOWN, SDL.SDL_IGNORE);
-            // SDL.SDL_EventState(SDL.SDL_EventType.SDL_KEYDOWN, SDL.SDL_IGNORE);
+            SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEMOTION, SDL.SDL_IGNORE);
+            SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEWHEEL, SDL.SDL_IGNORE);
+            SDL.SDL_EventState(SDL.SDL_EventType.SDL_TEXTINPUT, SDL.SDL_IGNORE);
+            SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERMOTION, SDL.SDL_IGNORE);
+            SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERUP, SDL.SDL_IGNORE);
+            SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERDOWN, SDL.SDL_IGNORE);
+            //SDL.SDL_EventState(SDL.SDL_EventType.SDL_KEYDOWN, SDL.SDL_IGNORE);
         }
 
         public void UpdateDisplay()
         {
             if (Draw)
             {
+                SDL.SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
                 SDL.SDL_RenderClear(_renderer);
                 Draw = false;
                 for (int y = 0; y < Height; y++)
@@ -74,23 +74,28 @@ namespace GameBoy_Emu.core.ppu
                         _rect.y = y * Scale;
 
                         int color = Pixels[y * Width + x];
-                        if (color == 1)
+                        if (color == 0)
                         {
-                            SDL.SDL_SetRenderDrawColor(_renderer, 100, 100, 100, 255);
+                            SDL.SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
+
+                        }
+                        else if (color == 1)
+                        {
+                            SDL.SDL_SetRenderDrawColor(_renderer, 211, 211, 211, 255);
+
                         }
                         else if (color == 2)
                         {
-                            SDL.SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
-                        }
-                        else if (color == 3)
-                        {
-                            SDL.SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
+
+                            SDL.SDL_SetRenderDrawColor(_renderer, 100, 100, 100, 255);
+
+
                         }
                         else
                         {
-                            SDL.SDL_SetRenderDrawColor(_renderer, 211, 211, 211, 255);
-                        }
+                            SDL.SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
 
+                        }
                         SDL.SDL_RenderFillRect(_renderer, ref _rect);
                     }
                 }

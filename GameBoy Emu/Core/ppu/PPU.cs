@@ -27,18 +27,10 @@ namespace GameBoy_Emu.core.ppu
         }
 
         int clocks;
-        private int total;
-        
+        private readonly int total;
+
         public void Tick(int cpuCycles)
         {
-            // lcdc enable logic?
-            //if (!BitUtils.isBitSet(_mmu.LoadLcdc(), 7))
-            //{
-            //    clocks = 0;
-               
-            //    return;
-            //}
-
             clocks += cpuCycles;
             SetMode();
             if (Status == PpuStatus.OAM_SEARCH)
@@ -97,7 +89,7 @@ namespace GameBoy_Emu.core.ppu
         private void PixelTransfer(int cpuCycles)
         {
             _fetcher.Tick(cpuCycles);
-            
+
             if (clocks >= PIXEL_PROCESS_CYCLES)
             {
                 _fetcher.Reset();
@@ -135,7 +127,7 @@ namespace GameBoy_Emu.core.ppu
                 if (Display.Y == 144)
                 {
                     SetInterrupt(InterruptController.VBLANK_MASK);
-                   
+
                 }
                 if (Display.Y == 154)
                 {
@@ -144,10 +136,12 @@ namespace GameBoy_Emu.core.ppu
                     Status = PpuStatus.OAM_SEARCH;
                 }
                 else
+                {
                     Status = PpuStatus.HBLANK;
+                }
             }
         }
-        
+
         private void LycCompare()
         {
             //lyc lcy compare
@@ -165,7 +159,7 @@ namespace GameBoy_Emu.core.ppu
         {
             // set lcdc vblank?
             byte stat = _mmu.LoadStat();
-            if (BitUtils.isBitSet(stat, bitToCheck))
+            if (BitUtils.IsBitSet(stat, bitToCheck))
             {
                 SetInterrupt(InterruptController.LCDC_MASK);
             }

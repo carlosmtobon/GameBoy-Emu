@@ -35,7 +35,7 @@
 
             return 0;
         }
-        
+
         private int SetRamSize(byte val)
         {
             switch (val)

@@ -104,7 +104,7 @@ namespace GameBoy_Emu.core.timer
 
         private static bool IsTimerOn(byte tac)
         {
-            return BitUtils.isBitSet(tac, 2);
+            return BitUtils.IsBitSet(tac, 2);
         }
     }
 }

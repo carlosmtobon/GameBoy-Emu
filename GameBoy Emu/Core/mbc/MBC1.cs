@@ -45,7 +45,10 @@ namespace GameBoy_Emu.core.mbc
             byte low5 = (byte)(value & 0x1F);
             RomBank &= 0xE0;
             RomBank |= low5;
-            if (RomBank == 0) RomBank++;
+            if (RomBank == 0)
+            {
+                RomBank++;
+            }
         }
 
         public override void DoHiRom(byte value)
@@ -55,7 +58,10 @@ namespace GameBoy_Emu.core.mbc
             // turn off the lower 5 bits of the data
             value &= 0xE0;
             RomBank |= value;
-            if (RomBank == 0) RomBank++;
+            if (RomBank == 0)
+            {
+                RomBank++;
+            }
         }
     }
 }

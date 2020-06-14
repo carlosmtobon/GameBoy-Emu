@@ -1,5 +1,4 @@
-﻿using System;
-using GameBoy_Emu.core.mmu;
+﻿using GameBoy_Emu.core.mmu;
 using GameBoy_Emu.core.timer;
 using GameBoy_Emu.core.utils;
 
@@ -124,7 +123,7 @@ namespace GameBoy_Emu.core.cpu
             Registers.SetNFLag(true);
             Registers.SetHCYFLag((Registers.A & 0xF) < (register & 0xF));
             Registers.SetCYFLag(Registers.A < register);
-            Registers.A -= (byte)(register);
+            Registers.A -= register;
             UpdatePCAndCycles(bytesRead, cycles);
         }
         public void SBC(byte register, ushort bytesRead, int cycles)
@@ -223,7 +222,7 @@ namespace GameBoy_Emu.core.cpu
                 _mmu.DmaTransfer(CpuTickCycles);
             }
         }
-        
+
         private void CheckTimer()
         {
             Timer.Tick(CpuTickCycles, _halt);
@@ -377,7 +376,7 @@ namespace GameBoy_Emu.core.cpu
                     break;
                 case 0x20:
                     // JR NZ,i8
-                  JRCondition(Registers.GetZFlag() == 0);
+                    JRCondition(Registers.GetZFlag() == 0);
                     break;
                 case 0x21:
                     Registers.SetHL(_mmu.LoadUnsigned16(PC + 1));
@@ -1098,7 +1097,7 @@ namespace GameBoy_Emu.core.cpu
         {
             if (condition)
             {
-                JP((ushort) (PC + 1));
+                JP((ushort)(PC + 1));
                 UpdatePCAndCycles(0, 16);
             }
             else
@@ -1177,7 +1176,7 @@ namespace GameBoy_Emu.core.cpu
             Registers.SetZFLag(false);
             Registers.SetNFLag(false);
             ushort lSP = (ushort)(SP + nextI8);
-            
+
             if (nextI8 >= 0)
             {
                 Registers.SetHCYFLag((SP & 0xF) + (nextI8 & 0xF) > 0xF);
@@ -1238,7 +1237,7 @@ namespace GameBoy_Emu.core.cpu
             byte oldbit7 = (byte)(register >> 7);
             Registers.SetCYFLag(oldbit7 == 1);
             register = (byte)(register << 1);
-            register |= (byte)(oldbit7);
+            register |= oldbit7;
             Registers.SetZFLag(register == 0);
             Registers.SetNFLag(false);
             Registers.SetHCYFLag(false);
@@ -1250,7 +1249,7 @@ namespace GameBoy_Emu.core.cpu
             byte oldbit7 = (byte)(Registers.A >> 7);
             Registers.SetCYFLag(oldbit7 == 1);
             Registers.A = (byte)(Registers.A << 1);
-            Registers.A |= (byte)(oldbit7);
+            Registers.A |= oldbit7;
             Registers.SetZFLag(false);
             Registers.SetNFLag(false);
             Registers.SetHCYFLag(false);
@@ -1381,7 +1380,7 @@ namespace GameBoy_Emu.core.cpu
 
         public byte RES(byte val, byte bitToClear, ushort bytesRead, int cycles)
         {
-            val = BitUtils.ClearBit(val,  bitToClear);
+            val = BitUtils.ClearBit(val, bitToClear);
             UpdatePCAndCycles(bytesRead, cycles);
             return val;
         }
