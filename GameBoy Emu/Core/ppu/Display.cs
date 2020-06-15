@@ -8,8 +8,8 @@ namespace GameBoy_Emu.core.ppu
         public int Width { get; set; }
         public int Height { get; set; }
         public int Scale { get; set; }
-        public int X { get; set; }
-        public int Y { get; set; }
+        public int CurrentX { get; set; }
+        public int CurrentY { get; set; }
         public int[] Pixels { get; set; }
 
         public bool Draw;
@@ -77,7 +77,6 @@ namespace GameBoy_Emu.core.ppu
                         if (color == 0)
                         {
                             SDL.SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
-
                         }
                         else if (color == 1)
                         {
@@ -88,13 +87,10 @@ namespace GameBoy_Emu.core.ppu
                         {
 
                             SDL.SDL_SetRenderDrawColor(_renderer, 100, 100, 100, 255);
-
-
                         }
                         else
                         {
                             SDL.SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
-
                         }
                         SDL.SDL_RenderFillRect(_renderer, ref _rect);
                     }
@@ -113,12 +109,12 @@ namespace GameBoy_Emu.core.ppu
 
         public void Add(int color)
         {
-            if (X < Width && Y < Height)
+            if (CurrentX < Width && CurrentY < Height)
             {
-                Pixels[Y * Width + X] = color;
+                Pixels[CurrentY * Width + CurrentX] = color;
             }
 
-            X++;
+            CurrentX++;
         }
     }
 }

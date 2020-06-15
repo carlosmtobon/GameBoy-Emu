@@ -22,7 +22,7 @@ namespace GameBoy_Emu.core.ppu
             if (State != PixelFifoState.IDLE)
             {
                 var pixelsToDiscard = scx % 8;
-                if (pixelsToDiscard != 0 && display.X == 0)
+                if (display.CurrentX == 0)
                 {
                     for (int i = 0; i < pixelsToDiscard; i++)
                     {

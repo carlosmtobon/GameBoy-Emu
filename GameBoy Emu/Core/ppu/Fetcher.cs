@@ -43,11 +43,10 @@ namespace GameBoy_Emu.core.ppu
         {
             if (State == FetcherState.READ_TILE_NUM)
             {
-                var scx = (_mmu.LoadUnsigned8(Mmu.SCX_REGISTER) % 255) / 8;
-                var scy = (_mmu.LoadUnsigned8(Mmu.SCY_REGISTER) % 255) / 8;
+                var scx = _mmu.LoadUnsigned8(Mmu.SCX_REGISTER);
+                var scy = _mmu.LoadUnsigned8(Mmu.SCY_REGISTER);
 
-                _currentBgTileAddress = _bgTileMap.GetBgTileAddr() +
-                                        (((((_display.Y) / 8) + scy) * 32) + ((_currentBgTile / 8) + scx));
+                _currentBgTileAddress = _bgTileMap.GetBgTileAddr() + ((((_display.CurrentY + scy) % 255) / 8) * 32) + ((((_currentBgTile + scx) % 255) / 8));
                 _currentBgTile += 8;
                 _currentTileNumber = _bgTileMap.GetTileNumber(_currentBgTileAddress);
 
@@ -61,7 +60,7 @@ namespace GameBoy_Emu.core.ppu
             }
             else if (State == FetcherState.READ_DATA_1)
             {
-                Pixels = _tile.GetRowPixelData(_display.Y % 8, PixelData.PixelType.BG);
+                Pixels = _tile.GetRowPixelData((_display.CurrentY % 8) % _display.Height, PixelData.PixelType.BG);
 
                 State = FetcherState.TRANSFER_READY;
             }
@@ -100,11 +99,11 @@ namespace GameBoy_Emu.core.ppu
         {
             while (cpuCycles > 0)
             {
-                var sprite = _bgTileMap.GetVisibleSprites().Find(oamEntry => oamEntry.XPos - 8 == _display.X);
+                var sprite = _bgTileMap.GetVisibleSprites().Find(oamEntry => oamEntry.XPos - 8 == _display.CurrentX);
 
                 if (_bgTileMap.GetVisibleSprites().Remove(sprite))
                 {
-                    GetSprite(sprite, _display.Y);
+                    GetSprite(sprite, _display.CurrentY);
                     _tileFifo.Mix(Pixels, sprite.GetPriority());
                     State = FetcherState.READ_DATA_0;
                 }
@@ -121,7 +120,7 @@ namespace GameBoy_Emu.core.ppu
 
         public void FindVisibleSprites()
         {
-            _bgTileMap.FindVisibleSprites(_display.Y);
+            _bgTileMap.FindVisibleSprites(_display.CurrentY);
         }
     }
 }

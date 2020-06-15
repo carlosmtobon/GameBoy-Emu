@@ -103,11 +103,12 @@ namespace GameBoy_Emu.core.ppu
             if (clocks >= HBLANK_CYCLES)
             {
                 IncrementLy();
-                LycCompare();
                 SetLcdcInterruptIfNeeded(3);
+
+                LycCompare();
                 clocks = 0;
-                Display.X = 0;
-                if (Display.Y >= (Display.Height - 1))
+                Display.CurrentX = 0;
+                if (Display.CurrentY >= (Display.Height - 1))
                 {
                     Status = PpuStatus.VBLANK;
                 }
@@ -124,15 +125,15 @@ namespace GameBoy_Emu.core.ppu
             {
                 //Console.WriteLine($"SCX: {_mmu.LoadUnsigned8(Mmu.SCX_REGISTER)}");
                 clocks = 0;
-                if (Display.Y == 144)
+                if (Display.CurrentY == 144)
                 {
                     SetInterrupt(InterruptController.VBLANK_MASK);
 
                 }
-                if (Display.Y == 154)
+                if (Display.CurrentY == 154)
                 {
                     Display.Draw = true;
-                    Display.Y = 0;
+                    Display.CurrentY = 0;
                     Status = PpuStatus.OAM_SEARCH;
                 }
                 else
@@ -167,7 +168,7 @@ namespace GameBoy_Emu.core.ppu
 
         private void IncrementLy()
         {
-            _mmu.StoreUnsigned8(Mmu.LY_REGISTER, (byte)Display.Y++);
+            _mmu.StoreUnsigned8(Mmu.LY_REGISTER, (byte)Display.CurrentY++);
         }
 
         private void SetInterrupt(byte flag)
