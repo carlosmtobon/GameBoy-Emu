@@ -41,12 +41,15 @@ namespace GameBoy_Emu.core.ppu
 
         public void Fetch()
         {
+            var scx = _mmu.LoadUnsigned8(Mmu.SCX_REGISTER);
+            var scy = _mmu.LoadUnsigned8(Mmu.SCY_REGISTER);
+
             if (State == FetcherState.READ_TILE_NUM)
             {
-                var scx = _mmu.LoadUnsigned8(Mmu.SCX_REGISTER);
-                var scy = _mmu.LoadUnsigned8(Mmu.SCY_REGISTER);
+                _currentBgTileAddress = _bgTileMap.GetBgTileAddr() +
+                    ((((_display.CurrentY + scy) % 256) / 8) * 32) + 
+                    ((((_currentBgTile + scx ) % 256) / 8));
 
-                _currentBgTileAddress = _bgTileMap.GetBgTileAddr() + ((((_display.CurrentY + scy) % 255) / 8) * 32) + ((((_currentBgTile + scx) % 255) / 8));
                 _currentBgTile += 8;
                 _currentTileNumber = _bgTileMap.GetTileNumber(_currentBgTileAddress);
 
@@ -60,7 +63,7 @@ namespace GameBoy_Emu.core.ppu
             }
             else if (State == FetcherState.READ_DATA_1)
             {
-                Pixels = _tile.GetRowPixelData((_display.CurrentY % 8) % _display.Height, PixelData.PixelType.BG);
+                Pixels = _tile.GetRowPixelData((_display.CurrentY + scy) % 256 % 8, PixelData.PixelType.BG);
 
                 State = FetcherState.TRANSFER_READY;
             }
@@ -88,11 +91,12 @@ namespace GameBoy_Emu.core.ppu
 
         public void GetSprite(OamEntry sprite, int yPos)
         {
+            var scy = _mmu.LoadUnsigned8(Mmu.SCY_REGISTER);
             Pixels.Clear();
             var height = _bgTileMap.GetSpriteHeight();
             _tile = _bgTileMap.GetSpriteTile(sprite.TileNumber, height);
             PixelData.PixelType pixelType = sprite.PaletteNumber() == 0 ? PixelData.PixelType.SPRITE_0 : PixelData.PixelType.SPRITE_1;
-            Pixels = _tile.GetRowPixelData((_tile.TileData.Length - (sprite.YPos - yPos)) % (_tile.TileData.Length / 2), pixelType, sprite.IsXFlip());
+            Pixels = _tile.GetRowPixelData((yPos-(sprite.YPos - 16)) % height, pixelType, sprite.IsXFlip());
         }
 
         public void Tick(int cpuCycles)
