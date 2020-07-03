@@ -1,5 +1,6 @@
 ﻿using SDL2;
 using System;
+using System.Windows;
 
 namespace GameBoy_Emu.core.ppu
 {
@@ -18,6 +19,7 @@ namespace GameBoy_Emu.core.ppu
         private IntPtr _window;
         private IntPtr _renderer;
         private SDL.SDL_Rect _rect;
+
         public Display(int width, int height, int scale)
         {
             Width = width;
@@ -40,7 +42,7 @@ namespace GameBoy_Emu.core.ppu
                 return;
             }
 
-            _window = SDL.SDL_CreateWindow("Chicho's Gameboy Emulator", 100, 100, Width * Scale,
+            _window = SDL.SDL_CreateWindow("ChiBoy v1.0 - ", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, Width * Scale,
                 Height * Scale, SDL.SDL_WindowFlags.SDL_WINDOW_VULKAN);
 
             _renderer = SDL.SDL_CreateRenderer(_window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
@@ -48,15 +50,21 @@ namespace GameBoy_Emu.core.ppu
             _rect.h = Scale;
             _rect.w = Scale;
 
-            // disable VSYNC
-            //SDL.SDL_GL_SetSwapInterval(1);
             SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEMOTION, SDL.SDL_IGNORE);
             SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEWHEEL, SDL.SDL_IGNORE);
             SDL.SDL_EventState(SDL.SDL_EventType.SDL_TEXTINPUT, SDL.SDL_IGNORE);
             SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERMOTION, SDL.SDL_IGNORE);
             SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERUP, SDL.SDL_IGNORE);
             SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERDOWN, SDL.SDL_IGNORE);
-            //SDL.SDL_EventState(SDL.SDL_EventType.SDL_KEYDOWN, SDL.SDL_IGNORE);
+        }
+
+        private IntPtr GetWinHandler(IntPtr window)
+        {
+            SDL.SDL_SysWMinfo infoWindow = new SDL.SDL_SysWMinfo();
+            SDL.SDL_VERSION(out infoWindow.version);
+            SDL.SDL_bool sDL_bool = SDL.SDL_GetWindowWMInfo(window, ref infoWindow);
+            _ = sDL_bool;
+            return infoWindow.info.win.window;
         }
 
         public void UpdateDisplay()
@@ -104,6 +112,8 @@ namespace GameBoy_Emu.core.ppu
         {
             SDL.SDL_DestroyRenderer(_renderer);
             SDL.SDL_DestroyWindow(_window);
+            _renderer = IntPtr.Zero;
+            _window = IntPtr.Zero;
             SDL.SDL_Quit();
         }
 

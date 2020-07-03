@@ -98,7 +98,9 @@
     <Compile Include="core\cpu\Interrupt.cs" />
     <Compile Include="core\cpu\InterruptController.cs" />
     <Compile Include="core\cpu\TimerController.cs" />
+    <Compile Include="core\input\InputDevice.cs" />
     <Compile Include="core\input\Joypad.cs" />
+    <Compile Include="core\input\Keyboard.cs" />
     <Compile Include="core\mbc\Mbc.cs" />
     <Compile Include="core\mbc\Mbc1.cs" />
     <Compile Include="core\mbc\Mbc2.cs" />

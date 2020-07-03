@@ -17,7 +17,7 @@ namespace GameBoy_Emu.core.mmu
 
         private RomHeader _romHeader;
         private Mbc _mbc;
-        private readonly Joypad _joypad;
+        private readonly InputDevice _joypad;
         private const int mmu_SIZE = 0x10000;
 
         public byte[] Memory { get; }
@@ -63,7 +63,7 @@ namespace GameBoy_Emu.core.mmu
             }
         }
 
-        public Mmu(Joypad joypad)
+        public Mmu(InputDevice joypad)
         {
             Memory = new byte[mmu_SIZE];
             _joypad = joypad;

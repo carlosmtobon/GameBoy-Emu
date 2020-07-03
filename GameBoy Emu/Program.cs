@@ -10,18 +10,19 @@ namespace GameBoy_Emu
     {
         static void Main()
         {
-            Joypad joypad = new Joypad();
-            Mmu mmu = new Mmu(joypad);
+            InputDevice inputDevice = InputDevice.GetInstance();
+            Mmu mmu = new Mmu(inputDevice);
 
-            //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev A).gb");
+            //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Turrican (USA, Europe).gb");
+             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev A).gb");
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Castlevania - The Adventure (USA).gb");
-            mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
+           mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Bubble Ghost (USA, Europe).gb");
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Prehistorik Man (USA, Europe).gb");
 
-            var display = new Display(160, 144, 5);
+            var display = new Display(160, 144, 4);
             var cpu = new Cpu(mmu);
             var ppu = new Ppu(mmu, display);
 
@@ -33,7 +34,7 @@ namespace GameBoy_Emu
                 var start = SDL.SDL_GetPerformanceCounter();
                 cpu.Tick();
                 ppu.Tick(cpu.CpuTickCycles);
-                running = joypad.HandleInput();
+                running = inputDevice.HandleInput();
                 display.UpdateDisplay();
                 var end = SDL.SDL_GetPerformanceCounter();
                 float elapsedMS = (end - start) / (float)(SDL.SDL_GetPerformanceFrequency());
@@ -45,6 +46,7 @@ namespace GameBoy_Emu
             // clean up
             mmu.SaveGameFile();
             display.Dispose();
+            inputDevice.Dispose();
         }
     }
 }
