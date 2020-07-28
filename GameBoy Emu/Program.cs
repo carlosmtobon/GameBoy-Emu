@@ -14,15 +14,15 @@ namespace GameBoy_Emu
             Mmu mmu = new Mmu(inputDevice);
 
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Turrican (USA, Europe).gb");
-             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev A).gb");
+             mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev A).gb");
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Castlevania - The Adventure (USA).gb");
-           mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
+           //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Bubble Ghost (USA, Europe).gb");
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Prehistorik Man (USA, Europe).gb");
 
-            var display = new Display(160, 144, 4);
+            var display = new Display(160, 144, 4, mmu.GetRomName());
             var cpu = new Cpu(mmu);
             var ppu = new Ppu(mmu, display);
 
@@ -36,8 +36,8 @@ namespace GameBoy_Emu
                 ppu.Tick(cpu.CpuTickCycles);
                 running = inputDevice.HandleInput();
                 display.UpdateDisplay();
-                var end = SDL.SDL_GetPerformanceCounter();
-                float elapsedMS = (end - start) / (float)(SDL.SDL_GetPerformanceFrequency());
+                //var end = SDL.SDL_GetPerformanceCounter();
+                //float elapsedMS = (end - start) / (float)(SDL.SDL_GetPerformanceFrequency());
                 //Console.WriteLine("FPS: " + 1.0 / elapsedMS);
                 //SDL.SDL_Delay((uint)Math.Floor(16.666f - elapsedMS));
 

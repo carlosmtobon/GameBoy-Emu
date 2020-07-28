@@ -17,7 +17,6 @@ namespace GameBoy_Emu.core.input
         public bool InterruptRequest { get; set; }
 
         public abstract void ProcessInput(SDL.SDL_Event sdlEvent);
-        public abstract void Dispose();
 
         internal static InputDevice GetInstance()
         {
@@ -101,6 +100,15 @@ namespace GameBoy_Emu.core.input
             }
 
             return true;
+        }
+
+        public void Dispose()
+        {
+            if (_gamecontroller != null)
+            {
+                SDL.SDL_JoystickClose(_gamecontroller);
+                _gamecontroller = IntPtr.Zero;
+            }
         }
     }
 }

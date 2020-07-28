@@ -19,14 +19,15 @@ namespace GameBoy_Emu.core.ppu
         private IntPtr _window;
         private IntPtr _renderer;
         private SDL.SDL_Rect _rect;
+        private object v;
 
-        public Display(int width, int height, int scale)
+        public Display(int width, int height, int scale, string romName)
         {
             Width = width;
             Height = height;
             Scale = scale;
             InitScreen();
-            InitSDL();
+            InitSDL(romName);
         }
 
         public void InitScreen()
@@ -34,7 +35,7 @@ namespace GameBoy_Emu.core.ppu
             Pixels = new int[Width * Height];
         }
 
-        private void InitSDL()
+        private void InitSDL(string romName)
         {
             if (SDL.SDL_Init(SDL.SDL_INIT_VIDEO) < 0)
             {
@@ -42,7 +43,7 @@ namespace GameBoy_Emu.core.ppu
                 return;
             }
 
-            _window = SDL.SDL_CreateWindow("ChiBoy v1.0 - ", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, Width * Scale,
+            _window = SDL.SDL_CreateWindow("ChiBoy v1.0 - " + romName , SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, Width * Scale,
                 Height * Scale, SDL.SDL_WindowFlags.SDL_WINDOW_VULKAN);
 
             _renderer = SDL.SDL_CreateRenderer(_window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
@@ -71,8 +72,8 @@ namespace GameBoy_Emu.core.ppu
         {
             if (Draw)
             {
-                SDL.SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
-                SDL.SDL_RenderClear(_renderer);
+                //SDL.SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
+                //SDL.SDL_RenderClear(_renderer);
                 Draw = false;
                 for (int y = 0; y < Height; y++)
                 {
@@ -82,24 +83,15 @@ namespace GameBoy_Emu.core.ppu
                         _rect.y = y * Scale;
 
                         int color = Pixels[y * Width + x];
-                        if (color == 0)
-                        {
-                            SDL.SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
-                        }
-                        else if (color == 1)
-                        {
-                            SDL.SDL_SetRenderDrawColor(_renderer, 211, 211, 211, 255);
 
-                        }
-                        else if (color == 2)
-                        {
-
-                            SDL.SDL_SetRenderDrawColor(_renderer, 100, 100, 100, 255);
-                        }
-                        else
-                        {
+                        if (color == 3)
                             SDL.SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
-                        }
+                        else if (color == 0)
+                            SDL.SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
+                        else if (color == 1)
+                            SDL.SDL_SetRenderDrawColor(_renderer, 211, 211, 211, 255);
+                        else 
+                            SDL.SDL_SetRenderDrawColor(_renderer, 100, 100, 100, 255);
                         SDL.SDL_RenderFillRect(_renderer, ref _rect);
                     }
                 }

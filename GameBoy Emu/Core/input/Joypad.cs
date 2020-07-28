@@ -22,11 +22,5 @@ namespace GameBoy_Emu.core.input
             //    }
             //}
         }
-
-        public override void Dispose()
-        {
-            SDL.SDL_JoystickClose(_gamecontroller);
-            _gamecontroller = IntPtr.Zero;
-        }
     }
 }

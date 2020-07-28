@@ -34,6 +34,12 @@ namespace GameBoy_Emu.core.mmu
 
         // special register address
         public const int IE_REGISTER = 0xFFFF;
+
+        internal string GetRomName()
+        {
+            return _romHeader.GameTitle;
+        }
+
         public const int IF_REGISTER = 0xFF0F;
 
         public const int DIV_REGISTER = 0xFF04;

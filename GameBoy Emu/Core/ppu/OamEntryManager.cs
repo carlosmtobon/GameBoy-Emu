@@ -20,6 +20,7 @@ namespace GameBoy_Emu.core.ppu
             VisibleSprites = new List<OamEntry>();
         }
 
+        // Method to be used to expose a GUI view for the entire OAM section of ram
         public List<OamEntry> GetOamEntries()
         {
             Sprites.Clear();
@@ -47,7 +48,7 @@ namespace GameBoy_Emu.core.ppu
                 sprite.TileNumber = _mmu.LoadUnsigned8(addr + 2);
                 sprite.AttributeFlag = _mmu.LoadUnsigned8(addr + 3);
 
-                if (sprite.XPos != 0 && currentLine + 16 >= sprite.YPos && currentLine + 16 < sprite.YPos + spriteHeight)
+                if (currentLine + 16 >= sprite.YPos && currentLine + 16 < sprite.YPos + spriteHeight)
                 {
                     VisibleSprites.Add(sprite);
                 }
