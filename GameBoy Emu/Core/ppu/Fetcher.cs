@@ -103,9 +103,18 @@ namespace GameBoy_Emu.core.ppu
         {
             while (cpuCycles > 0)
             {
-                var sprite = _bgTileMap.GetVisibleSprites().Find(oamEntry => oamEntry.XPos - 8 == _display.CurrentX);
+                OamEntry sprite = null;
+                var visibleSprites = _bgTileMap.GetVisibleSprites();
+                foreach (OamEntry oamEntry in visibleSprites)
+                {
+                    if (oamEntry.XPos - 8 == _display.CurrentX && (oamEntry.XPos - 8) > 0)
+                    {
+                        sprite = oamEntry;
+                        break;
+                    }
+                }
 
-                if (_bgTileMap.GetVisibleSprites().Remove(sprite))
+                if (sprite != null && visibleSprites.Remove(sprite))
                 {
                     GetSprite(sprite, _display.CurrentY);
                     _tileFifo.Mix(Pixels, sprite.GetPriority());
