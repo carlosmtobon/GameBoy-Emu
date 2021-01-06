@@ -50,14 +50,8 @@ namespace GameBoy_Emu.core.input
                     case 2:
                         PressButton(1);
                         break;
-                    case 3:
-                        PressButton(0);
-                        break;
-                    case 4:
-                        PressButton(0);
-                        break;
-                    case 5:
-                        PressButton(0);
+                    case 8:
+                        PressButton(2);
                         break;
                     case 9:
                         PressButton(3);
@@ -75,14 +69,8 @@ namespace GameBoy_Emu.core.input
                     case 2:
                         ReleaseButton(1);
                         break;
-                    case 3:
-                        ReleaseButton(0);
-                        break;
-                    case 4:
-                        ReleaseButton(0);
-                        break;
-                    case 5:
-                        ReleaseButton(0);
+                    case 8:
+                        ReleaseButton(2);
                         break;
                     case 9:
                         ReleaseButton(3);
