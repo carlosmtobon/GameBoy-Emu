@@ -14,7 +14,7 @@ namespace GameBoy_Emu
             Mmu mmu = new Mmu(inputDevice);
 
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Turrican (USA, Europe).gb");
-             mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev A).gb");
+             mmu.LoadRom(@"C:\Users\Carlos\Desktop\Legend of Zelda, The - Link's Awakening.gb");
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Castlevania - The Adventure (USA).gb");
            //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Bubble Ghost (USA, Europe).gb");
@@ -22,7 +22,7 @@ namespace GameBoy_Emu
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Prehistorik Man (USA, Europe).gb");
 
-            var display = new Display(160, 144, 4, mmu.GetRomName());
+            var display = new Display(160, 144, 8, mmu.GetRomName());
             var cpu = new Cpu(mmu);
             var ppu = new Ppu(mmu, display);
 
