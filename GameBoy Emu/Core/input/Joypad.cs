@@ -6,8 +6,9 @@ namespace GameBoy_Emu.core.input
 {
     public class Joypad : InputDevice
     {
-        private const int DEAD_ZONE = 6000;
-        public override void ProcessInput(SDL.SDL_Event sdlEvent)
+        private const int DEAD_ZONE = 8000;
+
+        protected override void ProcessInput(SDL.SDL_Event sdlEvent)
         {
             if (sdlEvent.type == SDL.SDL_EventType.SDL_JOYAXISMOTION)
             {

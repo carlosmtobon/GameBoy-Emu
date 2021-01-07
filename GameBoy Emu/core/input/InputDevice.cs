@@ -12,11 +12,11 @@ namespace GameBoy_Emu.core.input
     {
         private byte _directions = 0xf;
         private byte _buttons = 0xf;
-        protected static IntPtr _gamecontroller;
+        private static IntPtr _gamecontroller = IntPtr.Zero;
 
         public bool InterruptRequest { get; set; }
 
-        public abstract void ProcessInput(SDL.SDL_Event sdlEvent);
+        protected abstract void ProcessInput(SDL.SDL_Event sdlEvent);
 
         internal static InputDevice GetInstance()
         {
@@ -33,18 +33,13 @@ namespace GameBoy_Emu.core.input
                 SDL.SDL_QuitSubSystem(SDL.SDL_INIT_JOYSTICK);
                 return new Keyboard();
             }
-            else
-            {
-                _gamecontroller = SDL.SDL_JoystickOpen(0);
-                if (_gamecontroller == null)
-                {
-                    Console.WriteLine("Warning: Unable to open game controller! Sdl Error: " + SDL.SDL_GetError());
-                    SDL.SDL_QuitSubSystem(SDL.SDL_INIT_JOYSTICK);
-                    return new Keyboard();
-                }
-
-                return new Joypad();
-            }
+            
+            _gamecontroller = SDL.SDL_JoystickOpen(0);
+            if (_gamecontroller != null) return new Joypad();
+                
+            Console.WriteLine("Warning: Unable to open game controller! Sdl Error: " + SDL.SDL_GetError());
+            SDL.SDL_QuitSubSystem(SDL.SDL_INIT_JOYSTICK);
+            return new Keyboard();
         }
         protected void PressDirection(int bit)
         {
@@ -104,11 +99,10 @@ namespace GameBoy_Emu.core.input
 
         public void Dispose()
         {
-            if (_gamecontroller != null)
-            {
-                SDL.SDL_JoystickClose(_gamecontroller);
-                _gamecontroller = IntPtr.Zero;
-            }
+            if (_gamecontroller == IntPtr.Zero) return;
+            
+            SDL.SDL_JoystickClose(_gamecontroller);
+            _gamecontroller = IntPtr.Zero;
         }
     }
 }

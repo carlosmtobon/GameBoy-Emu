@@ -47,6 +47,7 @@ namespace GameBoy_Emu
             mmu.SaveGameFile();
             display.Dispose();
             inputDevice.Dispose();
+            SDL.SDL_Quit();
         }
     }
 }

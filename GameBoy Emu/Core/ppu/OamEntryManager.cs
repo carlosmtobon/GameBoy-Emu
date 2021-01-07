@@ -42,14 +42,16 @@ namespace GameBoy_Emu.core.ppu
             VisibleSprites.Clear();
             for (int addr = OAM_START_ADDRESS; addr <= OAM_END_ADDRESS; addr += 4)
             {
-                var sprite = new OamEntry();
-                sprite.YPos = _mmu.LoadUnsigned8(addr);
-                sprite.XPos = _mmu.LoadUnsigned8(addr + 1);
-                sprite.TileNumber = _mmu.LoadUnsigned8(addr + 2);
-                sprite.AttributeFlag = _mmu.LoadUnsigned8(addr + 3);
+                var x =_mmu.LoadUnsigned8(addr + 1);
+                var y = _mmu.LoadUnsigned8(addr);
 
-                if (currentLine + 16 >= sprite.YPos && currentLine + 16 < sprite.YPos + spriteHeight)
+                if (currentLine + 16 >= y && currentLine + 16 < y + spriteHeight)
                 {
+                    var sprite = new OamEntry();
+                    sprite.YPos = y;
+                    sprite.XPos = x;
+                    sprite.TileNumber = _mmu.LoadUnsigned8(addr + 2);
+                    sprite.AttributeFlag = _mmu.LoadUnsigned8(addr + 3);
                     VisibleSprites.Add(sprite);
                 }
 

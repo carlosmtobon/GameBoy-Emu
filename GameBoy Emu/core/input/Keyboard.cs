@@ -9,7 +9,7 @@ namespace GameBoy_Emu.core.input
 {
     class Keyboard : InputDevice
     {
-        public override void ProcessInput(SDL.SDL_Event sdlEvent)
+        protected override void ProcessInput(SDL.SDL_Event sdlEvent)
         {
             ProcessKeyDown(sdlEvent);
 

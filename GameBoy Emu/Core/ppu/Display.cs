@@ -106,7 +106,6 @@ namespace GameBoy_Emu.core.ppu
             SDL.SDL_DestroyWindow(_window);
             _renderer = IntPtr.Zero;
             _window = IntPtr.Zero;
-            SDL.SDL_Quit();
         }
 
         public void Add(int color)
