@@ -35,10 +35,10 @@ namespace GameBoy_Emu.core.input
                         ReleaseDirection(3);
                         break;
                     case SDL.SDL_Keycode.SDLK_z:
-                        ReleaseButton(0);
+                        ReleaseButton(1);
                         break;
                     case SDL.SDL_Keycode.SDLK_x:
-                        ReleaseButton(1);
+                        ReleaseButton(0);
                         break;
                     case SDL.SDL_Keycode.SDLK_SPACE:
                         ReleaseButton(2);
@@ -69,10 +69,10 @@ namespace GameBoy_Emu.core.input
                         PressDirection(3);
                         break;
                     case SDL.SDL_Keycode.SDLK_z:
-                        PressButton(0);
+                        PressButton(1);
                         break;
                     case SDL.SDL_Keycode.SDLK_x:
-                        PressButton(1);
+                        PressButton(0);
                         break;
                     case SDL.SDL_Keycode.SDLK_SPACE:
                         PressButton(2);

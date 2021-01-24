@@ -41,15 +41,15 @@ namespace GameBoy_Emu.core.input
 
             }
 
-                if (sdlEvent.type == SDL.SDL_EventType.SDL_JOYBUTTONDOWN)
+            if (sdlEvent.type == SDL.SDL_EventType.SDL_JOYBUTTONDOWN)
             {
                 switch (sdlEvent.jbutton.button)
                 {
                     case 1:
-                        PressButton(0);
+                        PressButton(1);
                         break;
                     case 2:
-                        PressButton(1);
+                        PressButton(0);
                         break;
                     case 8:
                         PressButton(2);
@@ -65,10 +65,10 @@ namespace GameBoy_Emu.core.input
                 switch (sdlEvent.jbutton.button)
                 {
                     case 1:
-                        ReleaseButton(0);
+                        ReleaseButton(1);
                         break;
                     case 2:
-                        ReleaseButton(1);
+                        ReleaseButton(0);
                         break;
                     case 8:
                         ReleaseButton(2);
