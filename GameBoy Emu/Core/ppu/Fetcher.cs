@@ -1,5 +1,7 @@
-﻿using GameBoy_Emu.core.mmu;
+﻿using System;
+using GameBoy_Emu.core.mmu;
 using System.Collections.Generic;
+using GameBoy_Emu.core.utils;
 
 namespace GameBoy_Emu.core.ppu
 {
@@ -38,18 +40,37 @@ namespace GameBoy_Emu.core.ppu
             Pixels = new Queue<PixelData>();
             State = FetcherState.READ_TILE_NUM;
         }
-
+       
+        bool window = false;
+        private int winX = 0;
+        private int winY = 0;
         public void Fetch()
         {
             var scx = _mmu.LoadUnsigned8(Mmu.SCX_REGISTER);
             var scy = _mmu.LoadUnsigned8(Mmu.SCY_REGISTER);
 
+            var wx = _mmu.LoadUnsigned8(Mmu.WX_REGISTER);
+            var wy = _mmu.LoadUnsigned8(Mmu.WY_REGISTER);
+
+            
+            if ((wx - 7 <= _display.CurrentX && wy <= _display.CurrentY) && BitUtils.IsBitSet(_mmu.LoadLcdc(), 5))
+            {
+                if (!window)
+                {
+                    window = true;
+                    Pixels.Clear();
+                }
+            }
             if (State == FetcherState.READ_TILE_NUM)
             {
-                _currentBgTileAddress = _bgTileMap.GetBgTileAddr() +
-                    ((((_display.CurrentY + scy) % 256) / 8) * 32) + 
-                    ((((_currentBgTile + scx ) % 256) / 8));
-
+                var addr = window ? _bgTileMap.GetWinTileAddr() + (((_display.CurrentY - wy  %256)/8)*32) + ((winX  % 256) /8) : _bgTileMap.GetBgTileAddr()+ ((((_display.CurrentY + scy) % 256) / 8) * 32) +
+                                                                   (((((_currentBgTile ) + scx ) % 256) / 8));
+                _currentBgTileAddress = addr;
+                 
+                if (window)
+                {
+                    winX += 8;
+                }
                 _currentBgTile += 8;
                 _currentTileNumber = _bgTileMap.GetTileNumber(_currentBgTileAddress);
 
@@ -66,6 +87,7 @@ namespace GameBoy_Emu.core.ppu
                 Pixels = _tile.GetRowPixelData((_display.CurrentY + scy) % 256 % 8, PixelData.PixelType.BG);
 
                 State = FetcherState.TRANSFER_READY;
+               
             }
         }
 
@@ -87,6 +109,9 @@ namespace GameBoy_Emu.core.ppu
             _tileFifo.Reset();
             State = FetcherState.READ_TILE_NUM;
             _currentBgTile = 0;
+            winX = 0;
+            winY = 0;
+            window = false;
         }
 
         public void GetSprite(OamEntry sprite, int yPos)

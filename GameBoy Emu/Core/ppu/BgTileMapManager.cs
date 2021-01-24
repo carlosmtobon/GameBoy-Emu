@@ -37,7 +37,7 @@ namespace GameBoy_Emu.core.ppu
         public int GetWinTileAddr()
         {
             int tileMapAddr = BG_MAP_ADDRESS_1;
-            if (BitUtils.IsBitSet(_mmu.LoadLcdc(), 4))
+            if (BitUtils.IsBitSet(_mmu.LoadLcdc(), 6))
             {
                 tileMapAddr = BG_MAP_ADDRESS_2;
             }

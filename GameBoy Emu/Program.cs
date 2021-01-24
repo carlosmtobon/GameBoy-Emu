@@ -22,7 +22,16 @@ namespace GameBoy_Emu
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
             //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Prehistorik Man (USA, Europe).gb");
 
-            var display = new Display(160, 144, 8, mmu.GetRomName());
+            Display display;
+#if DEBUG
+             display = new Display(160, 144, 4, mmu.GetRomName());
+#else
+              display = new Display(160, 144, 8, mmu.GetRomName());
+#endif
+           
+            
+
+           
             var cpu = new Cpu(mmu);
             var ppu = new Ppu(mmu, display);
 
