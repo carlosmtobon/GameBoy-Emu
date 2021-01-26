@@ -108,7 +108,7 @@ namespace GameBoy_Emu.core.ppu
                 LycCompare();
                 clocks = 0;
                 Display.CurrentX = 0;
-                if (Display.CurrentY >= (Display.Height - 1))
+                if (Display.CurrentY >= (Display.Height))
                 {
                     Status = PpuStatus.VBLANK;
                 }
