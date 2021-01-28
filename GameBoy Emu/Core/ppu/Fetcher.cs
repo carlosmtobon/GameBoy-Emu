@@ -124,7 +124,7 @@ namespace GameBoy_Emu.core.ppu
             var height = _bgTileMap.GetSpriteHeight();
             _tile = _bgTileMap.GetSpriteTile(sprite.TileNumber, height);
             PixelData.PixelType pixelType = sprite.PaletteNumber() == 0 ? PixelData.PixelType.SPRITE_0 : PixelData.PixelType.SPRITE_1;
-            int val = sprite.IsYFlip() ?  15 -(((yPos - (sprite.YPos - 16)) % height)) : (yPos -(sprite.YPos - 16)) % height;
+            int val = sprite.IsYFlip() ?  (height-1) -(((yPos - (sprite.YPos - 16)) % height)) : (yPos -(sprite.YPos - 16)) % height;
             Pixels = _tile.GetRowPixelData(val, pixelType, sprite.IsXFlip());
         }
 
