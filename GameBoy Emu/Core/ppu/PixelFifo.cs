@@ -34,7 +34,7 @@ namespace GameBoy_Emu.core.ppu
                 }
                 if (_pixels.Count <= 8)
                 {
-                    //Console.WriteLine("FIFO: IDLE");
+                    // Debug.WriteLine("FIFO: IDLE");
                     State = PixelFifoState.IDLE;
                     return 0;
                 }

@@ -123,7 +123,7 @@ namespace GameBoy_Emu.core.ppu
         {
             if (clocks >= VBLANK_CYCLES)
             {
-                //Console.WriteLine($"SCX: {_mmu.LoadUnsigned8(Mmu.SCX_REGISTER)}");
+                // Debug.WriteLine($"SCX: {_mmu.LoadUnsigned8(Mmu.SCX_REGISTER)}");
                 clocks = 0;
                 if (Display.CurrentY == 144)
                 {

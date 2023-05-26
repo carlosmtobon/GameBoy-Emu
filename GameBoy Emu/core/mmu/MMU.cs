@@ -41,12 +41,14 @@ namespace GameBoy_Emu.core.mmu
         }
 
         public const int IF_REGISTER = 0xFF0F;
-
+        
+        // timer registers
         public const int DIV_REGISTER = 0xFF04;
         public const int TIMA_REGISTER = 0xFF05;
         public const int TMA_REGISTER = 0xFF06;
         public const int TAC_REGISTER = 0xFF07;
 
+        // ppu registers
         public const int LCDC_REGISTER = 0xFF40;
         public const int STAT_REGISTER = 0xFF41;
         public const int SCY_REGISTER = 0xFF42;
@@ -60,6 +62,38 @@ namespace GameBoy_Emu.core.mmu
         public const int WY_REGISTER = 0xFF4A;
         public const int WX_REGISTER = 0xFF4B;
         public const int JOYP_REGISTER = 0xFF00;
+        
+        // apu registers
+        // square 1
+        public const int NR10_REGISTER = 0XFF10;
+        public const int NR11_REGISTER = 0XFF11;
+        public const int NR12_REGISTER = 0XFF12;
+        public const int NR13_REGISTER = 0XFF13;
+        public const int NR14_REGISTER = 0XFF14;
+        
+        // square 2
+        public const int NR21_REGISTER = 0XFF16;
+        public const int NR22_REGISTER = 0XFF17;
+        public const int NR23_REGISTER = 0XFF18;
+        public const int NR24_REGISTER = 0XFF19;
+        
+        // wave
+        public const int NR30_REGISTER = 0XFF1A;
+        public const int NR31_REGISTER = 0XFF1B;
+        public const int NR32_REGISTER = 0XFF1C;
+        public const int NR33_REGISTER = 0XFF1D;
+        public const int NR34_REGISTER = 0XFF1E;
+        
+        // noise
+        public const int NR41_REGISTER = 0XFF20;
+        public const int NR42_REGISTER = 0XFF21;
+        public const int NR43_REGISTER = 0XFF22;
+        public const int NR44_REGISTER = 0XFF23;
+        
+        // control/status
+        public const int NR50_REGISTER = 0XFF24;
+        public const int NR51_REGISTER = 0XFF25;
+        public const int NR52_REGISTER = 0XFF26;
 
         internal void SaveGameFile()
         {

@@ -2,6 +2,7 @@
 using GameBoy_Emu.core.utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace GameBoy_Emu.core.ppu
 {
@@ -136,7 +137,7 @@ namespace GameBoy_Emu.core.ppu
 
         private void DisplayTile(int addr, byte[] tileData)
         {
-            Console.WriteLine(string.Format("Address: {0:X}", addr));
+             Debug.WriteLine(string.Format("Address: {0:X}", addr));
             for (int i = 0; i < 16; i += 2)
             {
                 byte h = tileData[i];
@@ -165,10 +166,10 @@ namespace GameBoy_Emu.core.ppu
                         Console.Write('0');
                     }
                 }
-                Console.WriteLine("");
+                 Debug.WriteLine("");
 
             }
-            Console.WriteLine("");
+             Debug.WriteLine("");
         }
     }
 }

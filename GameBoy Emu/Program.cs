@@ -30,6 +30,8 @@ namespace GameBoy_Emu
            
             var cpu = new Cpu(mmu);
             var ppu = new Ppu(mmu, display);
+            var apu = new Apu(mmu);
+            apu.Init();
 
             bool running = true;
             var freq = Cpu.CYCLES_PER_SECOND / 59.7;
@@ -41,6 +43,7 @@ namespace GameBoy_Emu
                 ppu.Tick(cpu.CpuTickCycles);
                 running = inputDevice.HandleInput();
                 display.UpdateDisplay();
+                apu.Tick(cpu.CpuTickCycles);
                 //var end = SDL.SDL_GetPerformanceCounter();
                 //float elapsedMS = (end - start) / (float)(SDL.SDL_GetPerformanceFrequency());
                 // Debug.WriteLine("FPS: " + 1.0 / elapsedMS);
@@ -51,6 +54,7 @@ namespace GameBoy_Emu
             // clean up
             mmu.SaveGameFile();
             display.Dispose();
+            apu.Dispose();
             inputDevice.Dispose();
             SDL.SDL_Quit();
         }
