@@ -2,6 +2,7 @@
 using SDL2;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,14 +23,14 @@ namespace GameBoy_Emu.core.input
         {
             if (SDL.SDL_Init(SDL.SDL_INIT_JOYSTICK) < 0)
             {
-                Console.WriteLine("Failed to Init SDL");
+                 Debug.WriteLine("Failed to Init SDL");
                 SDL.SDL_QuitSubSystem(SDL.SDL_INIT_JOYSTICK);
                 return new Keyboard();
             }
 
             if (SDL.SDL_NumJoysticks() < 1)
             {
-                Console.WriteLine("Warning: No game controller connected!");
+                 Debug.WriteLine("Warning: No game controller connected!");
                 SDL.SDL_QuitSubSystem(SDL.SDL_INIT_JOYSTICK);
                 return new Keyboard();
             }
@@ -37,7 +38,7 @@ namespace GameBoy_Emu.core.input
             _gamecontroller = SDL.SDL_JoystickOpen(0);
             if (_gamecontroller != null) return new Joypad();
                 
-            Console.WriteLine("Warning: Unable to open game controller! Sdl Error: " + SDL.SDL_GetError());
+             Debug.WriteLine("Warning: Unable to open game controller! Sdl Error: " + SDL.SDL_GetError());
             SDL.SDL_QuitSubSystem(SDL.SDL_INIT_JOYSTICK);
             return new Keyboard();
         }

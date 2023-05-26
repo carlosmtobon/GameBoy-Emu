@@ -1,5 +1,6 @@
 ﻿using SDL2;
 using System;
+using System.Diagnostics;
 using System.Windows;
 
 namespace GameBoy_Emu.core.ppu
@@ -39,7 +40,7 @@ namespace GameBoy_Emu.core.ppu
         {
             if (SDL.SDL_Init(SDL.SDL_INIT_VIDEO) < 0)
             {
-                Console.WriteLine("Failed to Init SDL");
+                 Debug.WriteLine("Failed to Init SDL");
                 return;
             }
 

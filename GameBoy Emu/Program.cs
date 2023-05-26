@@ -1,4 +1,5 @@
-﻿using GameBoy_Emu.core.cpu;
+﻿using GameBoy_Emu.core.apu;
+using GameBoy_Emu.core.cpu;
 using GameBoy_Emu.core.input;
 using GameBoy_Emu.core.mmu;
 using GameBoy_Emu.core.ppu;
@@ -13,14 +14,9 @@ namespace GameBoy_Emu
             InputDevice inputDevice = InputDevice.GetInstance();
             Mmu mmu = new Mmu(inputDevice);
 
-            //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Turrican (USA, Europe).gb");
-             mmu.LoadRom(@"C:\Users\Carlos\Desktop\Legend of Zelda, The - Link's Awakening.gb");
-            //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Castlevania - The Adventure (USA).gb");
-           //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Super Mario Land (World).gb");
-            //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Bubble Ghost (USA, Europe).gb");
-            //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Dr. Mario.gb");
-            //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Tetris.gb");
-            //mmu.LoadRom(@"C:\Users\Carlos\Desktop\gbtest\Prehistorik Man (USA, Europe).gb");
+            mmu.LoadRom(@"C:\Users\Carlos\Desktop\emulator-stuff\roms\gb\Legend of Zelda, The - Link's Awakening.gb");
+            // mmu.LoadRom(@"C:\Users\Carlos\Desktop\emulator-stuff\roms\gb\Castlevania - The Adventure (USA).gb");
+            // mmu.LoadRom(@"C:\Users\Carlos\Desktop\emulator-stuff\roms\gb\Super Mario Land (World).gb");
 
             Display display;
 #if DEBUG
@@ -47,7 +43,7 @@ namespace GameBoy_Emu
                 display.UpdateDisplay();
                 //var end = SDL.SDL_GetPerformanceCounter();
                 //float elapsedMS = (end - start) / (float)(SDL.SDL_GetPerformanceFrequency());
-                //Console.WriteLine("FPS: " + 1.0 / elapsedMS);
+                // Debug.WriteLine("FPS: " + 1.0 / elapsedMS);
                 //SDL.SDL_Delay((uint)Math.Floor(16.666f - elapsedMS));
 
             }
