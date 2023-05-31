@@ -31,8 +31,6 @@ namespace GameBoy_Emu
             var cpu = new Cpu(mmu);
             var ppu = new Ppu(mmu, display);
             var apu = new Apu(mmu);
-            apu.Init();
-
             bool running = true;
             var freq = Cpu.CYCLES_PER_SECOND / 59.7;
 
