@@ -94,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="core\apu\Apu.cs" />
+    <Compile Include="core\apu\SquareChannel.cs" />
     <Compile Include="core\cpu\Cpu.cs" />
     <Compile Include="core\cpu\Interrupt.cs" />
     <Compile Include="core\cpu\InterruptController.cs" />

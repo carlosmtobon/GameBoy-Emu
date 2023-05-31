@@ -79,7 +79,7 @@ namespace GameBoy_Emu.core.ppu
         {
             if (clocks >= OAM_SEARCH_CYCLES)
             {
-                clocks = 0;
+                clocks -= OAM_SEARCH_CYCLES;
                 Status = PpuStatus.PIXEL_TRANSFER;
                 SetLcdcInterruptIfNeeded(5);
                 _fetcher.FindVisibleSprites();
@@ -93,7 +93,7 @@ namespace GameBoy_Emu.core.ppu
             if (clocks >= PIXEL_PROCESS_CYCLES)
             {
                 _fetcher.Reset();
-                clocks = 0;
+                clocks -= PIXEL_PROCESS_CYCLES;
                 Status = PpuStatus.HBLANK;
             }
         }
@@ -106,7 +106,7 @@ namespace GameBoy_Emu.core.ppu
                 SetLcdcInterruptIfNeeded(3);
 
                 LycCompare();
-                clocks = 0;
+                clocks -= HBLANK_CYCLES;
                 Display.CurrentX = 0;
                 if (Display.CurrentY >= (Display.Height))
                 {
@@ -124,7 +124,7 @@ namespace GameBoy_Emu.core.ppu
             if (clocks >= VBLANK_CYCLES)
             {
                 // Debug.WriteLine($"SCX: {_mmu.LoadUnsigned8(Mmu.SCX_REGISTER)}");
-                clocks = 0;
+                clocks -= VBLANK_CYCLES;
                 if (Display.CurrentY == 144)
                 {
                     SetInterrupt(InterruptController.VBLANK_MASK);
