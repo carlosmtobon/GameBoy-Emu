@@ -1,4 +1,6 @@
-﻿using GameBoy_Emu.core.apu;
+﻿using System;
+using System.Diagnostics;
+using GameBoy_Emu.core.apu;
 using GameBoy_Emu.core.cpu;
 using GameBoy_Emu.core.input;
 using GameBoy_Emu.core.mmu;
@@ -34,18 +36,36 @@ namespace GameBoy_Emu
             bool running = true;
             var freq = Cpu.CYCLES_PER_SECOND / 59.7;
 
+            
+            // Variables for FPS calculation
+            int frameCount = 0;
+            float deltaTime = 0.0f;
+            uint lastFrameTime = SDL.SDL_GetTicks();
+            uint fpsTimer = lastFrameTime;
+            int fps = 0;
             while (running)
             {
-                var start = SDL.SDL_GetPerformanceCounter();
+                var start = SDL.SDL_GetTicks();
                 cpu.Tick();
                 ppu.Tick(cpu.CpuTickCycles);
                 running = inputDevice.HandleInput();
                 display.UpdateDisplay();
                 apu.Tick(cpu.CpuTickCycles);
-                //var end = SDL.SDL_GetPerformanceCounter();
-                //float elapsedMS = (end - start) / (float)(SDL.SDL_GetPerformanceFrequency());
-                // Debug.WriteLine("FPS: " + 1.0 / elapsedMS);
-                //SDL.SDL_Delay((uint)Math.Floor(16.666f - elapsedMS));
+               
+                // Calculate delta time and FPS
+                uint currentFrameTime = SDL.SDL_GetTicks();
+                deltaTime = (currentFrameTime - lastFrameTime) / 1000.0f; // Convert to seconds
+                lastFrameTime = currentFrameTime;
+
+                fps++;
+
+                // Update FPS display every second
+                if (currentFrameTime - fpsTimer >= 1000) {
+                    // Debug.WriteLine($"APU: Samples per sec : {apu.GetSampleCounter()}");
+                    Debug.WriteLine($"FPS: {fps}");
+                    fps = 0;
+                    fpsTimer = currentFrameTime;
+                }
 
             }
 

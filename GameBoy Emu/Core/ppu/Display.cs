@@ -45,7 +45,7 @@ namespace GameBoy_Emu.core.ppu
             }
 
             _window = SDL.SDL_CreateWindow("ChiBoy v1.0 - " + romName , SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, Width * Scale,
-                Height * Scale, SDL.SDL_WindowFlags.SDL_WINDOW_VULKAN);
+                Height * Scale, SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL);
 
             _renderer = SDL.SDL_CreateRenderer(_window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED | SDL.SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC);
             _rect = new SDL.SDL_Rect();

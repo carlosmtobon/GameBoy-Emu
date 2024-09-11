@@ -14,7 +14,7 @@ namespace GameBoy_Emu.core.apu
 
         // sample code
         const int SAMPLE_RATE = 44100;
-        private const int SAMPLE_SIZE = 1024;
+        private const int SAMPLE_SIZE = 4096;
 
         // Timer
         private int frameSequenceClocks = 0;
@@ -22,7 +22,7 @@ namespace GameBoy_Emu.core.apu
 
         private int FRAME_SEQ_RATE = 8192;
         private int sampleClocks = 0;
-        private static readonly int SAMPLE_CLOCK_RATE = 95; // Cpu.CYCLES_PER_SECOND/SAMPLE_RATE;
+        private static readonly int SAMPLE_CLOCK_RATE =  Cpu.CYCLES_PER_SECOND/SAMPLE_RATE;
 
         // device ID
         private uint deviceId;
@@ -32,10 +32,18 @@ namespace GameBoy_Emu.core.apu
 
         // square 2
         private SquareChannel _square2Channel;
+        
+        // wave channel
+        private WaveChannel _waveChannel;
 
-        private short[] mixerBuffer = new short[SAMPLE_SIZE];
+        
+        // main buffer to send to audio stream
+        private float[] mixerBuffer = new float[SAMPLE_SIZE];
         private int bufferByteCount = 0;
 
+        
+        // test counter
+        private int sampleFuncCounter = 0;
 
         // apu mixer
         SDL.SDL_AudioSpec mixer = new SDL.SDL_AudioSpec();
@@ -44,9 +52,11 @@ namespace GameBoy_Emu.core.apu
         public Apu(Mmu mmu)
         {
             _mmu = mmu;
-
+            
+            // TODO implement a bus on program.cs
             _square1Channel = new SquareChannel(mmu);
             _square2Channel = new SquareChannel(mmu);
+            _waveChannel = new WaveChannel(mmu);
 
             if (SDL.SDL_Init(SDL.SDL_INIT_AUDIO) != 0)
             {
@@ -55,7 +65,7 @@ namespace GameBoy_Emu.core.apu
             }
 
             mixer.freq = SAMPLE_RATE; // number of samples per second
-            mixer.format = SDL.AUDIO_S16SYS; // sample type (here: signed short i.e. 16 bit)
+            mixer.format = SDL.AUDIO_F32; // sample type (here: signed short i.e. 16 bit)
             mixer.channels = 1; // only one channel
             mixer.samples = SAMPLE_SIZE; // buffer-size
             mixer.callback = AudioCallback; // function SDL calls periodically to refill the buffer
@@ -79,45 +89,52 @@ namespace GameBoy_Emu.core.apu
                 if (frameSequenceClocks >= FRAME_SEQ_RATE) // every 8192 clock or 512 hz
                 {
                     frameSequenceClocks -= FRAME_SEQ_RATE;
-                    frame++;
-
-                    if (frame % 2 == 0)
+                    
+                    if (frame == 0 || frame == 2 || frame  == 4 || frame == 6)
                     {
                         _square1Channel.Trigger(1); 
                         _square2Channel.Trigger(2);
+                        _waveChannel.Trigger();
+                    }
+
+                    if (frame == 7)
+                    {
+                        _square1Channel.SetVolume(1);
+                        _square2Channel.SetVolume(2);
+                        _waveChannel.SetVolume();
+                        
+                        frame = 0;
+                    }
+                    else
+                    {
+                        frame++;
                     }
                 }
 
                 _square1Channel.Tick(cpuCycles);
                 _square2Channel.Tick(cpuCycles);
+                _waveChannel.Tick(cpuCycles);
 
-                if (sampleClocks++ > 95)
+                sampleClocks += cpuCycles;
+                if (sampleClocks >= SAMPLE_CLOCK_RATE)
                 {
-                    sampleClocks = 0;
+                    sampleFuncCounter++;
+                    sampleClocks -= SAMPLE_CLOCK_RATE;
                     if (bufferByteCount < SAMPLE_SIZE)
                     {
-                        mixerBuffer[bufferByteCount] = (short)(500 * _square1Channel.Sample() + _square2Channel.Sample());
+                        // mixerBuffer[bufferByteCount] = (float)( _square1Channel.Sample() + _square2Channel.Sample() + _waveChannel.Sample());
+                        mixerBuffer[bufferByteCount] = _square2Channel.Sample();
                         bufferByteCount++;
                     }
                 }
-                // short output = 0;
-                // // // test code
-                // if (_square1Channel.Enabled)
-                // {
-                //     _square1Channel.Tick(cpuCycles);
-                //     if (sampleClocks >= SAMPLE_CLOCK_RATE)
-                //     {
-                //         sampleClocks -= SAMPLE_CLOCK_RATE;
-                //         output = _square1Channel.Sample();
-                //     }
-                //
-                //     if (bufferByteCount < SAMPLE_SIZE)
-                //     {
-                //         mixerBuffer[bufferByteCount] = output;
-                //         bufferByteCount++;
-                //     }
-                // }
             }
+        }
+
+        public int GetSampleCounter()
+        {
+            int val = sampleFuncCounter;
+            sampleFuncCounter = 0;
+            return val;
         }
 
         public void Dispose()
