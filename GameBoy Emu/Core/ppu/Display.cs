@@ -51,13 +51,6 @@ namespace GameBoy_Emu.core.ppu
             _rect = new SDL.SDL_Rect();
             _rect.h = Scale;
             _rect.w = Scale;
-
-            SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEMOTION, SDL.SDL_IGNORE);
-            SDL.SDL_EventState(SDL.SDL_EventType.SDL_MOUSEWHEEL, SDL.SDL_IGNORE);
-            SDL.SDL_EventState(SDL.SDL_EventType.SDL_TEXTINPUT, SDL.SDL_IGNORE);
-            SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERMOTION, SDL.SDL_IGNORE);
-            SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERUP, SDL.SDL_IGNORE);
-            SDL.SDL_EventState(SDL.SDL_EventType.SDL_FINGERDOWN, SDL.SDL_IGNORE);
         }
 
         private IntPtr GetWinHandler(IntPtr window)
@@ -73,8 +66,6 @@ namespace GameBoy_Emu.core.ppu
         {
             if (Draw)
             {
-                //SDL.SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
-                //SDL.SDL_RenderClear(_renderer);
                 Draw = false;
                 for (int y = 0; y < Height; y++)
                 {
