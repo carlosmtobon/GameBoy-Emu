@@ -25,7 +25,8 @@ namespace GameBoy_Emu.core.apu
         public bool Enabled { get; set; } = false;
         public short Output { get; set; } = 0;
         public short Volume { get; set; } = 0;
-        public int Frequency { set; get; } = 0;
+        public int TimerPeriod { set; get; } = 0;
+        public int Timer { get; set; }
         public int CurrentDuty { get; set; } = 0;
 
         public SquareChannel(Mmu mmu)
@@ -33,7 +34,7 @@ namespace GameBoy_Emu.core.apu
             _mmu = mmu;
         }
 
-        public void Trigger(int channel)
+        public void TriggerLength(int channel)
         {
             // grab square registers
             int nr1;
@@ -63,7 +64,10 @@ namespace GameBoy_Emu.core.apu
             if (triggerVal == 1)
             {
                 Enabled = true;
-                Frequency = (2048 - ((nr4 & 0b00111111) << 5 | nr3) * 4);
+                var low = nr3;
+                var high = (nr4 & 0b0000_0111) << 8;
+                TimerPeriod = (2048 - (high | low));
+                Timer = TimerPeriod;
                 CurrentDuty = (nr1 & 0b11000000) >> 6;
                 Length = 64 - (nr1 & 0b00111111);
             }
@@ -74,37 +78,31 @@ namespace GameBoy_Emu.core.apu
             {
                 Length = 64;
                 Enabled = false;
-                
             }
-
-            Debug.WriteLine($"Channel {channel} Duty: {CurrentDuty}");
-            Debug.WriteLine($"Channel {channel} Enable: {lengthEnable}");
         }
 
         public void Tick(int cpuCycles)
         {
-            if (Enabled)
+            AccumClock += cpuCycles;
+
+            while (AccumClock > 0)
             {
-                AccumClock += cpuCycles;
-                if (AccumClock >= Cpu.CYCLES_PER_SECOND / Frequency)
+                AccumClock -= 1;
+                Timer--;
+                if (Timer == 0)
                 {
-                    // channel is on
                     var dutySequence = waveDutyTable[CurrentDuty];
-                    AccumClock -= Cpu.CYCLES_PER_SECOND / Frequency;
-                    // sample square wave
                     Output = dutySequence[DutyCounter % 8];
                     DutyCounter++;
+                    Timer = TimerPeriod;
                 }
-            }
-            else
-            {
-                Output = 0;
             }
         }
 
         public float Sample()
         {
-            return (Output/100f * Volume * 100);
+            if (!Enabled) return 0;
+            return (Output * Volume);
         }
 
         public void SetVolume(int channel)

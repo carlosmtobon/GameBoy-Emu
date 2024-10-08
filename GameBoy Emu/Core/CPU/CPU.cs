@@ -266,15 +266,15 @@ namespace GameBoy_Emu.core.cpu
                     break;
                 case 0x01:
                     Registers.SetBC(_mmu.LoadUnsigned16(PC + 1));
-                    UpdatePCAndCycles(3, 12);
+                    UpdatePCAndCycles(3, 10);
                     break;
                 case 0x02:
                     _mmu.StoreUnsigned8(Registers.GetBC(), Registers.A);
-                    UpdatePCAndCycles(1, 8);
+                    UpdatePCAndCycles(1, 7);
                     break;
                 case 0x03:
                     Registers.AddToBC(1);
-                    UpdatePCAndCycles(1, 8);
+                    UpdatePCAndCycles(1, 6);
                     break;
                 case 0x04:
                     Registers.B = INC(Registers.B, 1, 4);
@@ -284,7 +284,7 @@ namespace GameBoy_Emu.core.cpu
                     break;
                 case 0x06:
                     Registers.B = _mmu.LoadUnsigned8(PC + 1);
-                    UpdatePCAndCycles(2, 8);
+                    UpdatePCAndCycles(2, 7);
                     break;
                 case 0x07:
                     RLCA();
