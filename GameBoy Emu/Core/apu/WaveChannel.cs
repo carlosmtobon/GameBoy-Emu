@@ -15,7 +15,8 @@ namespace GameBoy_Emu.core.apu
         public bool Enabled { get; set; } = false;
         public short Output { get; set; } = 0;
         public short VolumeShift { get; set; } = 0;
-        public int Frequency { get; set; } = 0;
+        public int TimerPeriod { get; set; } = 0;
+        public int Timer { get; set; } = 0;
 
         public const int WaveTableStartAddr = 0xFF30;
 
@@ -28,7 +29,7 @@ namespace GameBoy_Emu.core.apu
             _mmu = mmu;
         }
 
-        public void Trigger()
+        public void TriggerLength()
         {
             // grab wave registers
             int nr31 = _mmu.LoadUnsigned8(Mmu.NR31_REGISTER);
@@ -43,7 +44,10 @@ namespace GameBoy_Emu.core.apu
             if (triggerVal == 1 && !Enabled)
             {
                 Enabled = true;
-                Frequency = (2048 - ((nr34 & 0b00111111) << 5 | nr33) * 2);
+                var low = nr33;
+                var high = nr34 & (0b0000_0111) << 8;
+                TimerPeriod = 2048 - (high | low);
+                Timer = TimerPeriod;
                 Length = 256 - (nr31 & 0b11111111);
                 WaveTablePointer = 0;
             }
@@ -84,42 +88,40 @@ namespace GameBoy_Emu.core.apu
 
         public void Tick(int cpuCycles)
         {
-            if (Enabled)
+            AccumClock += cpuCycles;
+            while (AccumClock >= 1)
             {
-                AccumClock += cpuCycles;
-                if (AccumClock >= Cpu.CYCLES_PER_SECOND / Frequency)
+                AccumClock -= 1;
+
+                // load wave table
+                int j = 0;
+                for (int i = 0; i < waveTable.Length; i++)
                 {
-                    AccumClock -= Cpu.CYCLES_PER_SECOND / Frequency;
+                    // get the current sample
+                    var samples = _mmu.LoadUnsigned8(WaveTableStartAddr + j);
 
-                    // load wave table
-                    int j = 0;
-                    for (int i = 0; i < waveTable.Length; i++)
+                    if (i % 2 == 0)
                     {
-                        // get the current sample
-                        var samples = _mmu.LoadUnsigned8(WaveTableStartAddr + j);
-
-                        if (i % 2 == 0)
-                        {
-                            // get high nibble for sample
-                            waveTable[i] = (byte)((samples & 0b11110000) >> 4);
-                        }
-                        else
-                        {
-                            // get low nibble for sample
-                            waveTable[i] = (byte)(samples & 0b00001111);
-                            j++;
-                        }
+                        // get high nibble for sample
+                        waveTable[i] = (byte)((samples & 0b11110000) >> 4);
                     }
-
-                    // update the sample point
-                    Output = waveTable[WaveTablePointer % 32];
-                    WaveTablePointer++;
+                    else
+                    {
+                        // get low nibble for sample
+                        waveTable[i] = (byte)(samples & 0b00001111);
+                        j++;
+                    }
                 }
+
+                // update the sample point
+                Output = waveTable[WaveTablePointer % 32];
+                WaveTablePointer++;
             }
         }
 
         public float Sample()
         {
+            if (!Enabled) return 0;
             return ((Output >> VolumeShift)/100f * 100);
         }
     }

@@ -103,7 +103,7 @@ namespace GameBoy_Emu.core.apu
             {
                 sampleFuncCounter++;
                 sampleClocks -= SAMPLE_CLOCK_RATE;
-                mixerBuffer[bufferByteCount] = (float)(_square1Channel.Sample() + _square2Channel.Sample() + _waveChannel.Sample());
+                mixerBuffer[bufferByteCount] = (float)(_square1Channel.Sample() + _square2Channel.Sample());
                 bufferByteCount = (bufferByteCount + 1) % SAMPLE_SIZE;
             }
         }
