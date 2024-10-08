@@ -5,6 +5,7 @@ using GameBoy_Emu.core.utils;
 using System;
 using System.IO;
 using System.Text;
+using GameBoy_Emu.core.apu;
 
 namespace GameBoy_Emu.core.mmu
 {
@@ -217,6 +218,42 @@ namespace GameBoy_Emu.core.mmu
             else if (addr >= 0xFEA0 && addr <= 0xFEFF)
             {
                 // Debug.WriteLine("Unusable mmu Range");
+            }
+            else if (addr == NR52_REGISTER)
+            {
+                Apu.Instance.GlobalEnabled = BitUtils.GetBit(value, 7) == 1;
+            }
+            else if (addr == NR11_REGISTER)
+            {
+                Apu.Instance.SetPulse1_NR11(value);
+            }
+            else if (addr == NR12_REGISTER)
+            {
+                Apu.Instance.SetPulse1_NR12(value);
+            }
+            else if (addr == NR13_REGISTER)
+            {
+                Apu.Instance.SetPulse1_NR13(value);
+            }
+            else if (addr == NR14_REGISTER)
+            {
+                Apu.Instance.SetPulse1_NR14(value);
+            }
+            else if (addr == NR21_REGISTER)
+            {
+                Apu.Instance.SetPulse2_NR21(value);
+            }
+            else if (addr == NR22_REGISTER)
+            {
+                Apu.Instance.SetPulse2_NR22(value);
+            }
+            else if (addr == NR23_REGISTER)
+            {
+                Apu.Instance.SetPulse2_NR23(value);
+            }
+            else if (addr == NR24_REGISTER)
+            {
+                Apu.Instance.SetPulse2_NR24(value);
             }
             else
             {

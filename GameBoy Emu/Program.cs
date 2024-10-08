@@ -29,7 +29,7 @@ namespace GameBoy_Emu
             
             var cpu = new Cpu(mmu);
             var ppu = new Ppu(mmu, display);
-            var apu = new Apu(mmu);
+            var apu = Apu.Instance;
 
 
             bool running = true;

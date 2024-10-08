@@ -15,9 +15,6 @@ namespace GameBoy_Emu.core.apu
             new short[] { 1, -1, -1, -1, -1, 1, 1, 1 },
             new short[] { -1, 1, 1, 1, 1, 1, 1, -1 }
         };
-
-        private Mmu _mmu;
-
         // square 1
         public int DutyCounter { get; set; } = 0;
         public int AccumClock { get; set; } = 0;
@@ -28,50 +25,16 @@ namespace GameBoy_Emu.core.apu
         public int TimerPeriod { set; get; } = 0;
         public int Timer { get; set; }
         public int CurrentDuty { get; set; } = 0;
-
-        public SquareChannel(Mmu mmu)
-        {
-            _mmu = mmu;
-        }
-
+        
+        public bool LengthEnabled { get; set; } = false;
+        
+        public int NR13 { get; set; } = 0;
+        public int NR14 { get; set; } = 0;
+        public bool Trigger { get; set; } = false;
         public void TriggerLength(int channel)
         {
-            // grab square registers
-            int nr1;
-            int nr3;
-            int nr4;
-
-            if (channel == 1)
-            {
-                // grab square 1 registers
-                nr1 = _mmu.LoadUnsigned8(Mmu.NR11_REGISTER);
-                nr3 = _mmu.LoadUnsigned8(Mmu.NR13_REGISTER);
-                nr4 = _mmu.LoadUnsigned8(Mmu.NR14_REGISTER);
-            }
-            else
-            {
-                // grab square 2 registers
-                nr1 = _mmu.LoadUnsigned8(Mmu.NR21_REGISTER);
-                nr3 = _mmu.LoadUnsigned8(Mmu.NR23_REGISTER);
-                nr4 = _mmu.LoadUnsigned8(Mmu.NR24_REGISTER);
-            }
-
-
-            // Debug.WriteLine($"Length Enable: {BitUtils.GetBit((byte)nr4, 6)}");
-            byte triggerVal = BitUtils.GetBit((byte)nr4, 7);
-            byte lengthEnable = BitUtils.GetBit((byte)nr4, 6);
-
-            if (triggerVal == 1)
-            {
-                Enabled = true;
-                var low = nr3;
-                var high = (nr4 & 0b0000_0111) << 8;
-                TimerPeriod = (2048 - (high | low));
-                Timer = TimerPeriod;
-                CurrentDuty = (nr1 & 0b11000000) >> 6;
-                Length = 64 - (nr1 & 0b00111111);
-            }
-
+            if (!LengthEnabled) return;
+            
             Length--;
 
             if (Length == 0)
@@ -87,16 +50,17 @@ namespace GameBoy_Emu.core.apu
 
             while (AccumClock > 0)
             {
-                AccumClock -= 1;
+                AccumClock -=1 ;
                 Timer--;
-                if (Timer == 0)
+                if (Timer <= 0)
                 {
                     var dutySequence = waveDutyTable[CurrentDuty];
                     Output = dutySequence[DutyCounter % 8];
                     DutyCounter++;
-                    Timer = TimerPeriod;
+                    Timer = 2048 - TimerPeriod;  // Reload the timer
                 }
             }
+
         }
 
         public float Sample()
@@ -105,23 +69,9 @@ namespace GameBoy_Emu.core.apu
             return (Output * Volume);
         }
 
-        public void SetVolume(int channel)
+        public void SetVolume(short value)
         {
-            // grab square registers
-            int nr2 = 0;
-
-            if (channel == 1)
-            {
-                // grab square 1 registers
-                nr2 = _mmu.LoadUnsigned8(Mmu.NR12_REGISTER);
-            }
-            else
-            {
-                // grab square 2 registers
-                nr2 = _mmu.LoadUnsigned8(Mmu.NR22_REGISTER);
-            }
-
-            Volume = (short)((nr2 & 0b11110000) >> 4);
+            Volume = value;
         }
     }
 }

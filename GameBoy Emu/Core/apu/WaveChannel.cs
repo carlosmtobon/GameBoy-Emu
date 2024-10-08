@@ -24,11 +24,7 @@ namespace GameBoy_Emu.core.apu
         public int WaveTablePointer { get; set; } = 0;
 
 
-        public WaveChannel(Mmu mmu)
-        {
-            _mmu = mmu;
-        }
-
+       
         public void TriggerLength()
         {
             // grab wave registers
